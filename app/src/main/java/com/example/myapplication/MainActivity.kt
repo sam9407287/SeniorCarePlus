@@ -85,6 +85,7 @@ import com.example.myapplication.ui.screens.RegionScreen
 import com.example.myapplication.ui.screens.TemperatureScreen
 import com.example.myapplication.ui.screens.TimerFeatureScreen
 import com.example.myapplication.ui.screens.TimerScreen
+import com.example.myapplication.ui.screens.NotificationScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -109,7 +110,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}) {
+fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -> Unit = {}) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -143,12 +144,17 @@ fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}) {
             )
             
             // 右侧通知图标
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = "通知",
-                modifier = Modifier.size(40.dp),
-                tint = Color.Black
-            )
+            IconButton(
+                onClick = onNotificationClick,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = "通知",
+                    modifier = Modifier.size(40.dp),
+                    tint = Color.Black
+                )
+            }
         }
     }
 }
@@ -274,6 +280,17 @@ fun MainAppContent() {
                                 }
                             }
                         }
+                    },
+                    onNotificationClick = {
+                        // 導航到通知頁面，與主頁導航邏輯類似
+                        navController.navigate("notifications") {
+                            // 清空之前的notifications路由，確保每次都是新進入
+                            popUpTo("notifications") {
+                                inclusive = true
+                            }
+                            // 防止創建多個實例
+                            launchSingleTop = true
+                        }
                     }
                 )
                 
@@ -337,6 +354,9 @@ fun MainAppContent() {
                         composable("diaper") { DiaperScreen(navController) }
                         composable("button") { ButtonScreen(navController) }
                         composable("heart_rate") { HeartRateScreen(navController) }
+                        
+                        // 通知頁面
+                        composable("notifications") { NotificationScreen(navController) }
                         
                         // 管理页面
                         composable("patient_admin") { AdminPageTemplate(title = "院友管理", navController = navController) }

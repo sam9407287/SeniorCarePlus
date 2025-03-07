@@ -83,9 +83,12 @@ import com.example.myapplication.ui.screens.MapScreen
 import com.example.myapplication.ui.screens.MonitorScreen
 import com.example.myapplication.ui.screens.RegionScreen
 import com.example.myapplication.ui.screens.TemperatureScreen
-import com.example.myapplication.ui.screens.TimerFeatureScreen
 import com.example.myapplication.ui.screens.TimerScreen
 import com.example.myapplication.ui.screens.NotificationScreen
+import com.example.myapplication.ui.screens.EmergencyButtonScreen
+import com.example.myapplication.ui.screens.DiaperMonitorScreen
+import com.example.myapplication.ui.screens.HeartRateMonitorScreen
+import com.example.myapplication.ui.screens.TemperatureMonitorScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -266,7 +269,7 @@ fun MainAppContent() {
                     onUserIconClick = {
                         when {
                             // 功能页面点击返回
-                            currentRoute in listOf("region", "temperature", "timer_feature", "diaper", "button", "heart_rate") -> {
+                            currentRoute in listOf("region", "temperature", "diaper", "diaper_monitor", "button", "emergency_button", "heart_rate", "heart_rate_monitor", "temperature_monitor") -> {
                                 navController.navigateUp()
                             }
                             // 主页或底部导航页点击打开侧边栏
@@ -345,15 +348,21 @@ fun MainAppContent() {
                         composable("home") { HomeScreen(navController) }
                         composable("monitor") { MonitorScreen(navController) }
                         composable("map") { MapScreen(navController) }
-                        composable("timer") { TimerScreen(navController) }
+                        composable("timer") { 
+                            // 直接使用完整的TimerScreen實現
+                            TimerScreen(navController) 
+                        }
                         
                         // 添加新功能頁面的導航路由
                         composable("region") { RegionScreen(navController) }
                         composable("temperature") { TemperatureScreen(navController) }
-                        composable("timer_feature") { TimerFeatureScreen(navController) }
+                        composable("temperature_monitor") { TemperatureMonitorScreen(navController) }
                         composable("diaper") { DiaperScreen(navController) }
+                        composable("diaper_monitor") { DiaperMonitorScreen(navController) }
                         composable("button") { ButtonScreen(navController) }
+                        composable("emergency_button") { EmergencyButtonScreen(navController) }
                         composable("heart_rate") { HeartRateScreen(navController) }
+                        composable("heart_rate_monitor") { HeartRateMonitorScreen(navController) }
                         
                         // 通知頁面
                         composable("notifications") { NotificationScreen(navController) }

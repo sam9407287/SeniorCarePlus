@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bathroom
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Schedule
@@ -60,11 +61,11 @@ fun HomeScreen(navController: NavController) {
         
         val features = listOf(
             FeatureItem("區域", Icons.Default.LocationOn, "region"),
-            FeatureItem("體溫", Icons.Default.Thermostat, "temperature"),
-            FeatureItem("定時", Icons.Default.Schedule, "timer_feature"),
-            FeatureItem("尿布", Icons.Default.Bathroom, "diaper"),
-            FeatureItem("按鍵", Icons.Default.TouchApp, "button"),
-            FeatureItem("心率", Icons.Default.Favorite, "heart_rate")
+            FeatureItem("體溫監測", Icons.Default.Thermostat, "temperature_monitor"),
+            FeatureItem("定時", Icons.Default.Schedule, "timer"),
+            FeatureItem("尿布監測", Icons.Default.Bathroom, "diaper_monitor"),
+            FeatureItem("緊急呼叫", Icons.Default.Call, "emergency_button"),
+            FeatureItem("心率監測", Icons.Default.Favorite, "heart_rate_monitor")
         )
         
         LazyVerticalGrid(

@@ -22,6 +22,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Thermostat
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Bathroom
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Bed
+import androidx.compose.material.icons.filled.LocationOff
+import androidx.compose.material.icons.filled.LowPriority
+import androidx.compose.material.icons.filled.PauseCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -457,55 +466,55 @@ fun AlertIcon(
         // 根據警報類型顯示不同的圖標
         when (alertType) {
             AlertType.TEMPERATURE -> Icon(
-                imageVector = Icons.Default.Warning,
+                imageVector = Icons.Default.Thermostat,
                 contentDescription = alertType.displayName,
                 tint = if (isActive) Color(0xFFFF5722) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.HEART_RATE -> Icon(
-                imageVector = Icons.Default.Warning,
+                imageVector = Icons.Default.Favorite,
                 contentDescription = alertType.displayName,
                 tint = if (isActive) Color(0xFFE91E63) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.DIAPER -> Icon(
-                imageVector = Icons.Default.Warning,
+                imageVector = Icons.Default.Bathroom,
                 contentDescription = alertType.displayName,
                 tint = if (isActive) Color(0xFF9C27B0) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.CALL -> Icon(
-                imageVector = Icons.Default.Warning,
+                imageVector = Icons.Default.Call,
                 contentDescription = alertType.displayName,
                 tint = if (isActive) Color(0xFF2196F3) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.TIMER -> Icon(
-                imageVector = Icons.Default.Warning,
+                imageVector = Icons.Default.Schedule,
                 contentDescription = alertType.displayName,
                 tint = if (isActive) Color(0xFF4CAF50) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.BED_EXIT -> Icon(
-                imageVector = Icons.Default.Warning,
+                imageVector = Icons.Default.Bed,
                 contentDescription = alertType.displayName,
                 tint = if (isActive) Color(0xFF795548) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.AREA_EXIT -> Icon(
-                imageVector = Icons.Default.Warning,
+                imageVector = Icons.Default.LocationOff,
                 contentDescription = alertType.displayName,
                 tint = if (isActive) Color(0xFFFF9800) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.LOW_POSITION -> Icon(
-                imageVector = Icons.Default.Warning,
+                imageVector = Icons.Default.LowPriority,
                 contentDescription = alertType.displayName,
                 tint = if (isActive) Color(0xFF607D8B) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.STILL -> Icon(
-                imageVector = Icons.Default.Warning,
+                imageVector = Icons.Default.PauseCircle,
                 contentDescription = alertType.displayName,
                 tint = if (isActive) Color(0xFF673AB7) else Color.Gray,
                 modifier = Modifier.size(24.dp)

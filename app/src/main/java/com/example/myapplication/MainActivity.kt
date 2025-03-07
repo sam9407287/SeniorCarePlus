@@ -321,7 +321,18 @@ fun MainAppContent() {
                                                         inclusive = true
                                                     }
                                                 }
-                                            } else {
+                                            } 
+                                            // 針對監控按鈕做特殊處理
+                                            else if (item.route == "monitor" && currentRoute in listOf("temperature_monitor", "heart_rate_monitor", "diaper_monitor")) {
+                                                // 如果已經在監控子頁面，點擊監控按鈕應該返回主監控頁面
+                                                navController.navigate("monitor") {
+                                                    // 清空監控相關頁面
+                                                    popUpTo("monitor") {
+                                                        inclusive = true
+                                                    }
+                                                }
+                                            }
+                                            else {
                                                 navController.navigate(item.route) {
                                                     // 防止创建多个实例
                                                     popUpTo(navController.graph.findStartDestination().id) {

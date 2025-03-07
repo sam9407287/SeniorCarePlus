@@ -76,7 +76,9 @@ fun HomeScreen(navController: NavController) {
                 FeatureCard(
                     feature = feature,
                     onClick = { 
-                        navController.navigate(feature.route)
+                        navController.navigate(feature.route) {
+                            launchSingleTop = false
+                        }
                     }
                 )
             }

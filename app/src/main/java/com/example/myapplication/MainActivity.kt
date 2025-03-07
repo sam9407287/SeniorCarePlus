@@ -293,15 +293,25 @@ fun MainAppContent() {
                                             // 点击"更多"显示右侧边栏
                                             showRightDrawer = true
                                         } else {
-                                            navController.navigate(item.route) {
-                                                // 防止创建多个实例
-                                                popUpTo(navController.graph.findStartDestination().id) {
-                                                    saveState = true
+                                            // 針對首頁按鈕做特殊處理
+                                            if (item.route == "home") {
+                                                // 完全清空導航堆棧到主頁
+                                                navController.navigate("home") {
+                                                    popUpTo("home") {
+                                                        inclusive = true
+                                                    }
                                                 }
-                                                // 防止重复点击
-                                                launchSingleTop = true
-                                                // 恢复状态
-                                                restoreState = true
+                                            } else {
+                                                navController.navigate(item.route) {
+                                                    // 防止创建多个实例
+                                                    popUpTo(navController.graph.findStartDestination().id) {
+                                                        saveState = true
+                                                    }
+                                                    // 防止重复点击
+                                                    launchSingleTop = true
+                                                    // 恢复状态
+                                                    restoreState = true
+                                                }
                                             }
                                         }
                                     }
@@ -342,7 +352,16 @@ fun MainAppContent() {
                 AdminDrawer(
                     adminItems = adminItems,
                     onItemClick = { route ->
-                        navController.navigate(route)
+                        navController.navigate(route) {
+                            // 防止创建多个实例
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            // 防止重复点击
+                            launchSingleTop = true
+                            // 恢复状态
+                            restoreState = true
+                        }
                         showRightDrawer = false
                     },
                     onClose = { showRightDrawer = false }
@@ -431,22 +450,7 @@ fun AdminPageTemplate(title: String, navController: androidx.navigation.NavContr
                     modifier = Modifier.padding(top = 8.dp)
                 )
                 
-                // 返回按钮
-                Box(
-                    modifier = Modifier
-                        .padding(top = 32.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFF4169E1))
-                        .clickable { navController.navigateUp() }
-                        .padding(horizontal = 24.dp, vertical = 12.dp)
-                ) {
-                    Text(
-                        text = "返回",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                // 删除返回按钮
             }
         }
     }

@@ -64,7 +64,7 @@ fun HomeScreen(navController: NavController) {
             FeatureItem("定時", Icons.Default.Schedule, "timer_feature"),
             FeatureItem("尿布", Icons.Default.Bathroom, "diaper"),
             FeatureItem("按鍵", Icons.Default.TouchApp, "button"),
-            FeatureItem("心率", Icons.Default.Favorite, "heartrate")
+            FeatureItem("心率", Icons.Default.Favorite, "heart_rate")
         )
         
         LazyVerticalGrid(

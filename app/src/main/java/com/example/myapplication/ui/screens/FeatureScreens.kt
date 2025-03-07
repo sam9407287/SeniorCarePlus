@@ -1,5 +1,9 @@
+@file:Suppress("UnusedImport", "RedundantSuppression")
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.myapplication.ui.screens
 
+// 強制Android Studio重新索引此文件
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -26,7 +30,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myapplication.SeniorCareTopBar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegionScreen(navController: NavController) {
     FeatureScreenTemplate(
@@ -36,7 +39,6 @@ fun RegionScreen(navController: NavController) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TemperatureScreen(navController: NavController) {
     FeatureScreenTemplate(
@@ -46,7 +48,6 @@ fun TemperatureScreen(navController: NavController) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerFeatureScreen(navController: NavController) {
     FeatureScreenTemplate(
@@ -56,7 +57,6 @@ fun TimerFeatureScreen(navController: NavController) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiaperScreen(navController: NavController) {
     FeatureScreenTemplate(
@@ -66,7 +66,6 @@ fun DiaperScreen(navController: NavController) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ButtonScreen(navController: NavController) {
     FeatureScreenTemplate(
@@ -76,7 +75,6 @@ fun ButtonScreen(navController: NavController) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HeartRateScreen(navController: NavController) {
     FeatureScreenTemplate(
@@ -86,7 +84,6 @@ fun HeartRateScreen(navController: NavController) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeatureScreenTemplate(
     title: String,

@@ -1,3 +1,6 @@
+@file:Suppress("UNUSED_IMPORT", "NAME_SHADOWING", "UnusedImport")
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.myapplication
 
 import android.os.Bundle
@@ -35,8 +38,8 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material.icons.filled.Work
+import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -105,7 +108,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}) {
     Box(
@@ -151,7 +153,6 @@ fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainAppContent() {
     val navController = rememberNavController()
@@ -171,7 +172,7 @@ fun MainAppContent() {
         BottomNavItem(
             name = "監控",
             route = "monitor",
-            icon = Icons.Default.ShowChart
+            icon = Icons.AutoMirrored.Filled.ShowChart
         ),
         BottomNavItem(
             name = "地圖",
@@ -259,7 +260,7 @@ fun MainAppContent() {
                     onUserIconClick = {
                         when {
                             // 功能页面点击返回
-                            currentRoute in listOf("region", "temperature", "timer_feature", "diaper", "button", "heartrate") -> {
+                            currentRoute in listOf("region", "temperature", "timer_feature", "diaper", "button", "heart_rate") -> {
                                 navController.navigateUp()
                             }
                             // 主页或底部导航页点击打开侧边栏
@@ -279,8 +280,8 @@ fun MainAppContent() {
                 Scaffold(
                     bottomBar = {
                         NavigationBar {
-                            val navBackStackEntry by navController.currentBackStackEntryAsState()
-                            val currentDestination = navBackStackEntry?.destination
+                            val navBackStackEntryForBottomNav by navController.currentBackStackEntryAsState()
+                            val currentDestination = navBackStackEntryForBottomNav?.destination
                             
                             bottomNavItems.forEach { item ->
                                 NavigationBarItem(
@@ -325,7 +326,7 @@ fun MainAppContent() {
                         composable("timer_feature") { TimerFeatureScreen(navController) }
                         composable("diaper") { DiaperScreen(navController) }
                         composable("button") { ButtonScreen(navController) }
-                        composable("heartrate") { HeartRateScreen(navController) }
+                        composable("heart_rate") { HeartRateScreen(navController) }
                         
                         // 管理页面
                         composable("patient_admin") { AdminPageTemplate(title = "院友管理", navController = navController) }

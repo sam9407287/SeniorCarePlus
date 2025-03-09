@@ -31,6 +31,8 @@ import androidx.compose.material.icons.filled.Bed
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.LowPriority
 import androidx.compose.material.icons.filled.PauseCircle
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -59,6 +61,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.R
+import com.example.myapplication.ui.theme.ThemeManager
 
 // 病患資料類
 data class Patient(
@@ -98,6 +101,9 @@ enum class FilterOption {
 
 @Composable
 fun MonitorScreen(navController: NavController = rememberNavController()) {
+    // 檢查深色模式
+    val isDarkTheme = ThemeManager.isDarkTheme
+    
     // 示例病患資料
     val patients = remember {
         listOf(
@@ -202,15 +208,40 @@ fun MonitorScreen(navController: NavController = rememberNavController()) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
         // 頁面標題
-        Text(
-            text = "監控",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "監控",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f),
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            
+            // 主題切換按鈕
+            IconButton(
+                onClick = { ThemeManager.toggleTheme() },
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+            ) {
+                Icon(
+                    imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                    contentDescription = "切換主題",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
         
         // 過濾選項
         Row(
@@ -269,14 +300,16 @@ fun MonitorFilterButton(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val isDarkTheme = ThemeManager.isDarkTheme
+    
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(50.dp))
-            .background(if (isSelected) Color(0xFFE0E0E0) else Color(0xFFF5F5F5))
-            .border(
-                width = 1.dp,
-                color = Color.LightGray,
-                shape = RoundedCornerShape(50.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(
+                if (isSelected) 
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                else 
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             )
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -286,7 +319,10 @@ fun MonitorFilterButton(
         ) {
             Text(
                 text = text,
-                color = Color.Black,
+                color = if (isSelected) 
+                    MaterialTheme.colorScheme.primary
+                else 
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
             )
             
@@ -295,7 +331,10 @@ fun MonitorFilterButton(
             Icon(
                 imageVector = Icons.Default.KeyboardArrowDown,
                 contentDescription = null,
-                tint = Color.Gray,
+                tint = if (isSelected) 
+                    MaterialTheme.colorScheme.primary 
+                else 
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 modifier = Modifier.size(16.dp)
             )
         }
@@ -307,11 +346,16 @@ fun PatientCard(
     patient: Patient,
     onAlertClick: (String, AlertType) -> Unit
 ) {
+    val isDarkTheme = ThemeManager.isDarkTheme
+    
     Card(
         modifier = Modifier
             .fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Row(
             modifier = Modifier
@@ -324,13 +368,19 @@ fun PatientCard(
                 modifier = Modifier
                     .size(80.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFE0E0E0)),
+                    .background(if (isDarkTheme) 
+                        MaterialTheme.colorScheme.surfaceVariant 
+                    else 
+                        Color(0xFFE0E0E0)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
-                    tint = Color.Gray,
+                    tint = if (isDarkTheme) 
+                        MaterialTheme.colorScheme.onSurfaceVariant 
+                    else 
+                        Color.Gray,
                     modifier = Modifier.size(60.dp)
                 )
             }
@@ -344,12 +394,13 @@ fun PatientCard(
                 Text(
                     text = patient.name,
                     fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
                 Text(
                     text = "Age: ${patient.age}, GCS: ${patient.gcs}",
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                     fontSize = 14.sp
                 )
             }
@@ -359,7 +410,7 @@ fun PatientCard(
                 modifier = Modifier
                     .size(16.dp)
                     .clip(CircleShape)
-                    .background(if (patient.alerts.values.any { it }) Color.Green else Color.Gray)
+                    .background(if (patient.alerts.values.any { it }) Color.Green else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f))
             )
         }
         
@@ -454,69 +505,101 @@ fun AlertIcon(
     isActive: Boolean,
     onClick: () -> Unit
 ) {
+    val isDarkTheme = ThemeManager.isDarkTheme
+    
     Box(
         modifier = Modifier
             .size(50.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFEEEEEE))
+            .background(if (isDarkTheme) 
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) 
+            else 
+                Color(0xFFEEEEEE))
             .clickable(onClick = onClick)
             .padding(8.dp),
         contentAlignment = Alignment.Center
     ) {
-        // 根據警報類型顯示不同的圖標
+        // 根據警報類型顯示不同的圖標，並在深色模式下調整顏色
         when (alertType) {
             AlertType.TEMPERATURE -> Icon(
                 imageVector = Icons.Default.Thermostat,
                 contentDescription = alertType.displayName,
-                tint = if (isActive) Color(0xFFFF5722) else Color.Gray,
+                tint = if (isActive) 
+                    if (isDarkTheme) Color(0xFFFF8A65) else Color(0xFFFF5722)
+                else 
+                    if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.HEART_RATE -> Icon(
                 imageVector = Icons.Default.Favorite,
                 contentDescription = alertType.displayName,
-                tint = if (isActive) Color(0xFFE91E63) else Color.Gray,
+                tint = if (isActive) 
+                    if (isDarkTheme) Color(0xFFF48FB1) else Color(0xFFE91E63)
+                else 
+                    if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.DIAPER -> Icon(
                 imageVector = Icons.Default.Bathroom,
                 contentDescription = alertType.displayName,
-                tint = if (isActive) Color(0xFF9C27B0) else Color.Gray,
+                tint = if (isActive) 
+                    if (isDarkTheme) Color(0xFFCE93D8) else Color(0xFF9C27B0)
+                else 
+                    if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.CALL -> Icon(
                 imageVector = Icons.Default.Call,
                 contentDescription = alertType.displayName,
-                tint = if (isActive) Color(0xFF2196F3) else Color.Gray,
+                tint = if (isActive) 
+                    if (isDarkTheme) Color(0xFF90CAF9) else Color(0xFF2196F3)
+                else 
+                    if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.TIMER -> Icon(
                 imageVector = Icons.Default.Schedule,
                 contentDescription = alertType.displayName,
-                tint = if (isActive) Color(0xFF4CAF50) else Color.Gray,
+                tint = if (isActive) 
+                    if (isDarkTheme) Color(0xFFA5D6A7) else Color(0xFF4CAF50)
+                else 
+                    if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.BED_EXIT -> Icon(
                 imageVector = Icons.Default.Bed,
                 contentDescription = alertType.displayName,
-                tint = if (isActive) Color(0xFF795548) else Color.Gray,
+                tint = if (isActive) 
+                    if (isDarkTheme) Color(0xFFFFCC80) else Color(0xFFFF9800)
+                else 
+                    if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.AREA_EXIT -> Icon(
                 imageVector = Icons.Default.LocationOff,
                 contentDescription = alertType.displayName,
-                tint = if (isActive) Color(0xFFFF9800) else Color.Gray,
+                tint = if (isActive) 
+                    if (isDarkTheme) Color(0xFFFFD54F) else Color(0xFFFFC107)
+                else 
+                    if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.LOW_POSITION -> Icon(
                 imageVector = Icons.Default.LowPriority,
                 contentDescription = alertType.displayName,
-                tint = if (isActive) Color(0xFF607D8B) else Color.Gray,
+                tint = if (isActive) 
+                    if (isDarkTheme) Color(0xFF9FA8DA) else Color(0xFF3F51B5)
+                else 
+                    if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             AlertType.STILL -> Icon(
                 imageVector = Icons.Default.PauseCircle,
                 contentDescription = alertType.displayName,
-                tint = if (isActive) Color(0xFF673AB7) else Color.Gray,
+                tint = if (isActive) 
+                    if (isDarkTheme) Color(0xFFB39DDB) else Color(0xFF673AB7)
+                else 
+                    if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
         }

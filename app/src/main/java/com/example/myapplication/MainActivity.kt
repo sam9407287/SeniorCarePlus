@@ -267,20 +267,12 @@ fun MainAppContent() {
                 // 根据当前路由决定点击用户图标的行为
                 SeniorCareTopBar(
                     onUserIconClick = {
-                        when {
-                            // 功能页面点击返回
-                            currentRoute in listOf("region", "temperature", "diaper", "diaper_monitor", "button", "emergency_button", "heart_rate", "heart_rate_monitor", "temperature_monitor") -> {
-                                navController.navigateUp()
-                            }
-                            // 主页或底部导航页点击打开侧边栏
-                            else -> {
-                                scope.launch {
-                                    if (!leftDrawerState.isOpen) {
-                                        leftDrawerState.open()
-                                    } else {
-                                        leftDrawerState.close()
-                                    }
-                                }
+                        // 在所有頁面都打開側欄，不再做返回操作
+                        scope.launch {
+                            if (!leftDrawerState.isOpen) {
+                                leftDrawerState.open()
+                            } else {
+                                leftDrawerState.close()
                             }
                         }
                     },

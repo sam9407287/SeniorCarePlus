@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -84,20 +85,25 @@ import androidx.navigation.NavController
 import com.example.myapplication.ui.theme.DarkCardBackground
 import com.example.myapplication.ui.theme.LightCardBackground
 import com.example.myapplication.ui.theme.ThemeManager
+import com.example.myapplication.ui.theme.LanguageManager
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
 // 提醒类型
-enum class ReminderType(val label: String, val color: Color, val darkColor: Color) {
-    MEDICATION("服藥", Color(0xFF1976D2), Color(0xFF5E92F3)),
-    WATER("喝水", Color(0xFF03A9F4), Color(0xFF64B5F6)),
-    MEAL("用餐", Color(0xFFF57C00), Color(0xFFFFB74D)),
-    HEART_RATE("心率", Color(0xFFE91E63), Color(0xFFF48FB1)),
-    TEMPERATURE("體溫", Color(0xFF7B1FA2), Color(0xFFAB47BC)),
-    GENERAL("一般提醒", Color(0xFF009688), Color(0xFF4DB6AC))
+enum class ReminderType(val zhLabel: String, val enLabel: String, val color: Color, val darkColor: Color) {
+    MEDICATION("服藥", "Medication", Color(0xFF1976D2), Color(0xFF5E92F3)),
+    WATER("喝水", "Drink", Color(0xFF03A9F4), Color(0xFF64B5F6)),
+    MEAL("用餐", "Meal", Color(0xFFF57C00), Color(0xFFFFB74D)),
+    HEART_RATE("心率", "Heart Rate", Color(0xFFE91E63), Color(0xFFF48FB1)),
+    TEMPERATURE("體溫", "Temperature", Color(0xFF7B1FA2), Color(0xFFAB47BC)),
+    GENERAL("一般提醒", "General", Color(0xFF009688), Color(0xFF4DB6AC))
 }
+
+// 根據語言獲取標籤
+val ReminderType.label: String
+    get() = if (LanguageManager.isChineseLanguage) this.zhLabel else this.enLabel
 
 // 提醒项目
 data class ReminderItem(
@@ -464,32 +470,402 @@ fun ReminderItemCard(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun TimePickerDialog(
+    initialHour: Int,
+    initialMinute: Int,
+    selectedColor: Color,
+    isDarkTheme: Boolean,
+    isChineseLanguage: Boolean,
+    onCancel: () -> Unit,
+    onConfirm: (Int, Int) -> Unit
+) {
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialHour,
+        initialMinute = initialMinute
+    )
+    
+    Dialog(
+        onDismissRequest = onCancel,
+        properties = DialogProperties(dismissOnClickOutside = false)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = if (isChineseLanguage) "選擇時間" else "Select Time",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 16.dp),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                TimePicker(
+                    state = timePickerState,
+                    colors = TimePickerDefaults.colors(
+                        clockDialColor = if (isDarkTheme) 
+                            MaterialTheme.colorScheme.surfaceVariant 
+                        else 
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        clockDialSelectedContentColor = Color.White,
+                        clockDialUnselectedContentColor = MaterialTheme.colorScheme.onSurface,
+                        selectorColor = selectedColor,
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        periodSelectorBorderColor = selectedColor,
+                        periodSelectorSelectedContainerColor = selectedColor,
+                        periodSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // 確認和取消按鈕
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // 取消按鈕
+                    Button(
+                        onClick = onCancel,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp)
+                    ) {
+                        Text(
+                            text = if (isChineseLanguage) "取消" else "Cancel",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    // 確認按鈕
+                    Button(
+                        onClick = {
+                            onConfirm(timePickerState.hour, timePickerState.minute)
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = selectedColor
+                        ),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = if (isChineseLanguage) "確認" else "Confirm",
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DayPickerDialog(
+    initialSelectedDays: List<String>,
+    daysOfWeek: List<String>,
+    selectedColor: Color,
+    isDarkTheme: Boolean,
+    isChineseLanguage: Boolean,
+    onCancel: () -> Unit,
+    onConfirm: (List<String>) -> Unit
+) {
+    val selectedDays = remember { mutableStateListOf<String>().apply {
+        addAll(initialSelectedDays)
+    }}
+    
+    Dialog(
+        onDismissRequest = onCancel,
+        properties = DialogProperties(dismissOnClickOutside = false)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = if (isChineseLanguage) "選擇重複日期" else "Select Repeat Days",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 16.dp),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1
+                )
+                
+                // 周几选择
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    // 快速選擇按鈕
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // 全選按鈕
+                        Button(
+                            onClick = { 
+                                selectedDays.clear()
+                                selectedDays.addAll(daysOfWeek) 
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = selectedColor.copy(alpha = 0.8f)
+                            ),
+                            shape = RoundedCornerShape(50),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 4.dp)
+                        ) {
+                            Text(
+                                text = if (isChineseLanguage) "全選" else "All",
+                                fontSize = 14.sp,
+                                maxLines = 1
+                            )
+                        }
+                        
+                        // 工作日按鈕
+                        Button(
+                            onClick = { 
+                                selectedDays.clear()
+                                selectedDays.addAll(daysOfWeek.take(5)) 
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = selectedColor.copy(alpha = 0.8f)
+                            ),
+                            shape = RoundedCornerShape(50),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 4.dp)
+                        ) {
+                            Text(
+                                text = if (isChineseLanguage) "工作日" else "Weekdays",
+                                fontSize = 14.sp,
+                                maxLines = 1
+                            )
+                        }
+                        
+                        // 週末按鈕
+                        Button(
+                            onClick = { 
+                                selectedDays.clear()
+                                selectedDays.addAll(daysOfWeek.takeLast(2)) 
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = selectedColor.copy(alpha = 0.8f)
+                            ),
+                            shape = RoundedCornerShape(50),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 4.dp)
+                        ) {
+                            Text(
+                                text = if (isChineseLanguage) "週末" else "Weekend",
+                                fontSize = 14.sp,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                    
+                    // 改進日期選擇按鈕
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                    ) {
+                        // 使用更小的按鈕並減少間距
+                        val dayTexts = if (isChineseLanguage) {
+                            listOf("一", "二", "三", "四", "五", "六", "日")
+                        } else {
+                            listOf("M", "T", "W", "T", "F", "S", "S")
+                        }
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            for (i in 0 until 7) {
+                                val day = daysOfWeek[i]
+                                val isSelected = selectedDays.contains(day)
+                                val buttonSize = 40.dp // 縮小按鈕尺寸
+                                
+                                Button(
+                                    onClick = {
+                                        if (isSelected) {
+                                            selectedDays.remove(day)
+                                        } else {
+                                            selectedDays.add(day)
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (isSelected) 
+                                            selectedColor 
+                                        else 
+                                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+                                    ),
+                                    shape = CircleShape,
+                                    contentPadding = PaddingValues(0.dp),
+                                    modifier = Modifier
+                                        .size(buttonSize)
+                                        .padding(horizontal = 1.dp) // 減少水平間距
+                                ) {
+                                    Text(
+                                        text = dayTexts[i],
+                                        color = if (isSelected) 
+                                            MaterialTheme.colorScheme.onPrimary
+                                        else 
+                                            MaterialTheme.colorScheme.onSurface,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp // 縮小字體
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // 確認和取消按鈕
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // 取消按鈕
+                    Button(
+                        onClick = onCancel,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                        shape = RoundedCornerShape(50),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp)
+                    ) {
+                        Text(
+                            text = if (isChineseLanguage) "取消" else "Cancel",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    // 確認按鈕
+                    Button(
+                        onClick = {
+                            onConfirm(selectedDays.toList())
+                        },
+                        enabled = selectedDays.isNotEmpty(),
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = selectedColor,
+                            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = if (isChineseLanguage) "確認" else "Confirm",
+                            color = if (selectedDays.isNotEmpty()) 
+                                MaterialTheme.colorScheme.onPrimary 
+                            else 
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun AddEditReminderDialog(
     reminder: ReminderItem?,
     isDarkTheme: Boolean,
     onDismiss: () -> Unit,
     onConfirm: (String, String, List<String>, ReminderType) -> Unit
 ) {
+    // 檢查語言設置
+    val isChineseLanguage = LanguageManager.isChineseLanguage
+    
     // 状态
     var title by remember { mutableStateOf(reminder?.title ?: "") }
     var selectedType by remember { mutableStateOf(reminder?.type ?: ReminderType.GENERAL) }
     
-    // 时间选择
-    val timePickerState = rememberTimePickerState(
-        initialHour = reminder?.time?.split(":")?.get(0)?.toIntOrNull() ?: 8,
-        initialMinute = reminder?.time?.split(":")?.get(1)?.toIntOrNull() ?: 0
-    )
+    // 時間選擇
+    var showTimePicker by remember { mutableStateOf(false) }
+    var hour by remember { mutableStateOf(reminder?.time?.split(":")?.get(0)?.toIntOrNull() ?: 8) }
+    var minute by remember { mutableStateOf(reminder?.time?.split(":")?.get(1)?.toIntOrNull() ?: 0) }
+    var timeFormatted by remember { mutableStateOf(
+        reminder?.time ?: "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
+    ) }
     
     // 日期选择
-    val daysOfWeek = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日")
-    val selectedDays = remember { mutableStateListOf<String>().apply {
-        if (reminder != null) {
-            addAll(reminder.days)
-        } else {
-            // 默认选择工作日
-            addAll(daysOfWeek.take(5))
-        }
-    }}
+    var showDayPicker by remember { mutableStateOf(false) }
+    val daysOfWeek = if (isChineseLanguage) {
+        listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日")
+    } else {
+        listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    }
+    var selectedDays by remember { mutableStateOf(
+        if (reminder != null) reminder.days else daysOfWeek.take(5)
+    ) }
+    
+    // 顯示時間選擇器對話框
+    if (showTimePicker) {
+        TimePickerDialog(
+            initialHour = hour,
+            initialMinute = minute,
+            selectedColor = if (isDarkTheme) selectedType.darkColor else selectedType.color,
+            isDarkTheme = isDarkTheme,
+            isChineseLanguage = isChineseLanguage,
+            onCancel = { showTimePicker = false },
+            onConfirm = { selectedHour, selectedMinute ->
+                hour = selectedHour
+                minute = selectedMinute
+                timeFormatted = "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
+                showTimePicker = false
+            }
+        )
+    }
+    
+    // 顯示日期選擇器對話框
+    if (showDayPicker) {
+        DayPickerDialog(
+            initialSelectedDays = selectedDays,
+            daysOfWeek = daysOfWeek,
+            selectedColor = if (isDarkTheme) selectedType.darkColor else selectedType.color,
+            isDarkTheme = isDarkTheme,
+            isChineseLanguage = isChineseLanguage,
+            onCancel = { showDayPicker = false },
+            onConfirm = { days ->
+                selectedDays = days
+                showDayPicker = false
+            }
+        )
+    }
     
     Dialog(
         onDismissRequest = onDismiss,
@@ -501,10 +877,7 @@ fun AddEditReminderDialog(
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = if (isDarkTheme) 
-                    MaterialTheme.colorScheme.surface 
-                else 
-                    Color.White
+                containerColor = MaterialTheme.colorScheme.surface
             )
         ) {
             Column(
@@ -514,7 +887,11 @@ fun AddEditReminderDialog(
             ) {
                 // 标题
                 Text(
-                    text = if (reminder != null) "编辑提醒" else "添加提醒",
+                    text = if (reminder != null) {
+                        if (isChineseLanguage) "編輯提醒" else "Edit Reminder"
+                    } else {
+                        if (isChineseLanguage) "添加提醒" else "Add Reminder"
+                    },
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 16.dp),
@@ -525,7 +902,7 @@ fun AddEditReminderDialog(
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("提醒标题") },
+                    label = { Text(if (isChineseLanguage) "提醒標題" else "Reminder Title") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -534,7 +911,7 @@ fun AddEditReminderDialog(
                 
                 // 类型选择
                 Text(
-                    text = "提醒类型",
+                    text = if (isChineseLanguage) "提醒類型" else "Reminder Type",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -623,7 +1000,7 @@ fun AddEditReminderDialog(
                 
                 // 时间选择
                 Text(
-                    text = "提醒时间",
+                    text = if (isChineseLanguage) "提醒時間" else "Reminder Time",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -631,24 +1008,30 @@ fun AddEditReminderDialog(
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                // 时间选择器
-                TimePicker(
-                    state = timePickerState,
-                    colors = TimePickerDefaults.colors(
-                        clockDialColor = if (isDarkTheme) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                        clockDialSelectedContentColor = Color.White,
-                        clockDialUnselectedContentColor = MaterialTheme.colorScheme.onSurface,
-                        selectorColor = if (isDarkTheme) selectedType.darkColor else selectedType.color,
-                        containerColor = if (isDarkTheme) MaterialTheme.colorScheme.surface else Color.White
+                // 時間選擇按鈕
+                Button(
+                    onClick = { showTimePicker = true },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isDarkTheme) 
+                            MaterialTheme.colorScheme.surfaceVariant 
+                        else 
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                     ),
                     modifier = Modifier.fillMaxWidth()
-                )
+                ) {
+                    Text(
+                        text = timeFormatted,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isDarkTheme) selectedType.darkColor else selectedType.color
+                    )
+                }
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // 重复日期选择
                 Text(
-                    text = "重复日期",
+                    text = if (isChineseLanguage) "重複日期" else "Repeat Days",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -656,73 +1039,64 @@ fun AddEditReminderDialog(
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                // 周几选择
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                // 日期選擇按鈕
+                Button(
+                    onClick = { showDayPicker = true },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isDarkTheme) 
+                            MaterialTheme.colorScheme.surfaceVariant 
+                        else 
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    daysOfWeek.forEach { day ->
-                        val isSelected = selectedDays.contains(day)
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (isSelected) 
-                                        if (isDarkTheme) selectedType.darkColor else selectedType.color 
-                                    else 
-                                        if (isDarkTheme) Color.DarkGray.copy(alpha = 0.2f) else Color.LightGray.copy(alpha = 0.3f)
-                                )
-                                .clickable {
-                                    if (isSelected) {
-                                        selectedDays.remove(day)
-                                    } else {
-                                        selectedDays.add(day)
-                                    }
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = day.substring(1), // 只显示一个字
-                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
+                    Text(
+                        text = selectedDays.joinToString(" · "),
+                        fontSize = 14.sp,
+                        color = if (isDarkTheme) selectedType.darkColor else selectedType.color
+                    )
                 }
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                // 底部按钮
+                // 底部按钮 - 改為更明顯的按鈕樣式
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    TextButton(
-                        onClick = onDismiss
+                    // 取消按鈕
+                    Button(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                        modifier = Modifier.weight(1f).padding(end = 8.dp)
                     ) {
-                        Text("取消")
+                        Text(
+                            text = if (isChineseLanguage) "取消" else "Cancel",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                     
-                    Spacer(modifier = Modifier.width(8.dp))
-                    
+                    // 確認按鈕
                     Button(
                         onClick = {
-                            // 格式化时间
-                            val hour = timePickerState.hour.toString().padStart(2, '0')
-                            val minute = timePickerState.minute.toString().padStart(2, '0')
-                            val timeFormatted = "$hour:$minute"
-                            
-                            onConfirm(title, timeFormatted, selectedDays.toList(), selectedType)
+                            onConfirm(title, timeFormatted, selectedDays, selectedType)
                         },
                         enabled = title.isNotBlank() && selectedDays.isNotEmpty(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (isDarkTheme) selectedType.darkColor else selectedType.color,
-                            disabledContainerColor = if (isDarkTheme) Color.DarkGray else Color.LightGray
-                        )
+                            disabledContainerColor = if (isDarkTheme) 
+                                MaterialTheme.colorScheme.surfaceVariant 
+                            else 
+                                MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Text("确定")
+                        Text(
+                            text = if (isChineseLanguage) "確認" else "Confirm",
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 }
             }

@@ -4,6 +4,7 @@ import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,12 +19,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -33,7 +35,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -56,18 +57,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.random.Random
 import com.example.myapplication.ui.theme.DarkCardBackground
-import com.example.myapplication.ui.theme.DarkCardContentBackground
 import com.example.myapplication.ui.theme.DarkChartBackground
 import com.example.myapplication.ui.theme.DarkChartLine
 import com.example.myapplication.ui.theme.LightCardBackground
 import com.example.myapplication.ui.theme.LightChartBackground
 import com.example.myapplication.ui.theme.LightChartLine
 import com.example.myapplication.ui.theme.ThemeManager
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import java.time.temporal.ChronoUnit
+import kotlin.random.Random
+import com.example.myapplication.ui.components.TimeRangeChip
+import com.example.myapplication.ui.components.AbnormalFilterChip
 
 // 體溫數據類
 data class TemperatureRecord(
@@ -100,28 +104,144 @@ fun TemperatureMonitorScreen(navController: NavController) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabTitles = listOf("今日", "本週", "本月")
     
+    // 記錄過濾設置
+    var showOnlyAbnormal by remember { mutableStateOf(false) }
+    var selectedTimeRange by remember { mutableStateOf(7) } // 默認顯示7天數據
+    
+    // 增加異常類型過濾
+    var filterType by remember { mutableStateOf(0) } // 0:全部, 1:僅高溫, 2:僅低溫
+    
     // 模擬體溫記錄 - 增加更多记录使页面可滚动
-    val temperatureRecords = remember {
+    val rawTemperatureRecords = remember {
         val records = mutableListOf<TemperatureRecord>()
         val now = LocalDateTime.now()
         val patient = patients[selectedPatientIndex]
         
-        // 模拟更多数据 - 过去7天每2小时一条记录
+        // 模拟更多数据 - 过去7天每30分钟一条记录（增加數據密度，便於分桶處理）
         for (day in 0..6) {
-            for (hour in 0..23 step 2) {
-                val time = now.minusDays(day.toLong()).withHour(hour).withMinute(0)
-                val temp = 36.5f + (Random.nextFloat() - 0.5f) * if ((0..10).random() > 8) 2.0f else 0.5f
-                records.add(
-                    TemperatureRecord(
-                        patientId = patient.second,
-                        patientName = patient.first,
-                        temperature = temp,
-                        timestamp = time
+            for (hour in 0..23) {
+                for (minute in listOf(0, 30)) {
+                    val time = now.minusDays(day.toLong()).withHour(hour).withMinute(minute)
+                    
+                    // 生成一些异常体温值，提高低温数据的比例
+                    val temp = when {
+                        Random.nextInt(100) < 5 -> 38.0f + Random.nextFloat() * 1.5f // 高温: 38.0-39.5度，约5%
+                        Random.nextInt(100) < 15 -> 35.0f + Random.nextFloat() * 0.9f // 低温: 35.0-35.9度，约15%
+                        else -> 36.5f + (Random.nextFloat() - 0.5f) * 0.6f // 正常体温，小范围浮动
+                    }
+                    
+                    records.add(
+                        TemperatureRecord(
+                            patientId = patient.second,
+                            patientName = patient.first,
+                            temperature = temp,
+                            timestamp = time
+                        )
                     )
-                )
+                }
             }
         }
+        
+        // 确保在最近的数据中有明显异常的值，方便测试
+        // 添加高温数据
+        records.add(
+            TemperatureRecord(
+                patientId = patient.second,
+                patientName = patient.first,
+                temperature = 38.7f,
+                timestamp = now.minusHours(2)
+            )
+        )
+        
+        records.add(
+            TemperatureRecord(
+                patientId = patient.second,
+                patientName = patient.first,
+                temperature = 39.2f,
+                timestamp = now.minusHours(4)
+            )
+        )
+        
+        // 添加低温数据
+        records.add(
+            TemperatureRecord(
+                patientId = patient.second,
+                patientName = patient.first,
+                temperature = 35.6f, 
+                timestamp = now.minusHours(6)
+            )
+        )
+        
+        records.add(
+            TemperatureRecord(
+                patientId = patient.second,
+                patientName = patient.first,
+                temperature = 35.2f, 
+                timestamp = now.minusHours(3)
+            )
+        )
+        
+        records.add(
+            TemperatureRecord(
+                patientId = patient.second,
+                patientName = patient.first,
+                temperature = 35.7f, 
+                timestamp = now.minusHours(8)
+            )
+        )
+        
+        // 添加正常数据，确保有一些明确的正常值
+        records.add(
+            TemperatureRecord(
+                patientId = patient.second,
+                patientName = patient.first,
+                temperature = 37.0f, 
+                timestamp = now.minusHours(1)
+            )
+        )
+        
+        records.add(
+            TemperatureRecord(
+                patientId = patient.second,
+                patientName = patient.first,
+                temperature = 36.8f, 
+                timestamp = now.minusHours(5)
+            )
+        )
+        
+        records.add(
+            TemperatureRecord(
+                patientId = patient.second,
+                patientName = patient.first,
+                temperature = 36.2f, 
+                timestamp = now.minusHours(7)
+            )
+        )
+        
         records
+    }
+    
+    // 對原始數據進行分桶處理，每小時一個桶，計算平均值
+    val temperatureRecords = remember(rawTemperatureRecords) {
+        rawTemperatureRecords
+            .groupBy { record -> 
+                record.timestamp.withMinute(0).withSecond(0).withNano(0) // 按小時分組
+            }
+            .map { (hourBucket, recordsInBucket) ->
+                // 計算該小時的平均體溫
+                val avgTemp = recordsInBucket.map { it.temperature }.average().toFloat()
+                // 檢查是否有異常體溫
+                val hasAbnormal = recordsInBucket.any { it.isAbnormal }
+                
+                TemperatureRecord(
+                    patientId = recordsInBucket.first().patientId,
+                    patientName = recordsInBucket.first().patientName,
+                    temperature = avgTemp,
+                    timestamp = hourBucket,
+                    isAbnormal = hasAbnormal
+                )
+            }
+            .sortedBy { it.timestamp }
     }
     
     // 使用LazyColumn替代Column让整个页面可以滚动
@@ -332,29 +452,145 @@ fun TemperatureMonitorScreen(navController: NavController) {
                         .fillMaxSize()
                         .padding(16.dp)
                 ) {
-                    Text(
-                        text = "體溫記錄",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "體溫記錄",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        
+                        // 替換原有的過濾開關為過濾類型選擇
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "過濾:",
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                            
+                            Spacer(modifier = Modifier.width(4.dp))
+                            
+                            // 過濾類型選擇按鈕
+                            Row(
+                                modifier = Modifier
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                AbnormalFilterChip(
+                                    text = "全部",
+                                    isSelected = filterType == 0,
+                                    onClick = { filterType = 0 },
+                                    isDarkTheme = isDarkTheme
+                                )
+                                
+                                Spacer(modifier = Modifier.width(4.dp))
+                                
+                                AbnormalFilterChip(
+                                    text = "高溫",
+                                    isSelected = filterType == 1,
+                                    onClick = { filterType = 1 },
+                                    isDarkTheme = isDarkTheme,
+                                    color = if (isDarkTheme) Color(0xFFFF5252) else Color.Red
+                                )
+                                
+                                Spacer(modifier = Modifier.width(4.dp))
+                                
+                                AbnormalFilterChip(
+                                    text = "低溫",
+                                    isSelected = filterType == 2,
+                                    onClick = { filterType = 2 },
+                                    isDarkTheme = isDarkTheme,
+                                    color = if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3)
+                                )
+                            }
+                        }
+                    }
+                    
+                    // 時間範圍選擇
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        TimeRangeChip(
+                            text = "1天",
+                            isSelected = selectedTimeRange == 1,
+                            onClick = { selectedTimeRange = 1 },
+                            isDarkTheme = isDarkTheme
+                        )
+                        
+                        TimeRangeChip(
+                            text = "3天",
+                            isSelected = selectedTimeRange == 3,
+                            onClick = { selectedTimeRange = 3 },
+                            isDarkTheme = isDarkTheme
+                        )
+                        
+                        TimeRangeChip(
+                            text = "7天",
+                            isSelected = selectedTimeRange == 7,
+                            onClick = { selectedTimeRange = 7 },
+                            isDarkTheme = isDarkTheme
+                        )
+                    }
                     
                     Divider(
                         modifier = Modifier.padding(bottom = 8.dp),
                         color = if (isDarkTheme) Color.DarkGray else Color.LightGray
                     )
                     
+                    // 過濾並按時間範圍顯示記錄
+                    val now = LocalDateTime.now()
+                    val filteredRecords = temperatureRecords
+                        .filter { record -> 
+                            // 時間範圍過濾
+                            val daysAgo = ChronoUnit.DAYS.between(record.timestamp, now).toInt()
+                            val inTimeRange = daysAgo < selectedTimeRange
+                            
+                            // 異常類型過濾
+                            val matchesFilter = when (filterType) {
+                                0 -> true // 全部顯示
+                                1 -> record.temperature > 37.5f // 僅高溫
+                                2 -> record.temperature < 36.0f // 僅低溫
+                                else -> true
+                            }
+                            
+                            inTimeRange && matchesFilter
+                        }
+                        .sortedByDescending { it.timestamp }
+                    
                     // 在Card内使用LazyColumn显示记录
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(temperatureRecords.sortedByDescending { it.timestamp }) { record ->
-                            TemperatureRecordItem(record = record, isDarkTheme = isDarkTheme)
-                            Divider(
-                                modifier = Modifier.padding(vertical = 4.dp),
-                                color = if (isDarkTheme) Color.DarkGray.copy(alpha = 0.5f) else Color.LightGray.copy(alpha = 0.5f)
+                    if (filteredRecords.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "無符合條件的數據",
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                             )
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(filteredRecords) { record ->
+                                TemperatureRecordItem(record = record, isDarkTheme = isDarkTheme)
+                                Divider(
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    color = if (isDarkTheme) Color.DarkGray.copy(alpha = 0.5f) else Color.LightGray.copy(alpha = 0.5f)
+                                )
+                            }
                         }
                     }
                 }
@@ -526,10 +762,10 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>, isDarkTheme: B
         points.forEachIndexed { index, offset ->
             val record = sortedRecords[index]
             // 根据深色模式调整点的颜色
-            val pointColor = if (record.isAbnormal) {
-                if (isDarkTheme) Color(0xFFFF5252) else Color.Red
-            } else {
-                if (isDarkTheme) DarkChartLine else LightChartLine
+            val pointColor = when {
+                record.temperature > 37.5f -> if (isDarkTheme) Color(0xFFFF5252) else Color.Red
+                record.temperature < 36.0f -> if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3) // Blue
+                else -> if (isDarkTheme) DarkChartLine else LightChartLine
             }
             
             drawCircle(
@@ -548,10 +784,16 @@ fun TemperatureRecordItem(record: TemperatureRecord, isDarkTheme: Boolean) {
     
     // 根据深色模式调整颜色
     val temperatureColor = when {
-        record.temperature > 38.0f -> if (isDarkTheme) Color(0xFFFF5252) else Color.Red
-        record.temperature > 37.5f -> if (isDarkTheme) Color(0xFFFFB74D) else Color(0xFFFF9800) // Orange
+        record.temperature > 37.5f -> if (isDarkTheme) Color(0xFFFF5252) else Color.Red
         record.temperature < 36.0f -> if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3) // Blue
         else -> if (isDarkTheme) Color(0xFF81C784) else Color(0xFF4CAF50) // Green
+    }
+    
+    // 體溫狀態文本
+    val statusText = when {
+        record.temperature > 37.5f -> "體溫過高"
+        record.temperature < 36.0f -> "體溫過低"
+        else -> "正常"
     }
     
     Row(
@@ -594,12 +836,8 @@ fun TemperatureRecordItem(record: TemperatureRecord, isDarkTheme: Boolean) {
         }
         
         Text(
-            text = if (record.isAbnormal) "異常" else "正常",
-            color = if (record.isAbnormal) {
-                if (isDarkTheme) Color(0xFFFF5252) else Color.Red
-            } else {
-                if (isDarkTheme) Color(0xFF81C784) else Color(0xFF4CAF50)
-            },
+            text = statusText,
+            color = temperatureColor,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
         )

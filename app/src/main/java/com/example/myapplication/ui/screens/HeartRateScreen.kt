@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -69,6 +70,11 @@ import com.example.myapplication.ui.theme.LightChartBackground
 import com.example.myapplication.ui.theme.LightChartLine
 import com.example.myapplication.ui.theme.ThemeManager
 import kotlin.random.Random
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import java.time.temporal.ChronoUnit
+import com.example.myapplication.ui.components.TimeRangeChip
+import com.example.myapplication.ui.components.AbnormalFilterChip
 
 // 心率數據類
 data class HeartRateRecord(
@@ -76,7 +82,7 @@ data class HeartRateRecord(
     val patientName: String,
     val heartRate: Int,
     val timestamp: LocalDateTime,
-    val isAbnormal: Boolean = heartRate > 100 || heartRate < 60
+    val isAbnormal: Boolean = heartRate > 150 || heartRate < 60
 )
 
 @Composable
@@ -101,6 +107,13 @@ fun HeartRateMonitorScreen(navController: NavController) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabTitles = listOf("今日", "本週", "本月")
     
+    // 記錄過濾設置
+    var showOnlyAbnormal by remember { mutableStateOf(false) }
+    var selectedTimeRange by remember { mutableStateOf(7) } // 默認顯示7天數據
+    
+    // 增加異常類型過濾
+    var filterType by remember { mutableStateOf(0) } // 0:全部, 1:僅高心率, 2:僅低心率
+    
     // 參考心率值
     var targetHeartRate by remember { mutableFloatStateOf(75f) }
     
@@ -114,7 +127,14 @@ fun HeartRateMonitorScreen(navController: NavController) {
         for (day in 0..6) {
             for (hour in 0..23) {
                 val time = now.minusDays(day.toLong()).withHour(hour).withMinute(0)
-                val rate = 70 + Random.nextInt(-20, 30)
+                
+                // 生成一些异常心率值，约有10%的高心率和10%的低心率
+                val rate = when {
+                    Random.nextInt(100) < 10 -> 151 + Random.nextInt(30) // 高心率: 151-180
+                    Random.nextInt(100) < 10 -> 40 + Random.nextInt(19) // 低心率: 40-59
+                    else -> 70 + Random.nextInt(-10, 30) // 正常心率
+                }
+                
                 records.add(
                     HeartRateRecord(
                         patientId = patient.second,
@@ -125,6 +145,35 @@ fun HeartRateMonitorScreen(navController: NavController) {
                 )
             }
         }
+        
+        // 确保在最近的数据中有几个明显异常的值，方便测试
+        records.add(
+            HeartRateRecord(
+                patientId = patient.second,
+                patientName = patient.first,
+                heartRate = 165,
+                timestamp = now.minusHours(3)
+            )
+        )
+        
+        records.add(
+            HeartRateRecord(
+                patientId = patient.second,
+                patientName = patient.first,
+                heartRate = 178,
+                timestamp = now.minusHours(5)
+            )
+        )
+        
+        records.add(
+            HeartRateRecord(
+                patientId = patient.second,
+                patientName = patient.first,
+                heartRate = 51,
+                timestamp = now.minusHours(8)
+            )
+        )
+        
         records
     }
     
@@ -366,29 +415,145 @@ fun HeartRateMonitorScreen(navController: NavController) {
                         .fillMaxSize()
                         .padding(16.dp)
                 ) {
-                    Text(
-                        text = "心率記錄",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "心率記錄",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        
+                        // 替換原有的過濾開關為過濾類型選擇
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "過濾:",
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                            
+                            Spacer(modifier = Modifier.width(4.dp))
+                            
+                            // 過濾類型選擇按鈕
+                            Row(
+                                modifier = Modifier
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                AbnormalFilterChip(
+                                    text = "全部",
+                                    isSelected = filterType == 0,
+                                    onClick = { filterType = 0 },
+                                    isDarkTheme = isDarkTheme
+                                )
+                                
+                                Spacer(modifier = Modifier.width(4.dp))
+                                
+                                AbnormalFilterChip(
+                                    text = "高心率",
+                                    isSelected = filterType == 1,
+                                    onClick = { filterType = 1 },
+                                    isDarkTheme = isDarkTheme,
+                                    color = if (isDarkTheme) Color(0xFFFF5252) else Color.Red
+                                )
+                                
+                                Spacer(modifier = Modifier.width(4.dp))
+                                
+                                AbnormalFilterChip(
+                                    text = "低心率",
+                                    isSelected = filterType == 2,
+                                    onClick = { filterType = 2 },
+                                    isDarkTheme = isDarkTheme,
+                                    color = if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3)
+                                )
+                            }
+                        }
+                    }
+                    
+                    // 時間範圍選擇
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        TimeRangeChip(
+                            text = "1天",
+                            isSelected = selectedTimeRange == 1,
+                            onClick = { selectedTimeRange = 1 },
+                            isDarkTheme = isDarkTheme
+                        )
+                        
+                        TimeRangeChip(
+                            text = "3天",
+                            isSelected = selectedTimeRange == 3,
+                            onClick = { selectedTimeRange = 3 },
+                            isDarkTheme = isDarkTheme
+                        )
+                        
+                        TimeRangeChip(
+                            text = "7天",
+                            isSelected = selectedTimeRange == 7,
+                            onClick = { selectedTimeRange = 7 },
+                            isDarkTheme = isDarkTheme
+                        )
+                    }
                     
                     Divider(
                         modifier = Modifier.padding(bottom = 8.dp),
                         color = if (isDarkTheme) Color.DarkGray else Color.LightGray
                     )
                     
+                    // 過濾並按時間範圍顯示記錄
+                    val now = LocalDateTime.now()
+                    val filteredRecords = heartRateRecords
+                        .filter { record -> 
+                            // 時間範圍過濾
+                            val daysAgo = ChronoUnit.DAYS.between(record.timestamp, now).toInt()
+                            val inTimeRange = daysAgo < selectedTimeRange
+                            
+                            // 異常類型過濾
+                            val matchesFilter = when (filterType) {
+                                0 -> true // 全部顯示
+                                1 -> record.heartRate > 150 // 僅高心率
+                                2 -> record.heartRate < 60 // 僅低心率
+                                else -> true
+                            }
+                            
+                            inTimeRange && matchesFilter
+                        }
+                        .sortedByDescending { it.timestamp }
+                    
                     // 在Card内使用LazyColumn显示记录
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(heartRateRecords.sortedByDescending { it.timestamp }) { record ->
-                            HeartRateRecordItem(record = record, isDarkTheme = isDarkTheme)
-                            Divider(
-                                modifier = Modifier.padding(vertical = 4.dp),
-                                color = if (isDarkTheme) Color.DarkGray.copy(alpha = 0.5f) else Color.LightGray.copy(alpha = 0.5f)
+                    if (filteredRecords.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "無符合條件的數據",
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                             )
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(filteredRecords) { record ->
+                                HeartRateRecordItem(record = record, isDarkTheme = isDarkTheme)
+                                Divider(
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    color = if (isDarkTheme) Color.DarkGray.copy(alpha = 0.5f) else Color.LightGray.copy(alpha = 0.5f)
+                                )
+                            }
                         }
                     }
                 }
@@ -562,10 +727,10 @@ fun HeartRateChart(heartRateRecords: List<HeartRateRecord>, targetHeartRate: Int
         points.forEachIndexed { index, offset ->
             val record = sortedRecords[index]
             // 根据深色模式调整点的颜色
-            val pointColor = if (record.isAbnormal) {
-                if (isDarkTheme) Color(0xFFFF5252) else Color.Red
-            } else {
-                if (isDarkTheme) DarkChartLine else LightChartLine
+            val pointColor = when {
+                record.heartRate > 150 -> if (isDarkTheme) Color(0xFFFF5252) else Color.Red
+                record.heartRate < 60 -> if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3) // Blue
+                else -> if (isDarkTheme) DarkChartLine else LightChartLine
             }
             
             drawCircle(
@@ -584,9 +749,16 @@ fun HeartRateRecordItem(record: HeartRateRecord, isDarkTheme: Boolean) {
     
     // 根据深色模式调整颜色
     val heartRateColor = when {
-        record.heartRate > 100 -> if (isDarkTheme) Color(0xFFFF5252) else Color.Red
+        record.heartRate > 150 -> if (isDarkTheme) Color(0xFFFF5252) else Color.Red
         record.heartRate < 60 -> if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3) // Blue
         else -> if (isDarkTheme) Color(0xFF81C784) else Color(0xFF4CAF50) // Green
+    }
+    
+    // 心率狀態文本
+    val statusText = when {
+        record.heartRate > 150 -> "心率過高"
+        record.heartRate < 60 -> "心率過低"
+        else -> "正常"
     }
     
     Row(
@@ -629,12 +801,8 @@ fun HeartRateRecordItem(record: HeartRateRecord, isDarkTheme: Boolean) {
         }
         
         Text(
-            text = if (record.isAbnormal) "異常" else "正常",
-            color = if (record.isAbnormal) {
-                if (isDarkTheme) Color(0xFFFF5252) else Color.Red
-            } else {
-                if (isDarkTheme) Color(0xFF81C784) else Color(0xFF4CAF50)
-            },
+            text = statusText,
+            color = heartRateColor,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
         )

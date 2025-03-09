@@ -724,7 +724,7 @@ fun DayPickerDialog(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp, horizontal = 4.dp)  // 增加水平填充
+                            .padding(vertical = 8.dp, horizontal = 4.dp)
                     ) {
                         val dayTexts = if (isChineseLanguage) {
                             listOf("一", "二", "三", "四", "五", "六", "日")
@@ -740,8 +740,8 @@ fun DayPickerDialog(
                             for (i in 0 until 7) {
                                 val day = daysOfWeek[i]
                                 val isSelected = selectedDays.contains(day)
-                                // 統一按鈕大小
-                                val buttonSize = if (isChineseLanguage) 38.dp else 40.dp  // 中文版稍小
+                                // 統一並縮小按鈕大小
+                                val buttonSize = 36.dp
                                 
                                 Button(
                                     onClick = {
@@ -769,7 +769,7 @@ fun DayPickerDialog(
                                         else 
                                             MaterialTheme.colorScheme.onSurface,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = if (isChineseLanguage) 14.sp else 11.sp,  // 英文版字體更小
+                                        fontSize = if (isChineseLanguage) 13.sp else 10.sp,  // 調整字體大小
                                         maxLines = 1,
                                         overflow = TextOverflow.Visible
                                     )
@@ -992,7 +992,7 @@ fun AddEditReminderDialog(
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                // 提醒類型選擇器 - 優化佈局
+                // 提醒類型選擇器 - 修正英文標籤問題
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
@@ -1003,25 +1003,25 @@ fun AddEditReminderDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(6.dp),  // 減少內部間距
+                            .padding(6.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         // 計算每個類型項目的比例和顯示大小
                         ReminderType.values().forEach { type ->
                             val isSelected = selectedType == type
                             
-                            // 標籤寬度調整
+                            // 修正英文標籤顯示
                             val labelText = if (isChineseLanguage) {
-                                type.zhLabel
+                                type.zhLabel  // 中文標籤
                             } else {
-                                // 確保英文標籤顯示一致
+                                // 完整英文標籤
                                 when (type) {
                                     ReminderType.MEDICATION -> "Med"
-                                    ReminderType.WATER -> "Wat"
+                                    ReminderType.WATER -> "Water"
                                     ReminderType.MEAL -> "Meal"
-                                    ReminderType.HEART_RATE -> "Hear"
-                                    ReminderType.TEMPERATURE -> "Tem"
-                                    ReminderType.GENERAL -> "Nor"
+                                    ReminderType.HEART_RATE -> "Heart"
+                                    ReminderType.TEMPERATURE -> "Temp"
+                                    ReminderType.GENERAL -> "Normal"
                                 }
                             }
                             
@@ -1037,12 +1037,12 @@ fun AddEditReminderDialog(
                                             Color.Transparent,
                                         RoundedCornerShape(8.dp)
                                     )
-                                    .padding(vertical = 6.dp, horizontal = 1.dp)  // 減少內部間距
+                                    .padding(vertical = 6.dp, horizontal = 1.dp)
                             ) {
                                 // 圖標
                                 Box(
                                     modifier = Modifier
-                                        .size(35.dp)  // 減小圖標容器尺寸
+                                        .size(35.dp)
                                         .clip(CircleShape)
                                         .background(
                                             if (isDarkTheme) type.darkColor.copy(alpha = 0.2f) else type.color.copy(alpha = 0.1f)
@@ -1054,47 +1054,47 @@ fun AddEditReminderDialog(
                                             imageVector = Icons.Default.Medication, 
                                             contentDescription = null,
                                             tint = if (isDarkTheme) type.darkColor else type.color,
-                                            modifier = Modifier.size(20.dp)  // 減小圖標尺寸
+                                            modifier = Modifier.size(20.dp)
                                         )
                                         ReminderType.WATER -> Icon(
                                             imageVector = Icons.Default.WaterDrop, 
                                             contentDescription = null,
                                             tint = if (isDarkTheme) type.darkColor else type.color,
-                                            modifier = Modifier.size(20.dp)  // 減小圖標尺寸
+                                            modifier = Modifier.size(20.dp)
                                         )
                                         ReminderType.MEAL -> Icon(
                                             imageVector = Icons.Default.Restaurant, 
                                             contentDescription = null,
                                             tint = if (isDarkTheme) type.darkColor else type.color,
-                                            modifier = Modifier.size(20.dp)  // 減小圖標尺寸
+                                            modifier = Modifier.size(20.dp)
                                         )
                                         ReminderType.HEART_RATE -> Icon(
                                             imageVector = Icons.Default.Favorite, 
                                             contentDescription = null,
                                             tint = if (isDarkTheme) type.darkColor else type.color,
-                                            modifier = Modifier.size(20.dp)  // 減小圖標尺寸
+                                            modifier = Modifier.size(20.dp)
                                         )
                                         ReminderType.TEMPERATURE -> Icon(
                                             imageVector = Icons.Default.MedicalServices, 
                                             contentDescription = null,
                                             tint = if (isDarkTheme) type.darkColor else type.color,
-                                            modifier = Modifier.size(20.dp)  // 減小圖標尺寸
+                                            modifier = Modifier.size(20.dp)
                                         )
                                         ReminderType.GENERAL -> Icon(
                                             imageVector = Icons.Default.Timer, 
                                             contentDescription = null,
                                             tint = if (isDarkTheme) type.darkColor else type.color,
-                                            modifier = Modifier.size(20.dp)  // 減小圖標尺寸
+                                            modifier = Modifier.size(20.dp)
                                         )
                                     }
                                 }
                                 
-                                Spacer(modifier = Modifier.height(3.dp))  // 減少間距
+                                Spacer(modifier = Modifier.height(3.dp))
                                 
-                                // 確保標籤顯示完整
+                                // 調整標籤字體大小
                                 Text(
                                     text = labelText,
-                                    fontSize = 10.sp,  // 減小字體大小
+                                    fontSize = if (isChineseLanguage) 12.sp else 9.sp,  // 中文字體增大，英文字體縮小
                                     color = if (isDarkTheme) type.darkColor else type.color,
                                     textAlign = TextAlign.Center,
                                     maxLines = 1,

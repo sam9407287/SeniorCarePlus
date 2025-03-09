@@ -711,7 +711,7 @@ fun DayPickerDialog(
                             for (i in 0 until 7) {
                                 val day = daysOfWeek[i]
                                 val isSelected = selectedDays.contains(day)
-                                val buttonSize = 40.dp // 縮小按鈕尺寸
+                                val buttonSize = 32.dp // 更小的按鈕尺寸
                                 
                                 Button(
                                     onClick = {
@@ -731,7 +731,7 @@ fun DayPickerDialog(
                                     contentPadding = PaddingValues(0.dp),
                                     modifier = Modifier
                                         .size(buttonSize)
-                                        .padding(horizontal = 1.dp) // 減少水平間距
+                                        .padding(horizontal = 0.dp) // 最小間距
                                 ) {
                                     Text(
                                         text = dayTexts[i],
@@ -740,7 +740,7 @@ fun DayPickerDialog(
                                         else 
                                             MaterialTheme.colorScheme.onSurface,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 14.sp // 縮小字體
+                                        fontSize = 12.sp // 更小的字體
                                     )
                                 }
                             }

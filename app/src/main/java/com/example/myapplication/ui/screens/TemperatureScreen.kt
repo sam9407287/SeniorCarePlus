@@ -47,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
@@ -369,12 +370,6 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>) {
         val normalLowY = chartHeight - (36.0f - minTemp) * verticalStepSize
         val normalHighY = chartHeight - (37.5f - minTemp) * verticalStepSize
         
-        drawRect(
-            color = Color(0x1A4CAF50),
-            topLeft = Offset(yAxisWidth, normalHighY),
-            size = androidx.compose.ui.geometry.Size(chartWidth, normalLowY - normalHighY)
-        )
-        
         // 畫折線
         val points = sortedRecords.mapIndexed { index, record ->
             val x = yAxisWidth + index * horizontalStepSize
@@ -382,12 +377,28 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>) {
             Offset(x, y)
         }
         
+        // 绘制整个折线图下方的淡红色填充
+        val belowCurvePath = Path()
+        belowCurvePath.moveTo(yAxisWidth, chartHeight)
+        for (point in points) {
+            belowCurvePath.lineTo(point.x, point.y)
+        }
+        belowCurvePath.lineTo(width, chartHeight)
+        belowCurvePath.close()
+        
+        // 使用统一的淡红色填充折线图下方区域
+        drawPath(
+            path = belowCurvePath,
+            color = Color(0x55FFB6C1) // 淡红色
+        )
+        
+        // 畫折線
         for (i in 0 until points.size - 1) {
             val startPoint = points[i]
             val endPoint = points[i + 1]
             
             drawLine(
-                color = Color(0xFF4169E1),
+                color = Color(0xFFE91E63), // 深红色
                 start = startPoint,
                 end = endPoint,
                 strokeWidth = 2f
@@ -397,7 +408,7 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>) {
         // 畫數據點
         points.forEachIndexed { index, offset ->
             val record = sortedRecords[index]
-            val pointColor = if (record.isAbnormal) Color.Red else Color(0xFF4169E1)
+            val pointColor = if (record.isAbnormal) Color.Red else Color(0xFFE91E63) // 深红色
             
             drawCircle(
                 color = pointColor,

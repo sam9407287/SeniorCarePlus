@@ -78,6 +78,8 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 // 緊急類型
 enum class EmergencyType(val label: String, val color: Color) {
@@ -253,190 +255,192 @@ fun EmergencyButtonScreen(navController: NavController) {
         label = "scale"
     )
     
-    Column(
+    // 移除垂直滾動的Column，改用LazyColumn
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ) {
         // 頂部標題
-        Text(
-            text = "緊急呼叫",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        item {
+            Text(
+                text = "緊急呼叫",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)
+            )
+        }
         
         // 顯示當前緊急狀態
-        if (isEmergencyActive && activeEmergency != null) {
-            EmergencyActiveCard(
-                emergency = activeEmergency!!,
-                onCancel = {
-                    showResponseDialog = true
-                }
-            )
-        } else {
-            // 病患選擇
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
-                        .padding(12.dp)
-                        .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
-                        .clip(RoundedCornerShape(8.dp))
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "患者",
-                        tint = Color(0xFFE53935),
-                        modifier = Modifier.size(24.dp)
-                    )
-                    
-                    Spacer(modifier = Modifier.width(8.dp))
-                    
-                    Text(
-                        text = "患者: ${patients[selectedPatientIndex].first}",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
-                    )
-                    
-                    IconButton(
-                        onClick = { showPatientDropdown = true }
-                    ) {
-                        Icon(
-                            imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                            contentDescription = "選擇患者"
-                        )
+        item {
+            if (isEmergencyActive && activeEmergency != null) {
+                EmergencyActiveCard(
+                    emergency = activeEmergency!!,
+                    onCancel = {
+                        showResponseDialog = true
                     }
-                    
-                    DropdownMenu(
-                        expanded = showPatientDropdown,
-                        onDismissRequest = { showPatientDropdown = false }
-                    ) {
-                        patients.forEachIndexed { index, patient ->
-                            DropdownMenuItem(
-                                text = { Text(text = patient.first) },
-                                onClick = {
-                                    selectedPatientIndex = index
-                                    showPatientDropdown = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-            
-            // 位置選擇
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
-                        .padding(12.dp)
-                        .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
-                        .clip(RoundedCornerShape(8.dp))
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.LocationOn,
-                        contentDescription = "位置",
-                        tint = Color(0xFFE53935),
-                        modifier = Modifier.size(24.dp)
-                    )
-                    
-                    Spacer(modifier = Modifier.width(8.dp))
-                    
-                    Text(
-                        text = "位置: ${locations[selectedLocationIndex]}",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
-                    )
-                    
-                    IconButton(
-                        onClick = { showLocationDropdown = true }
-                    ) {
-                        Icon(
-                            imageVector = if (showLocationDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                            contentDescription = "選擇位置"
-                        )
-                    }
-                    
-                    DropdownMenu(
-                        expanded = showLocationDropdown,
-                        onDismissRequest = { showLocationDropdown = false }
-                    ) {
-                        locations.forEachIndexed { index, location ->
-                            DropdownMenuItem(
-                                text = { Text(text = location) },
-                                onClick = {
-                                    selectedLocationIndex = index
-                                    showLocationDropdown = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-            
-            // 緊急按鈕
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 32.dp),
-                contentAlignment = Alignment.Center
-            ) {
+                )
+            } else {
+                // 病患選擇
                 Box(
                     modifier = Modifier
-                        .size(160.dp)
-                        .scale(scale)
-                        .clip(CircleShape)
-                        .background(Color(0xFFE53935))
-                        .clickable { showEmergencyDialog = true },
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                            .padding(12.dp)
+                            .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(8.dp))
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "患者",
+                            tint = Color(0xFFE53935),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        Text(
+                            text = "患者: ${patients[selectedPatientIndex].first}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
+                        )
+                        
+                        IconButton(
+                            onClick = { showPatientDropdown = true }
+                        ) {
+                            Icon(
+                                imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                contentDescription = "選擇患者"
+                            )
+                        }
+                        
+                        DropdownMenu(
+                            expanded = showPatientDropdown,
+                            onDismissRequest = { showPatientDropdown = false }
+                        ) {
+                            patients.forEachIndexed { index, patient ->
+                                DropdownMenuItem(
+                                    text = { Text(text = patient.first) },
+                                    onClick = {
+                                        selectedPatientIndex = index
+                                        showPatientDropdown = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                // 位置選擇
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                            .padding(12.dp)
+                            .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(8.dp))
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = "位置",
+                            tint = Color(0xFFE53935),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        Text(
+                            text = "位置: ${locations[selectedLocationIndex]}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
+                        )
+                        
+                        IconButton(
+                            onClick = { showLocationDropdown = true }
+                        ) {
+                            Icon(
+                                imageVector = if (showLocationDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                contentDescription = "選擇位置"
+                            )
+                        }
+                        
+                        DropdownMenu(
+                            expanded = showLocationDropdown,
+                            onDismissRequest = { showLocationDropdown = false }
+                        ) {
+                            locations.forEachIndexed { index, location ->
+                                DropdownMenuItem(
+                                    text = { Text(text = location) },
+                                    onClick = {
+                                        selectedLocationIndex = index
+                                        showLocationDropdown = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                // 緊急按鈕
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "緊急\n呼叫",
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        textAlign = TextAlign.Center
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(160.dp)
+                            .scale(scale)
+                            .clip(CircleShape)
+                            .background(Color(0xFFE53935))
+                            .clickable { showEmergencyDialog = true },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "緊急\n呼叫",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }
         
         // 歷史記錄標題
-        Text(
-            text = "呼叫記錄",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
+        item {
+            Text(
+                text = "呼叫記錄",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        }
         
         // 歷史呼叫記錄
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            if (emergencyCallRecords.isEmpty()) {
+        if (emergencyCallRecords.isEmpty()) {
+            item {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -446,17 +450,16 @@ fun EmergencyButtonScreen(navController: NavController) {
                         color = Color.Gray
                     )
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    items(emergencyCallRecords.sortedByDescending { it.callTime }) { record ->
-                        EmergencyRecordItem(record = record)
-                    }
-                }
             }
+        } else {
+            items(emergencyCallRecords.sortedByDescending { it.callTime }) { record ->
+                EmergencyRecordItem(record = record)
+            }
+        }
+        
+        // 底部空間
+        item {
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
     

@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.filled.BabyChangingStation
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -432,8 +433,8 @@ fun DiaperMonitorScreen(navController: NavController) {
                                 )
                             } else {
                                 Icon(
-                                    imageVector = Icons.Default.WaterDrop,
-                                    contentDescription = if (isChineseLanguage) "狀態良好" else "Status Good",
+                                    imageVector = Icons.Default.BabyChangingStation,
+                                    contentDescription = if (isChineseLanguage) "尿布狀態良好" else "Diaper Status Good",
                                     tint = if (isDarkTheme) Color.White else Color(0xFF4CAF50),
                                     modifier = Modifier.size(36.dp)
                                 )
@@ -647,7 +648,7 @@ fun DiaperChangeRecordItem(record: DiaperChangeRecord, isDarkTheme: Boolean, isC
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Default.WaterDrop,
+                imageVector = Icons.Default.BabyChangingStation,
                 contentDescription = null,
                 tint = if (record.status == DiaperStatus.WET)
                     if (isDarkTheme) Color(0xFF90CAF9) else Color(0xFF2196F3)

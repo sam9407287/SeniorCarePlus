@@ -24,7 +24,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Bathroom
+import androidx.compose.material.icons.filled.BabyChangingStation
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Bed
@@ -540,7 +540,7 @@ fun AlertIcon(
                 modifier = Modifier.size(24.dp)
             )
             AlertType.DIAPER -> Icon(
-                imageVector = Icons.Default.Bathroom,
+                imageVector = Icons.Default.BabyChangingStation,
                 contentDescription = alertType.displayName,
                 tint = if (isActive) 
                     if (isDarkTheme) Color(0xFFCE93D8) else Color(0xFF9C27B0)

@@ -518,11 +518,17 @@ fun EmergencyButtonScreen(navController: NavController) {
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "SOS",
-                            fontSize = 48.sp,
+                            text = if (isChineseLanguage) {
+                                "緊 急\n呼 叫"
+                            } else {
+                                "SOS"
+                            },
+                            fontSize = if (isChineseLanguage) 28.sp else 48.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            lineHeight = if (isChineseLanguage) 40.sp else 48.sp,
+                            letterSpacing = if (isChineseLanguage) 4.sp else 0.sp
                         )
                     }
                 }

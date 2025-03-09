@@ -89,8 +89,10 @@ import com.example.myapplication.ui.screens.EmergencyButtonScreen
 import com.example.myapplication.ui.screens.DiaperMonitorScreen
 import com.example.myapplication.ui.screens.HeartRateMonitorScreen
 import com.example.myapplication.ui.screens.TemperatureMonitorScreen
+import com.example.myapplication.ui.screens.SettingsScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.theme.ThemeManager
+import com.example.myapplication.ui.theme.LanguageManager
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -118,6 +120,7 @@ class MainActivity : ComponentActivity() {
 fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -> Unit = {}) {
     // 使用MaterialTheme的颜色而不是硬编码的颜色
     val isDarkTheme = ThemeManager.isDarkTheme
+    val isChineseLanguage = LanguageManager.isChineseLanguage
     
     Box(
         modifier = Modifier
@@ -129,22 +132,22 @@ fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 左侧用户图标，点击打开侧边栏
+            // 左侧用户图标
             IconButton(
                 onClick = onUserIconClick,
                 modifier = Modifier.size(40.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "用户菜单",
+                    contentDescription = if (isChineseLanguage) "用戶菜單" else "User Menu",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(36.dp)
                 )
             }
             
             // 居中标题
             Text(
-                text = "SENIOR CARE PLUS",
+                text = if (isChineseLanguage) "長者照護系統" else "SENIOR CARE PLUS",
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
                 modifier = Modifier.weight(1f),
@@ -159,8 +162,8 @@ fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -
             ) {
                 Icon(
                     imageVector = Icons.Default.Notifications,
-                    contentDescription = "通知",
-                    modifier = Modifier.size(40.dp),
+                    contentDescription = if (isChineseLanguage) "通知" else "Notifications",
+                    modifier = Modifier.size(28.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -177,30 +180,33 @@ fun MainAppContent() {
     // 管理页面右侧边栏
     var showRightDrawer by remember { mutableStateOf(false) }
     
+    // 檢查語言設定
+    val isChineseLanguage = LanguageManager.isChineseLanguage
+    
     // 定义底部导航栏的项目
     val bottomNavItems = listOf(
         BottomNavItem(
-            name = "主頁",
+            name = if (isChineseLanguage) "主頁" else "Home",
             route = "home",
             icon = Icons.Default.Home
         ),
         BottomNavItem(
-            name = "監控",
+            name = if (isChineseLanguage) "監控" else "Monitor",
             route = "monitor",
             icon = Icons.AutoMirrored.Filled.ShowChart
         ),
         BottomNavItem(
-            name = "地圖",
+            name = if (isChineseLanguage) "地圖" else "Map",
             route = "map",
             icon = Icons.Default.Map
         ),
         BottomNavItem(
-            name = "定時",
+            name = if (isChineseLanguage) "定時" else "Timer",
             route = "timer",
             icon = Icons.Default.DateRange
         ),
         BottomNavItem(
-            name = "更多",
+            name = if (isChineseLanguage) "更多" else "More",
             route = "more",
             icon = Icons.Default.MoreHoriz
         )
@@ -208,18 +214,50 @@ fun MainAppContent() {
     
     // 定义左侧边栏项目
     val leftDrawerItems = listOf(
-        DrawerItem("個人郵箱", "登錄您的郵箱賬號", Icons.Default.Email),
-        DrawerItem("個人資料", "查看和編輯您的資料", Icons.Default.Person),
-        DrawerItem("設置", "應用程序設置", Icons.Default.Settings),
-        DrawerItem("關於我們", "了解更多信息", Icons.Default.Info)
+        DrawerItem(
+            if (isChineseLanguage) "個人郵箱" else "Personal Email", 
+            if (isChineseLanguage) "登錄您的郵箱賬號" else "Log in to your email account", 
+            Icons.Default.Email
+        ),
+        DrawerItem(
+            if (isChineseLanguage) "個人資料" else "Personal Profile", 
+            if (isChineseLanguage) "查看和編輯您的資料" else "View and edit your profile", 
+            Icons.Default.Person
+        ),
+        DrawerItem(
+            if (isChineseLanguage) "設置" else "Settings", 
+            if (isChineseLanguage) "應用程序設置" else "Application settings", 
+            Icons.Default.Settings
+        ),
+        DrawerItem(
+            if (isChineseLanguage) "關於我們" else "About Us", 
+            if (isChineseLanguage) "了解更多信息" else "Learn more about us", 
+            Icons.Default.Info
+        )
     )
     
     // 定义右侧边栏项目 - 管理页面
     val adminItems = listOf(
-        AdminItem("院友管理", "patient_admin", Icons.Default.People),
-        AdminItem("員工管理", "staff_admin", Icons.Default.Work),
-        AdminItem("設備管理", "equipment_admin", Icons.Default.Build),
-        AdminItem("設定", "settings_admin", Icons.Default.Settings)
+        AdminItem(
+            if (isChineseLanguage) "院友管理" else "Patient Management", 
+            "patient_admin", 
+            Icons.Default.People
+        ),
+        AdminItem(
+            if (isChineseLanguage) "員工管理" else "Staff Management", 
+            "staff_admin", 
+            Icons.Default.Work
+        ),
+        AdminItem(
+            if (isChineseLanguage) "設備管理" else "Equipment Management", 
+            "equipment_admin", 
+            Icons.Default.Build
+        ),
+        AdminItem(
+            if (isChineseLanguage) "設定" else "Settings", 
+            "settings_admin", 
+            Icons.Default.Settings
+        )
     )
     
     // 构建UI界面
@@ -229,14 +267,14 @@ fun MainAppContent() {
             ModalDrawerSheet {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    "SENIOR CARE PLUS",
+                    if (isChineseLanguage) "長者照護系統" else "SENIOR CARE PLUS",
                     modifier = Modifier.padding(16.dp).fillMaxWidth(),
                     style = MaterialTheme.typography.headlineMedium,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                leftDrawerItems.forEach { item ->
+                leftDrawerItems.forEachIndexed { index, item ->
                     NavigationDrawerItem(
                         icon = { Icon(item.icon, contentDescription = item.title) },
                         label = { 
@@ -250,7 +288,18 @@ fun MainAppContent() {
                             scope.launch {
                                 leftDrawerState.close()
                             }
-                            // 处理侧边栏项目点击
+                            // 處理側邊欄項目點擊
+                            if (index == 2) { // 設置項目的索引
+                                // 導航到設定頁面
+                                navController.navigate("settings") {
+                                    // 清空之前的settings路由，確保每次都是新進入
+                                    popUpTo("settings") {
+                                        inclusive = true
+                                    }
+                                    // 防止創建多個實例
+                                    launchSingleTop = true
+                                }
+                            }
                         },
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                     )
@@ -376,6 +425,9 @@ fun MainAppContent() {
                         // 通知頁面
                         composable("notifications") { NotificationScreen(navController) }
                         
+                        // 設定頁面
+                        composable("settings") { SettingsScreen(navController) }
+                        
                         // 管理页面
                         composable("patient_admin") { AdminPageTemplate(title = "院友管理", navController = navController) }
                         composable("staff_admin") { AdminPageTemplate(title = "員工管理", navController = navController) }
@@ -417,6 +469,7 @@ fun AdminDrawer(
 ) {
     // 检查是否为深色模式
     val isDarkTheme = ThemeManager.isDarkTheme
+    val isChineseLanguage = LanguageManager.isChineseLanguage
     
     // 半透明背景，点击关闭抽屉
     Box(
@@ -430,7 +483,8 @@ fun AdminDrawer(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .fillMaxHeight()
-                .fillMaxWidth(0.45f)
+                // 增加寬度以適應英文文本
+                .fillMaxWidth(0.55f)
                 .background(if (isDarkTheme) MaterialTheme.colorScheme.surface else Color(0xFFCDCDCD))
                 .padding(top = 48.dp, start = 12.dp, end = 12.dp)
                 // 阻止点击事件传递到下层
@@ -441,18 +495,22 @@ fun AdminDrawer(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 10.dp)
+                        .padding(vertical = 8.dp)  // 減少垂直間距
                         .clip(RoundedCornerShape(20.dp))
                         .background(if (isDarkTheme) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFE0E0E0))
                         .clickable { onItemClick(item.route) }
-                        .padding(vertical = 18.dp),
+                        .padding(vertical = 16.dp, horizontal = 12.dp),  // 添加水平內邊距，減少垂直內邊距
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = item.title,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,  // 確保文本居中對齊
+                        maxLines = 2,  // 允許最多兩行文本
+                        // 字體大小根據語言略微調整，英文字體略小以適應更長的文本
+                        fontSize = if (isChineseLanguage) 16.sp else 15.sp
                     )
                 }
             }
@@ -462,6 +520,8 @@ fun AdminDrawer(
 
 @Composable
 fun AdminPageTemplate(title: String, navController: androidx.navigation.NavController) {
+    val isChineseLanguage = LanguageManager.isChineseLanguage
+    
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -486,7 +546,7 @@ fun AdminPageTemplate(title: String, navController: androidx.navigation.NavContr
                 
                 // 可根据不同页面添加相应内容
                 Text(
-                    text = "管理功能页面",
+                    text = if (isChineseLanguage) "管理功能頁面" else "Management Function Page",
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 8.dp)

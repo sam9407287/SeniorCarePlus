@@ -415,6 +415,9 @@ fun AdminDrawer(
     onItemClick: (String) -> Unit,
     onClose: () -> Unit
 ) {
+    // 检查是否为深色模式
+    val isDarkTheme = ThemeManager.isDarkTheme
+    
     // 半透明背景，点击关闭抽屉
     Box(
         modifier = Modifier
@@ -428,7 +431,7 @@ fun AdminDrawer(
                 .align(Alignment.TopEnd)
                 .fillMaxHeight()
                 .fillMaxWidth(0.45f)
-                .background(Color(0xFFCDCDCD))
+                .background(if (isDarkTheme) MaterialTheme.colorScheme.surface else Color(0xFFCDCDCD))
                 .padding(top = 48.dp, start = 12.dp, end = 12.dp)
                 // 阻止点击事件传递到下层
                 .clickable(enabled = false, onClick = {})
@@ -440,7 +443,7 @@ fun AdminDrawer(
                         .fillMaxWidth()
                         .padding(vertical = 10.dp)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(Color(0xFFE0E0E0))
+                        .background(if (isDarkTheme) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFE0E0E0))
                         .clickable { onItemClick(item.route) }
                         .padding(vertical = 18.dp),
                     contentAlignment = Alignment.Center
@@ -448,7 +451,8 @@ fun AdminDrawer(
                     Text(
                         text = item.title,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

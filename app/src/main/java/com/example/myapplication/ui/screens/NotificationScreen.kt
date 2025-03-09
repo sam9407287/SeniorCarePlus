@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.myapplication.ui.theme.ThemeManager
 
 // 通知項目數據類
 data class NotificationItem(
@@ -67,6 +68,9 @@ enum class FilterType {
 
 @Composable
 fun NotificationScreen(navController: NavController) {
+    // 检查深色模式
+    val isDarkTheme = ThemeManager.isDarkTheme
+    
     // 不再使用SeniorCareTopBar，直接顯示內容
     NotificationContent(navController)
 }
@@ -103,7 +107,7 @@ fun NotificationContent(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -115,7 +119,8 @@ fun NotificationContent(navController: NavController) {
                 text = "通知",
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier.padding(vertical = 16.dp),
+                color = MaterialTheme.colorScheme.onBackground
             )
             
             // 篩選按鈕
@@ -176,21 +181,25 @@ fun FilterButton(
 ) {
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(24.dp))
-            .background(if (isSelected) Color(0xFFE0E0E0) else Color(0xFFF5F5F5))
+            .clip(RoundedCornerShape(16.dp))
+            .background(
+                if (isSelected) 
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                else 
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            )
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = text,
-                fontSize = 16.sp,
-                color = Color.Black
-            )
-        }
+        Text(
+            text = text,
+            color = if (isSelected) 
+                MaterialTheme.colorScheme.primary
+            else 
+                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+        )
     }
 }
 
@@ -199,45 +208,48 @@ fun NotificationItemCard(
     notification: NotificationItem,
     onEditClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(4.dp))
-            .background(Color(0xFFEEEEEE))
-            .padding(16.dp)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp)
             ) {
                 Text(
                     text = notification.title,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
                 Text(
                     text = notification.notificationMethods,
                     fontSize = 16.sp,
-                    color = Color(0xFF4169E1)
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
             
             Button(
                 onClick = onEditClick,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF202020)
+                    containerColor = MaterialTheme.colorScheme.secondary
                 ),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text(
                     text = "Edit",
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onSecondary
                 )
             }
         }

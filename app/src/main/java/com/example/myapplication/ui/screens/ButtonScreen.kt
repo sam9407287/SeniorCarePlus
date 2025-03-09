@@ -55,6 +55,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -90,22 +91,31 @@ import java.time.format.DateTimeFormatter
 import com.example.myapplication.ui.theme.DarkCardBackground
 import com.example.myapplication.ui.theme.LightCardBackground
 import com.example.myapplication.ui.theme.ThemeManager
+import com.example.myapplication.ui.theme.LanguageManager
 
 // 緊急類型
-enum class EmergencyType(val label: String, val color: Color) {
-    FALL("跌倒", Color(0xFFE53935)),
-    PAIN("疼痛", Color(0xFFFF9800)),
-    TOILET("如廁協助", Color(0xFF4CAF50)),
-    MEDICATION("藥物協助", Color(0xFF2196F3)),
-    OTHER("其他協助", Color(0xFF9C27B0))
+enum class EmergencyType(val chineseLabel: String, val englishLabel: String, val color: Color) {
+    FALL("跌倒", "Fall", Color(0xFFE53935)),
+    PAIN("疼痛", "Pain", Color(0xFFFF9800)),
+    TOILET("如廁協助", "Toilet Assistance", Color(0xFF4CAF50)),
+    MEDICATION("藥物協助", "Medication Help", Color(0xFF2196F3)),
+    OTHER("其他協助", "Other Assistance", Color(0xFF9C27B0))
 }
 
+// 根據語言設置獲取標籤
+val EmergencyType.label: String
+    get() = if (LanguageManager.isChineseLanguage) this.chineseLabel else this.englishLabel
+
 // 緊急狀態
-enum class EmergencyStatus(val label: String, val color: Color) {
-    PENDING("等待響應", Color(0xFFE53935)),
-    RESPONDING("正在響應", Color(0xFFFF9800)),
-    RESOLVED("已解決", Color(0xFF4CAF50))
+enum class EmergencyStatus(val chineseLabel: String, val englishLabel: String, val color: Color) {
+    WAITING("等待響應", "Waiting", Color(0xFFE53935)),
+    RESPONDING("正在處理", "Responding", Color(0xFF1565C0)),
+    RESOLVED("已解決", "Resolved", Color(0xFF2E7D32))
 }
+
+// 根據語言設置獲取標籤
+val EmergencyStatus.label: String
+    get() = if (LanguageManager.isChineseLanguage) this.chineseLabel else this.englishLabel
 
 // 緊急呼叫記錄
 data class EmergencyCallRecord(
@@ -126,29 +136,39 @@ data class EmergencyCallRecord(
 fun EmergencyButtonScreen(navController: NavController) {
     // 判断是否为深色模式
     val isDarkTheme = ThemeManager.isDarkTheme
+    // 判断当前语言
+    val isChineseLanguage = LanguageManager.isChineseLanguage
     
     // 示例數據
-    val patients = listOf(
-        "張三" to "001",
-        "李四" to "002",
-        "王五" to "003",
-        "趙六" to "004",
-        "孫七" to "005"
-    )
+    val patients = if (isChineseLanguage) {
+        listOf(
+            "張三" to "001",
+            "李四" to "002",
+            "王五" to "003",
+            "趙六" to "004",
+            "孫七" to "005"
+        )
+    } else {
+        listOf(
+            "Zhang San" to "001", 
+            "Li Si" to "002",
+            "Wang Wu" to "003",
+            "Zhao Liu" to "004",
+            "Sun Qi" to "005"
+        )
+    }
     
-    val locations = listOf(
-        "A區 101房",
-        "A區 102房",
-        "B區 201房",
-        "B區 202房",
-        "C區 301房",
-        "C區 302房",
-        "餐廳",
-        "活動室",
-        "康復區"
-    )
+    val locations = if (isChineseLanguage) {
+        listOf("A區 101房", "A區 102房", "B區 201房", "B區 202房", "C區 301房")
+    } else {
+        listOf("Area A Room 101", "Area A Room 102", "Area B Room 201", "Area B Room 202", "Area C Room 301")
+    }
     
-    val responders = listOf("護工A", "護工B", "護工C", "護工D", "醫生A", "醫生B")
+    val responders = if (isChineseLanguage) {
+        listOf("護工A", "護工B", "護工C", "護工D")
+    } else {
+        listOf("Caregiver A", "Caregiver B", "Caregiver C", "Caregiver D")
+    }
     
     // 選中的病患
     var selectedPatientIndex by remember { mutableIntStateOf(0) }
@@ -283,7 +303,7 @@ fun EmergencyButtonScreen(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "緊急呼叫",
+                    text = if (isChineseLanguage) "緊急呼叫" else "Emergency Call",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
@@ -300,7 +320,7 @@ fun EmergencyButtonScreen(navController: NavController) {
                 ) {
                     Icon(
                         imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                        contentDescription = "切換主題",
+                        contentDescription = if (isChineseLanguage) "切換主題" else "Toggle Theme",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
@@ -315,7 +335,8 @@ fun EmergencyButtonScreen(navController: NavController) {
                     emergency = activeEmergency!!,
                     onCancel = {
                         showResponseDialog = true
-                    }
+                    },
+                    isChineseLanguage = isChineseLanguage
                 )
             } else {
                 // 病患選擇
@@ -343,7 +364,7 @@ fun EmergencyButtonScreen(navController: NavController) {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Person,
-                                contentDescription = "患者",
+                                contentDescription = if (isChineseLanguage) "患者" else "Patient",
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(24.dp)
                             )
@@ -351,7 +372,7 @@ fun EmergencyButtonScreen(navController: NavController) {
                             Spacer(modifier = Modifier.width(8.dp))
                             
                             Text(
-                                text = "患者: ${patients[selectedPatientIndex].first}",
+                                text = if (isChineseLanguage) "患者: ${patients[selectedPatientIndex].first}" else "Patient: ${patients[selectedPatientIndex].first}",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.weight(1f),
@@ -363,7 +384,7 @@ fun EmergencyButtonScreen(navController: NavController) {
                             ) {
                                 Icon(
                                     imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                    contentDescription = "選擇患者",
+                                    contentDescription = if (isChineseLanguage) "選擇患者" else "Select Patient",
                                     tint = MaterialTheme.colorScheme.onSurface
                                 )
                             }
@@ -422,7 +443,7 @@ fun EmergencyButtonScreen(navController: NavController) {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.LocationOn,
-                                contentDescription = "位置",
+                                contentDescription = if (isChineseLanguage) "位置" else "Location",
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(24.dp)
                             )
@@ -430,7 +451,7 @@ fun EmergencyButtonScreen(navController: NavController) {
                             Spacer(modifier = Modifier.width(8.dp))
                             
                             Text(
-                                text = "位置: ${locations[selectedLocationIndex]}",
+                                text = if (isChineseLanguage) "位置: ${locations[selectedLocationIndex]}" else "Location: ${locations[selectedLocationIndex]}",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.weight(1f),
@@ -442,7 +463,7 @@ fun EmergencyButtonScreen(navController: NavController) {
                             ) {
                                 Icon(
                                     imageVector = if (showLocationDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                    contentDescription = "選擇位置",
+                                    contentDescription = if (isChineseLanguage) "選擇位置" else "Select Location",
                                     tint = MaterialTheme.colorScheme.onSurface
                                 )
                             }
@@ -497,13 +518,11 @@ fun EmergencyButtonScreen(navController: NavController) {
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "緊 急\n呼 叫",
-                            fontSize = 28.sp,
+                            text = "SOS",
+                            fontSize = 48.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
-                            textAlign = TextAlign.Center,
-                            lineHeight = 40.sp,
-                            letterSpacing = 4.sp
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
@@ -513,7 +532,7 @@ fun EmergencyButtonScreen(navController: NavController) {
         // 歷史記錄標題
         item {
             Text(
-                text = "呼叫記錄",
+                text = if (isChineseLanguage) "呼叫記錄" else "Call Records",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
@@ -531,7 +550,7 @@ fun EmergencyButtonScreen(navController: NavController) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "暫無呼叫記錄",
+                        text = if (isChineseLanguage) "暫無呼叫記錄" else "No call records",
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                         textAlign = TextAlign.Center
@@ -540,7 +559,7 @@ fun EmergencyButtonScreen(navController: NavController) {
             }
         } else {
             items(emergencyCallRecords.sortedByDescending { it.callTime }) { record ->
-                EmergencyRecordItem(record = record, isDarkTheme = isDarkTheme)
+                EmergencyRecordItem(record = record, isDarkTheme = isDarkTheme, isChineseLanguage = isChineseLanguage)
             }
         }
     }
@@ -551,10 +570,9 @@ fun EmergencyButtonScreen(navController: NavController) {
             onDismissRequest = { showEmergencyDialog = false },
             title = {
                 Text(
-                    text = "選擇緊急類型",
-                    fontWeight = FontWeight.Bold,
+                    text = if (isChineseLanguage) "選擇緊急類型" else "Select Emergency Type",
                     fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onSurface
+                    fontWeight = FontWeight.Bold
                 )
             },
             text = {
@@ -576,7 +594,7 @@ fun EmergencyButtonScreen(navController: NavController) {
                                     callTime = Date(),
                                     location = locations[selectedLocationIndex],
                                     type = type,
-                                    status = EmergencyStatus.PENDING
+                                    status = EmergencyStatus.WAITING
                                 )
                                 
                                 // 更新狀態
@@ -631,7 +649,7 @@ fun EmergencyButtonScreen(navController: NavController) {
             onDismissRequest = { showResponseDialog = false },
             title = {
                 Text(
-                    text = "取消緊急呼叫",
+                    text = if (isChineseLanguage) "取消緊急呼叫" else "Cancel Emergency Call",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
@@ -691,7 +709,8 @@ fun EmergencyButtonScreen(navController: NavController) {
 @Composable
 fun EmergencyActiveCard(
     emergency: EmergencyCallRecord,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    isChineseLanguage: Boolean = LanguageManager.isChineseLanguage
 ) {
     val isResponding = emergency.status == EmergencyStatus.RESPONDING
     val isDarkTheme = ThemeManager.isDarkTheme
@@ -741,7 +760,7 @@ fun EmergencyActiveCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (isResponding) "正在響應中..." else "緊急呼叫中...",
+                    text = if (isChineseLanguage) "正在響應中..." else "Emergency Call in Progress...",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isDarkTheme) {
@@ -767,35 +786,35 @@ fun EmergencyActiveCard(
             Spacer(modifier = Modifier.height(16.dp))
             
             EmergencyInfoRow(
-                label = "患者:",
+                label = if (isChineseLanguage) "患者:" else "Patient:",
                 value = emergency.patientName,
                 valueColor = if (isDarkTheme) Color.White else Color.Black,
                 isDarkTheme = isDarkTheme
             )
             
             EmergencyInfoRow(
-                label = "位置:",
+                label = if (isChineseLanguage) "位置:" else "Location:",
                 value = emergency.location,
                 valueColor = if (isDarkTheme) Color.White else Color.Black,
                 isDarkTheme = isDarkTheme
             )
             
             EmergencyInfoRow(
-                label = "類型:",
+                label = if (isChineseLanguage) "類型:" else "Type:",
                 value = emergency.type.label,
                 valueColor = emergency.type.color,
                 isDarkTheme = isDarkTheme
             )
             
             EmergencyInfoRow(
-                label = "呼叫時間:",
+                label = if (isChineseLanguage) "呼叫時間:" else "Call Time:",
                 value = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(emergency.callTime),
                 valueColor = if (isDarkTheme) Color.White else Color.Black,
                 isDarkTheme = isDarkTheme
             )
             
             EmergencyInfoRow(
-                label = "等待時間:",
+                label = if (isChineseLanguage) "等待時間:" else "Waiting Time:",
                 value = displayWaitTime,
                 valueColor = if (isDarkTheme) {
                     if (isResponding) Color(0xFFFFB74D) else Color(0xFFEF9A9A)
@@ -813,7 +832,7 @@ fun EmergencyActiveCard(
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 EmergencyInfoRow(
-                    label = "響應人員:",
+                    label = if (isChineseLanguage) "響應人員:" else "Responder:",
                     value = emergency.responder ?: "",
                     valueColor = if (isDarkTheme) Color.White else Color.Black,
                     isDarkTheme = isDarkTheme
@@ -821,7 +840,7 @@ fun EmergencyActiveCard(
                 
                 if (emergency.responseTime != null) {
                     EmergencyInfoRow(
-                        label = "響應時間:",
+                        label = if (isChineseLanguage) "響應時間:" else "Response Time:",
                         value = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(emergency.responseTime),
                         valueColor = if (isDarkTheme) Color.White else Color.Black,
                         isDarkTheme = isDarkTheme
@@ -862,7 +881,7 @@ fun EmergencyActiveCard(
                 Spacer(modifier = Modifier.width(8.dp))
                 
                 Text(
-                    text = if (isResponding) "刷新狀態" else "取消呼叫",
+                    text = if (isChineseLanguage) "刷新狀態" else "Refresh Status",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
@@ -876,7 +895,8 @@ fun EmergencyInfoRow(
     label: String,
     value: String,
     valueColor: Color,
-    isDarkTheme: Boolean
+    valueSize: Int = 16,
+    isDarkTheme: Boolean = ThemeManager.isDarkTheme
 ) {
     Row(
         modifier = Modifier
@@ -886,7 +906,7 @@ fun EmergencyInfoRow(
     ) {
         Text(
             text = label,
-            fontSize = 16.sp,
+            fontSize = valueSize.sp,
             fontWeight = FontWeight.Normal,
             color = if (isDarkTheme) Color.Gray else Color.DarkGray,
             modifier = Modifier.width(80.dp)
@@ -894,7 +914,7 @@ fun EmergencyInfoRow(
         
         Text(
             text = value,
-            fontSize = 16.sp,
+            fontSize = valueSize.sp,
             fontWeight = FontWeight.Bold,
             color = valueColor
         )
@@ -904,21 +924,24 @@ fun EmergencyInfoRow(
 @Composable
 fun EmergencyRecordItem(
     record: EmergencyCallRecord,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    isChineseLanguage: Boolean
 ) {
     val dateFormat = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())
+    val formattedTime = dateFormat.format(record.callTime)
+    val resolvedTime = if (record.status == EmergencyStatus.RESOLVED && record.resolvedTime != null) {
+        dateFormat.format(record.resolvedTime)
+    } else {
+        if (isChineseLanguage) "未解決" else "Unresolved"
+    }
     
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = when (record.status) {
-                EmergencyStatus.PENDING -> if (isDarkTheme) DarkCardBackground else LightCardBackground
-                EmergencyStatus.RESPONDING -> if (isDarkTheme) Color(0xFF5D4037) else Color(0xFFFFF9C4)
-                EmergencyStatus.RESOLVED -> if (isDarkTheme) MaterialTheme.colorScheme.surfaceVariant else Color.White
-            }
+            containerColor = if (isDarkTheme) DarkCardBackground else LightCardBackground
         )
     ) {
         Column(
@@ -928,105 +951,93 @@ fun EmergencyRecordItem(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                // 狀態圖標
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(
+                            when (record.status) {
+                                EmergencyStatus.WAITING -> if (isDarkTheme) Color(0xFFAD1457).copy(alpha = 0.7f) else Color(0xFFFCE4EC)
+                                EmergencyStatus.RESPONDING -> if (isDarkTheme) Color(0xFF1565C0).copy(alpha = 0.7f) else Color(0xFFE3F2FD)
+                                EmergencyStatus.RESOLVED -> if (isDarkTheme) Color(0xFF2E7D32).copy(alpha = 0.7f) else Color(0xFFE8F5E9)
+                            }
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(record.type.color.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = when (record.status) {
-                                EmergencyStatus.PENDING -> Icons.Default.Error
-                                EmergencyStatus.RESPONDING -> Icons.Default.PlayArrow
-                                EmergencyStatus.RESOLVED -> Icons.Default.CheckCircle
-                            },
-                            contentDescription = null,
-                            tint = record.type.color,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                    
-                    Spacer(modifier = Modifier.width(12.dp))
-                    
-                    Column {
-                        Text(
-                            text = record.type.label,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = record.type.color
-                        )
-                        
-                        Text(
-                            text = record.status.label,
-                            fontSize = 14.sp,
-                            color = record.status.color
-                        )
-                    }
+                    Icon(
+                        imageVector = when (record.status) {
+                            EmergencyStatus.WAITING -> Icons.Default.Warning
+                            EmergencyStatus.RESPONDING -> Icons.Default.PlayArrow
+                            EmergencyStatus.RESOLVED -> Icons.Default.Check
+                        },
+                        contentDescription = when (record.status) {
+                            EmergencyStatus.WAITING -> if (isChineseLanguage) "等待中" else "Waiting"
+                            EmergencyStatus.RESPONDING -> if (isChineseLanguage) "響應中" else "Responding"
+                            EmergencyStatus.RESOLVED -> if (isChineseLanguage) "已解決" else "Resolved"
+                        },
+                        tint = when (record.status) {
+                            EmergencyStatus.WAITING -> if (isDarkTheme) Color.White else Color(0xFFE53935)
+                            EmergencyStatus.RESPONDING -> if (isDarkTheme) Color.White else Color(0xFF1565C0)
+                            EmergencyStatus.RESOLVED -> if (isDarkTheme) Color.White else Color(0xFF2E7D32)
+                        },
+                        modifier = Modifier.size(28.dp)
+                    )
                 }
                 
-                Text(
-                    text = dateFormat.format(record.callTime),
-                    fontSize = 14.sp,
-                    color = if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) else Color.Gray
-                )
+                Spacer(modifier = Modifier.width(16.dp))
+                
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    // 呼叫類型
+                    Text(
+                        text = record.type.label,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = record.type.color
+                    )
+                    
+                    Spacer(modifier = Modifier.height(4.dp))
+                    
+                    // 狀態文字
+                    Text(
+                        text = when (record.status) {
+                            EmergencyStatus.WAITING -> if (isChineseLanguage) "等待響應" else "Waiting for response"
+                            EmergencyStatus.RESPONDING -> if (isChineseLanguage) "正在處理" else "Being processed"
+                            EmergencyStatus.RESOLVED -> if (isChineseLanguage) "已解決" else "Resolved"
+                        },
+                        fontSize = 14.sp,
+                        color = when (record.status) {
+                            EmergencyStatus.WAITING -> if (isDarkTheme) Color(0xFFE57373) else Color(0xFFE53935)
+                            EmergencyStatus.RESPONDING -> if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF1565C0)
+                            EmergencyStatus.RESOLVED -> if (isDarkTheme) Color(0xFFA5D6A7) else Color(0xFF2E7D32)
+                        }
+                    )
+                }
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             
+            Divider(
+                color = if (isDarkTheme) Color.DarkGray else Color.LightGray,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+            
+            // 患者和位置信息
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    tint = if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) else Color.Gray,
-                    modifier = Modifier.size(16.dp)
-                )
-                
-                Spacer(modifier = Modifier.width(4.dp))
-                
-                Text(
-                    text = record.patientName,
-                    fontSize = 14.sp,
-                    color = if (isDarkTheme) MaterialTheme.colorScheme.onSurface else Color.DarkGray
-                )
-                
-                Spacer(modifier = Modifier.width(16.dp))
-                
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = null,
-                    tint = if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) else Color.Gray,
-                    modifier = Modifier.size(16.dp)
-                )
-                
-                Spacer(modifier = Modifier.width(4.dp))
-                
-                Text(
-                    text = record.location,
-                    fontSize = 14.sp,
-                    color = if (isDarkTheme) MaterialTheme.colorScheme.onSurface else Color.DarkGray
-                )
-            }
-            
-            if (record.resolvedTime != null) {
-                Spacer(modifier = Modifier.height(4.dp))
-                
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.AccessTime,
-                        contentDescription = null,
+                        imageVector = Icons.Default.Person,
+                        contentDescription = if (isChineseLanguage) "患者" else "Patient",
                         tint = if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) else Color.Gray,
                         modifier = Modifier.size(16.dp)
                     )
@@ -1034,37 +1045,94 @@ fun EmergencyRecordItem(
                     Spacer(modifier = Modifier.width(4.dp))
                     
                     Text(
-                        text = "處理時間: ${calculateTimeDifference(record.callTime, record.resolvedTime!!)}",
+                        text = record.patientName,
                         fontSize = 14.sp,
-                        color = if (isDarkTheme) MaterialTheme.colorScheme.onSurface else Color.DarkGray
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = if (isChineseLanguage) "位置" else "Location",
+                        tint = if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) else Color.Gray,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.width(4.dp))
+                    
+                    Text(
+                        text = record.location,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
             
-            if (record.notes.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // 時間信息
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AccessTime,
+                        contentDescription = if (isChineseLanguage) "呼叫時間" else "Call Time",
+                        tint = if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) else Color.Gray,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.width(4.dp))
+                    
+                    Text(
+                        text = if (isChineseLanguage) "呼叫時間: $formattedTime" else "Call: $formattedTime",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+                
+                if (record.status == EmergencyStatus.RESOLVED) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = if (isChineseLanguage) "處理時間" else "Resolution Time",
+                            tint = if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) else Color.Gray,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        
+                        Spacer(modifier = Modifier.width(4.dp))
+                        
+                        Text(
+                            text = if (isChineseLanguage) "處理時間: $resolvedTime" else "Resolved: $resolvedTime",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+            }
+            
+            // 響應人員信息
+            if (record.responder != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                Text(
-                    text = record.notes,
-                    fontSize = 14.sp,
-                    color = if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) else Color.Gray,
-                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (isChineseLanguage) "處理人員: ${record.responder}" else "Responder: ${record.responder}",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
             }
         }
-    }
-}
-
-// 計算時間差
-fun calculateTimeDifference(startTime: Date, endTime: Date): String {
-    val diffMillis = endTime.time - startTime.time
-    val minutes = TimeUnit.MILLISECONDS.toMinutes(diffMillis)
-    
-    return if (minutes < 60) {
-        "$minutes 分鐘"
-    } else {
-        val hours = minutes / 60
-        val remainingMinutes = minutes % 60
-        "$hours 小時 $remainingMinutes 分鐘"
     }
 } 

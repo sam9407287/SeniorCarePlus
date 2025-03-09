@@ -490,18 +490,20 @@ fun EmergencyButtonScreen(navController: NavController) {
                             .clip(CircleShape)
                             .background(if (isDarkTheme) Color(0xFFEC407A) else Color(0xFFEC407A))
                             .border(
-                                BorderStroke(4.dp, if (isDarkTheme) Color(0x80EC407A) else Color(0x80F48FB1)),
+                                BorderStroke(4.dp, if (isDarkTheme) Color(0xFFB71C1C) else Color(0xFFC62828)),
                                 CircleShape
                             )
                             .clickable { showEmergencyDialog = true },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "緊急\n呼叫",
+                            text = "緊 急\n呼 叫",
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            lineHeight = 40.sp,
+                            letterSpacing = 4.sp
                         )
                     }
                 }

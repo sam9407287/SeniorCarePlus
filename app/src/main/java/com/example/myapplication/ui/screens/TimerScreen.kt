@@ -26,11 +26,14 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Medication
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.Medication
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -48,19 +51,21 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.TimePickerState
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,38 +74,45 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
+import com.example.myapplication.ui.theme.DarkCardBackground
+import com.example.myapplication.ui.theme.LightCardBackground
+import com.example.myapplication.ui.theme.ThemeManager
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-// 提醒項目數據類
+// 提醒类型
+enum class ReminderType(val label: String, val color: Color, val darkColor: Color) {
+    MEDICATION("服藥", Color(0xFF1976D2), Color(0xFF5E92F3)),
+    WATER("喝水", Color(0xFF03A9F4), Color(0xFF64B5F6)),
+    MEAL("用餐", Color(0xFFF57C00), Color(0xFFFFB74D)),
+    HEART_RATE("心率", Color(0xFFE91E63), Color(0xFFF48FB1)),
+    TEMPERATURE("體溫", Color(0xFF7B1FA2), Color(0xFFAB47BC)),
+    GENERAL("一般提醒", Color(0xFF009688), Color(0xFF4DB6AC))
+}
+
+// 提醒项目
 data class ReminderItem(
     val id: Int,
     val title: String,
     val time: String,
     val days: List<String>,
-    val type: ReminderType,
-    var isEnabled: Boolean = true
+    val type: ReminderType
 )
-
-// 提醒類型
-enum class ReminderType(val icon: ImageVector, val color: Color) {
-    MEDICATION(Icons.Default.MedicalServices, Color(0xFF4CAF50)),
-    WATER(Icons.Default.WaterDrop, Color(0xFF2196F3)),
-    HEART_RATE(Icons.Default.Favorite, Color(0xFFE91E63)),
-    MEAL(Icons.Default.Restaurant, Color(0xFFFF9800))
-}
 
 @Composable
 fun TimerScreen(navController: NavController) {
+    // 判断是否为深色模式
+    val isDarkTheme = ThemeManager.isDarkTheme
+    
     // 提醒列表
     val reminders = remember {
         mutableStateListOf(
@@ -149,7 +161,7 @@ fun TimerScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -157,12 +169,36 @@ fun TimerScreen(navController: NavController) {
                 .padding(16.dp)
         ) {
             // 標題
-            Text(
-                text = "定時提醒",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "定時提醒",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                
+                // 主題切換按鈕
+                IconButton(
+                    onClick = { ThemeManager.toggleTheme() },
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                ) {
+                    Icon(
+                        imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                        contentDescription = "切換主題",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
             
             // 提醒列表
             if (reminders.isEmpty()) {
@@ -174,41 +210,39 @@ fun TimerScreen(navController: NavController) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "尚未設置任何提醒\n點擊下方 + 按鈕添加",
-                        fontSize = 16.sp,
-                        color = Color.Gray,
-                        textAlign = TextAlign.Center
+                        text = "暫無提醒事項",
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                     )
                 }
             } else {
-                // 顯示提醒列表
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
                 ) {
                     items(reminders) { reminder ->
-                        ReminderCard(
+                        ReminderItemCard(
                             reminder = reminder,
-                            onToggle = { isEnabled ->
-                                val index = reminders.indexOfFirst { it.id == reminder.id }
-                                if (index >= 0) {
-                                    reminders[index] = reminders[index].copy(isEnabled = isEnabled)
-                                }
-                            },
+                            isDarkTheme = isDarkTheme,
                             onEdit = {
                                 currentEditingReminder = reminder
                                 showAddReminderDialog = true
                             },
                             onDelete = {
-                                reminders.removeAll { it.id == reminder.id }
+                                reminders.remove(reminder)
+                            },
+                            onToggle = { isActive ->
+                                // TODO: 實現啟用/禁用提醒的功能
                             }
                         )
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             }
         }
         
-        // 添加按鈕
+        // 添加按钮
         FloatingActionButton(
             onClick = {
                 currentEditingReminder = null
@@ -217,92 +251,132 @@ fun TimerScreen(navController: NavController) {
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
-            containerColor = Color(0xFF4169E1),
-            contentColor = Color.White
+            containerColor = MaterialTheme.colorScheme.primary
         ) {
-            Icon(Icons.Default.Add, contentDescription = "添加提醒")
-        }
-        
-        // 添加/編輯提醒對話框
-        if (showAddReminderDialog) {
-            AddEditReminderDialog(
-                reminder = currentEditingReminder,
-                onDismiss = { showAddReminderDialog = false },
-                onSave = { title, time, days, type ->
-                    if (currentEditingReminder != null) {
-                        // 編輯現有提醒
-                        val index = reminders.indexOfFirst { it.id == currentEditingReminder!!.id }
-                        if (index >= 0) {
-                            reminders[index] = reminders[index].copy(
-                                title = title,
-                                time = time,
-                                days = days,
-                                type = type
-                            )
-                        }
-                    } else {
-                        // 添加新提醒
-                        val newId = if (reminders.isEmpty()) 1 else reminders.maxOf { it.id } + 1
-                        reminders.add(
-                            ReminderItem(
-                                id = newId,
-                                title = title,
-                                time = time,
-                                days = days,
-                                type = type
-                            )
-                        )
-                    }
-                    showAddReminderDialog = false
-                }
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "添加提醒",
+                tint = Color.White
             )
         }
+    }
+    
+    // 添加/编辑提醒对话框
+    if (showAddReminderDialog) {
+        AddEditReminderDialog(
+            reminder = currentEditingReminder,
+            isDarkTheme = isDarkTheme,
+            onDismiss = { showAddReminderDialog = false },
+            onConfirm = { title, time, days, type ->
+                if (currentEditingReminder != null) {
+                    // 编辑现有提醒
+                    val index = reminders.indexOfFirst { it.id == currentEditingReminder!!.id }
+                    if (index != -1) {
+                        reminders[index] = currentEditingReminder!!.copy(
+                            title = title,
+                            time = time,
+                            days = days,
+                            type = type
+                        )
+                    }
+                } else {
+                    // 添加新提醒
+                    val newId = reminders.maxOfOrNull { it.id }?.plus(1) ?: 1
+                    reminders.add(
+                        ReminderItem(
+                            id = newId,
+                            title = title,
+                            time = time,
+                            days = days,
+                            type = type
+                        )
+                    )
+                }
+                showAddReminderDialog = false
+            }
+        )
     }
 }
 
 @Composable
-fun ReminderCard(
+fun ReminderItemCard(
     reminder: ReminderItem,
-    onToggle: (Boolean) -> Unit,
+    isDarkTheme: Boolean,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onToggle: (Boolean) -> Unit
 ) {
+    var isEnabled by remember { mutableStateOf(true) }
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (reminder.isEnabled) Color.White else Color(0xFFF5F5F5)
+            containerColor = if (isDarkTheme) DarkCardBackground else LightCardBackground
         )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 類型圖標
+            // 图标
             Box(
                 modifier = Modifier
-                    .size(50.dp)
+                    .size(48.dp)
                     .clip(CircleShape)
                     .background(
-                        if (reminder.isEnabled) reminder.type.color.copy(alpha = 0.2f)
-                        else Color.Gray.copy(alpha = 0.1f)
+                        if (isDarkTheme) 
+                            reminder.type.darkColor.copy(alpha = 0.2f) 
+                        else 
+                            reminder.type.color.copy(alpha = 0.1f)
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = reminder.type.icon,
-                    contentDescription = null,
-                    tint = if (reminder.isEnabled) reminder.type.color else Color.Gray,
-                    modifier = Modifier.size(30.dp)
-                )
+                when (reminder.type) {
+                    ReminderType.MEDICATION -> Icon(
+                        imageVector = Icons.Default.Medication, 
+                        contentDescription = null,
+                        tint = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    ReminderType.WATER -> Icon(
+                        imageVector = Icons.Default.WaterDrop, 
+                        contentDescription = null,
+                        tint = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    ReminderType.MEAL -> Icon(
+                        imageVector = Icons.Default.Restaurant, 
+                        contentDescription = null,
+                        tint = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    ReminderType.HEART_RATE -> Icon(
+                        imageVector = Icons.Default.Favorite, 
+                        contentDescription = null,
+                        tint = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    ReminderType.TEMPERATURE -> Icon(
+                        imageVector = Icons.Default.MedicalServices, 
+                        contentDescription = null,
+                        tint = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    ReminderType.GENERAL -> Icon(
+                        imageVector = Icons.Default.Timer, 
+                        contentDescription = null,
+                        tint = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
             
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             
-            // 提醒內容
+            // 内容
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -310,51 +384,76 @@ fun ReminderCard(
                     text = reminder.title,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (reminder.isEnabled) Color.Black else Color.Gray
+                    color = MaterialTheme.colorScheme.onSurface
                 )
+                
+                Spacer(modifier = Modifier.height(4.dp))
                 
                 Text(
                     text = reminder.time,
-                    fontSize = 16.sp,
-                    color = if (reminder.isEnabled) Color(0xFF4169E1) else Color.Gray
+                    fontSize = 20.sp,
+                    color = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
+                    fontWeight = FontWeight.Bold
                 )
                 
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                // 显示选中的天数
                 Text(
                     text = reminder.days.joinToString(" · "),
                     fontSize = 14.sp,
-                    color = if (reminder.isEnabled) Color.Gray else Color.Gray.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
             }
             
-            // 操作按鈕
+            // 按钮
             Column(
                 horizontalAlignment = Alignment.End
             ) {
+                // 启用/禁用开关
                 Switch(
-                    checked = reminder.isEnabled,
-                    onCheckedChange = onToggle,
+                    checked = isEnabled,
+                    onCheckedChange = { 
+                        isEnabled = it
+                        onToggle(it)
+                    },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = Color(0xFF4169E1),
-                        uncheckedThumbColor = Color.White,
-                        uncheckedTrackColor = Color.Gray
+                        checkedThumbColor = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
+                        checkedTrackColor = if (isDarkTheme) 
+                            reminder.type.darkColor.copy(alpha = 0.5f) 
+                        else 
+                            reminder.type.color.copy(alpha = 0.3f)
                     )
                 )
                 
+                Spacer(modifier = Modifier.height(8.dp))
+                
                 Row {
-                    IconButton(onClick = onEdit) {
+                    // 编辑按钮
+                    IconButton(
+                        onClick = onEdit,
+                        modifier = Modifier.size(24.dp)
+                    ) {
                         Icon(
-                            Icons.Default.Edit,
-                            contentDescription = "編輯",
-                            tint = if (reminder.isEnabled) Color(0xFF4169E1) else Color.Gray
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "编辑",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                     
-                    IconButton(onClick = onDelete) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                    
+                    // 删除按钮
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.size(24.dp)
+                    ) {
                         Icon(
-                            Icons.Default.Delete,
-                            contentDescription = "刪除",
-                            tint = if (reminder.isEnabled) Color.Red else Color.Gray
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "删除",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
@@ -367,211 +466,212 @@ fun ReminderCard(
 @Composable
 fun AddEditReminderDialog(
     reminder: ReminderItem?,
+    isDarkTheme: Boolean,
     onDismiss: () -> Unit,
-    onSave: (String, String, List<String>, ReminderType) -> Unit
+    onConfirm: (String, String, List<String>, ReminderType) -> Unit
 ) {
-    // 狀態
+    // 状态
     var title by remember { mutableStateOf(reminder?.title ?: "") }
-    var selectedTime by remember { 
-        mutableStateOf(reminder?.time ?: 
-            SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()))
-    }
-    var selectedType by remember { mutableStateOf(reminder?.type ?: ReminderType.MEDICATION) }
+    var selectedType by remember { mutableStateOf(reminder?.type ?: ReminderType.GENERAL) }
     
-    // 星期選擇
-    val allDays = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日")
-    val selectedDays = remember { 
-        mutableStateListOf<String>().apply {
-            if (reminder != null) {
-                addAll(reminder.days)
-            } else {
-                addAll(allDays) // 預設選擇所有日期
-            }
-        }
-    }
-    
-    // 時間選擇器狀態
-    val initialHour = if (reminder != null) {
-        reminder.time.split(":")[0].toInt()
-    } else {
-        Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-    }
-    
-    val initialMinute = if (reminder != null) {
-        reminder.time.split(":")[1].toInt()
-    } else {
-        Calendar.getInstance().get(Calendar.MINUTE)
-    }
-    
+    // 时间选择
     val timePickerState = rememberTimePickerState(
-        initialHour = initialHour,
-        initialMinute = initialMinute
+        initialHour = reminder?.time?.split(":")?.get(0)?.toIntOrNull() ?: 8,
+        initialMinute = reminder?.time?.split(":")?.get(1)?.toIntOrNull() ?: 0
     )
     
-    var showTimePicker by remember { mutableStateOf(false) }
-    var showTypeSelector by remember { mutableStateOf(false) }
+    // 日期选择
+    val daysOfWeek = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日")
+    val selectedDays = remember { mutableStateListOf<String>().apply {
+        if (reminder != null) {
+            addAll(reminder.days)
+        } else {
+            // 默认选择工作日
+            addAll(daysOfWeek.take(5))
+        }
+    }}
     
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(dismissOnClickOutside = false)
+    ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(
+                containerColor = if (isDarkTheme) 
+                    MaterialTheme.colorScheme.surface 
+                else 
+                    Color.White
+            )
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                // 標題
+                // 标题
                 Text(
-                    text = if (reminder == null) "添加提醒" else "編輯提醒",
-                    fontSize = 22.sp,
+                    text = if (reminder != null) "编辑提醒" else "添加提醒",
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = 16.dp),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
-                // 提醒標題輸入
+                // 标题输入
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("提醒標題") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
+                    label = { Text("提醒标题") },
+                    modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
                 
-                // 提醒類型選擇
-                Box {
-                    OutlinedTextField(
-                        value = when (selectedType) {
-                            ReminderType.MEDICATION -> "服藥提醒"
-                            ReminderType.WATER -> "喝水提醒"
-                            ReminderType.HEART_RATE -> "測量心率提醒"
-                            ReminderType.MEAL -> "進餐提醒"
-                        },
-                        onValueChange = { },
-                        label = { Text("提醒類型") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp)
-                            .clickable { showTypeSelector = true },
-                        readOnly = true,
-                        trailingIcon = {
-                            Icon(
-                                imageVector = selectedType.icon,
-                                contentDescription = null,
-                                tint = selectedType.color
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // 类型选择
+                Text(
+                    text = "提醒类型",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    ReminderType.values().forEach { type ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { selectedType = type }
+                                .padding(4.dp)
+                                .background(
+                                    if (selectedType == type) 
+                                        if (isDarkTheme) type.darkColor.copy(alpha = 0.2f) else type.color.copy(alpha = 0.1f)
+                                    else 
+                                        Color.Transparent,
+                                    RoundedCornerShape(8.dp)
+                                )
+                                .padding(4.dp)
+                        ) {
+                            // 图标
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (isDarkTheme) type.darkColor.copy(alpha = 0.2f) else type.color.copy(alpha = 0.1f)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                when (type) {
+                                    ReminderType.MEDICATION -> Icon(
+                                        imageVector = Icons.Default.Medication, 
+                                        contentDescription = null,
+                                        tint = if (isDarkTheme) type.darkColor else type.color
+                                    )
+                                    ReminderType.WATER -> Icon(
+                                        imageVector = Icons.Default.WaterDrop, 
+                                        contentDescription = null,
+                                        tint = if (isDarkTheme) type.darkColor else type.color
+                                    )
+                                    ReminderType.MEAL -> Icon(
+                                        imageVector = Icons.Default.Restaurant, 
+                                        contentDescription = null,
+                                        tint = if (isDarkTheme) type.darkColor else type.color
+                                    )
+                                    ReminderType.HEART_RATE -> Icon(
+                                        imageVector = Icons.Default.Favorite, 
+                                        contentDescription = null,
+                                        tint = if (isDarkTheme) type.darkColor else type.color
+                                    )
+                                    ReminderType.TEMPERATURE -> Icon(
+                                        imageVector = Icons.Default.MedicalServices, 
+                                        contentDescription = null,
+                                        tint = if (isDarkTheme) type.darkColor else type.color
+                                    )
+                                    ReminderType.GENERAL -> Icon(
+                                        imageVector = Icons.Default.Timer, 
+                                        contentDescription = null,
+                                        tint = if (isDarkTheme) type.darkColor else type.color
+                                    )
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(4.dp))
+                            
+                            // 文字
+                            Text(
+                                text = type.label,
+                                fontSize = 12.sp,
+                                color = if (isDarkTheme) type.darkColor else type.color,
+                                textAlign = TextAlign.Center
                             )
                         }
-                    )
-                    
-                    DropdownMenu(
-                        expanded = showTypeSelector,
-                        onDismissRequest = { showTypeSelector = false },
-                        modifier = Modifier.fillMaxWidth(0.9f)
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("服藥提醒") },
-                            onClick = {
-                                selectedType = ReminderType.MEDICATION
-                                showTypeSelector = false
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = ReminderType.MEDICATION.icon,
-                                    contentDescription = null,
-                                    tint = ReminderType.MEDICATION.color
-                                )
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("喝水提醒") },
-                            onClick = {
-                                selectedType = ReminderType.WATER
-                                showTypeSelector = false
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = ReminderType.WATER.icon,
-                                    contentDescription = null,
-                                    tint = ReminderType.WATER.color
-                                )
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("測量心率提醒") },
-                            onClick = {
-                                selectedType = ReminderType.HEART_RATE
-                                showTypeSelector = false
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = ReminderType.HEART_RATE.icon,
-                                    contentDescription = null,
-                                    tint = ReminderType.HEART_RATE.color
-                                )
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("進餐提醒") },
-                            onClick = {
-                                selectedType = ReminderType.MEAL
-                                showTypeSelector = false
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = ReminderType.MEAL.icon,
-                                    contentDescription = null,
-                                    tint = ReminderType.MEAL.color
-                                )
-                            }
-                        )
                     }
                 }
                 
-                // 提醒時間選擇
-                OutlinedTextField(
-                    value = selectedTime,
-                    onValueChange = { },
-                    label = { Text("提醒時間") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                        .clickable { showTimePicker = true },
-                    readOnly = true,
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Timer,
-                            contentDescription = null
-                        )
-                    }
-                )
+                Spacer(modifier = Modifier.height(16.dp))
                 
-                // 星期選擇
+                // 时间选择
                 Text(
-                    text = "重複",
+                    text = "提醒时间",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // 时间选择器
+                TimePicker(
+                    state = timePickerState,
+                    colors = TimePickerDefaults.colors(
+                        clockDialColor = if (isDarkTheme) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        clockDialSelectedContentColor = Color.White,
+                        clockDialUnselectedContentColor = MaterialTheme.colorScheme.onSurface,
+                        selectorColor = if (isDarkTheme) selectedType.darkColor else selectedType.color,
+                        containerColor = if (isDarkTheme) MaterialTheme.colorScheme.surface else Color.White
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // 重复日期选择
+                Text(
+                    text = "重复日期",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // 周几选择
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    allDays.forEach { day ->
+                    daysOfWeek.forEach { day ->
                         val isSelected = selectedDays.contains(day)
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
+                                .size(40.dp)
                                 .clip(CircleShape)
                                 .background(
-                                    if (isSelected) Color(0xFF4169E1) else Color(0xFFEEEEEE)
+                                    if (isSelected) 
+                                        if (isDarkTheme) selectedType.darkColor else selectedType.color 
+                                    else 
+                                        if (isDarkTheme) Color.DarkGray.copy(alpha = 0.2f) else Color.LightGray.copy(alpha = 0.3f)
                                 )
                                 .clickable {
                                     if (isSelected) {
@@ -583,15 +683,18 @@ fun AddEditReminderDialog(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = day.substring(1, 2), // 例如：週一 -> 一
-                                color = if (isSelected) Color.White else Color.Black,
-                                fontSize = 16.sp
+                                text = day.substring(1), // 只显示一个字
+                                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
                             )
                         }
                     }
                 }
                 
-                // 按鈕
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // 底部按钮
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
@@ -606,72 +709,20 @@ fun AddEditReminderDialog(
                     
                     Button(
                         onClick = {
-                            if (title.isNotEmpty() && selectedDays.isNotEmpty()) {
-                                onSave(
-                                    title,
-                                    selectedTime,
-                                    selectedDays.toList(),
-                                    selectedType
-                                )
-                            }
+                            // 格式化时间
+                            val hour = timePickerState.hour.toString().padStart(2, '0')
+                            val minute = timePickerState.minute.toString().padStart(2, '0')
+                            val timeFormatted = "$hour:$minute"
+                            
+                            onConfirm(title, timeFormatted, selectedDays.toList(), selectedType)
                         },
-                        enabled = title.isNotEmpty() && selectedDays.isNotEmpty(),
+                        enabled = title.isNotBlank() && selectedDays.isNotEmpty(),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF4169E1)
+                            containerColor = if (isDarkTheme) selectedType.darkColor else selectedType.color,
+                            disabledContainerColor = if (isDarkTheme) Color.DarkGray else Color.LightGray
                         )
                     ) {
-                        Text("保存")
-                    }
-                }
-            }
-        }
-    }
-    
-    // 時間選擇器對話框
-    if (showTimePicker) {
-        Dialog(
-            onDismissRequest = { showTimePicker = false }
-        ) {
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = Color.White
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "選擇時間",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                    
-                    TimePicker(
-                        state = timePickerState
-                    )
-                    
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(
-                            onClick = { showTimePicker = false }
-                        ) {
-                            Text("取消")
-                        }
-                        
-                        TextButton(
-                            onClick = {
-                                val hour = timePickerState.hour.toString().padStart(2, '0')
-                                val minute = timePickerState.minute.toString().padStart(2, '0')
-                                selectedTime = "$hour:$minute"
-                                showTimePicker = false
-                            }
-                        ) {
-                            Text("確定")
-                        }
+                        Text("确定")
                     }
                 }
             }

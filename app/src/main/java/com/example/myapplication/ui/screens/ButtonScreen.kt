@@ -9,6 +9,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,15 +30,19 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -80,6 +85,11 @@ import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import com.example.myapplication.ui.theme.DarkCardBackground
+import com.example.myapplication.ui.theme.LightCardBackground
+import com.example.myapplication.ui.theme.ThemeManager
 
 // 緊急類型
 enum class EmergencyType(val label: String, val color: Color) {
@@ -114,6 +124,9 @@ data class EmergencyCallRecord(
 
 @Composable
 fun EmergencyButtonScreen(navController: NavController) {
+    // 判断是否为深色模式
+    val isDarkTheme = ThemeManager.isDarkTheme
+    
     // 示例數據
     val patients = listOf(
         "張三" to "001",
@@ -259,16 +272,40 @@ fun EmergencyButtonScreen(navController: NavController) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // 頂部標題
         item {
-            Text(
-                text = "緊急呼叫",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "緊急呼叫",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                
+                // 主題切換按鈕
+                IconButton(
+                    onClick = { ThemeManager.toggleTheme() },
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                ) {
+                    Icon(
+                        imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                        contentDescription = "切換主題",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
         }
         
         // 顯示當前緊急狀態
@@ -285,55 +322,76 @@ fun EmergencyButtonScreen(navController: NavController) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
-                            .padding(12.dp)
-                            .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
-                            .clip(RoundedCornerShape(8.dp))
-                            .padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isDarkTheme) 
+                                MaterialTheme.colorScheme.surface 
+                            else 
+                                Color.White
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "患者",
-                            tint = Color(0xFFE53935),
-                            modifier = Modifier.size(24.dp)
-                        )
-                        
-                        Spacer(modifier = Modifier.width(8.dp))
-                        
-                        Text(
-                            text = "患者: ${patients[selectedPatientIndex].first}",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.weight(1f)
-                        )
-                        
-                        IconButton(
-                            onClick = { showPatientDropdown = true }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                contentDescription = "選擇患者"
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "患者",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
                             )
-                        }
-                        
-                        DropdownMenu(
-                            expanded = showPatientDropdown,
-                            onDismissRequest = { showPatientDropdown = false }
-                        ) {
-                            patients.forEachIndexed { index, patient ->
-                                DropdownMenuItem(
-                                    text = { Text(text = patient.first) },
-                                    onClick = {
-                                        selectedPatientIndex = index
-                                        showPatientDropdown = false
-                                    }
+                            
+                            Spacer(modifier = Modifier.width(8.dp))
+                            
+                            Text(
+                                text = "患者: ${patients[selectedPatientIndex].first}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            
+                            IconButton(
+                                onClick = { showPatientDropdown = true }
+                            ) {
+                                Icon(
+                                    imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = "選擇患者",
+                                    tint = MaterialTheme.colorScheme.onSurface
                                 )
+                            }
+                            
+                            DropdownMenu(
+                                expanded = showPatientDropdown,
+                                onDismissRequest = { showPatientDropdown = false },
+                                modifier = Modifier.background(
+                                    if (isDarkTheme) 
+                                        MaterialTheme.colorScheme.surfaceVariant 
+                                    else 
+                                        Color.White
+                                )
+                            ) {
+                                patients.forEachIndexed { index, patient ->
+                                    DropdownMenuItem(
+                                        text = { 
+                                            Text(
+                                                text = patient.first,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        },
+                                        onClick = {
+                                            selectedPatientIndex = index
+                                            showPatientDropdown = false
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -343,55 +401,76 @@ fun EmergencyButtonScreen(navController: NavController) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
-                            .padding(12.dp)
-                            .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
-                            .clip(RoundedCornerShape(8.dp))
-                            .padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isDarkTheme) 
+                                MaterialTheme.colorScheme.surface 
+                            else 
+                                Color.White
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = "位置",
-                            tint = Color(0xFFE53935),
-                            modifier = Modifier.size(24.dp)
-                        )
-                        
-                        Spacer(modifier = Modifier.width(8.dp))
-                        
-                        Text(
-                            text = "位置: ${locations[selectedLocationIndex]}",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.weight(1f)
-                        )
-                        
-                        IconButton(
-                            onClick = { showLocationDropdown = true }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = if (showLocationDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                contentDescription = "選擇位置"
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = "位置",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
                             )
-                        }
-                        
-                        DropdownMenu(
-                            expanded = showLocationDropdown,
-                            onDismissRequest = { showLocationDropdown = false }
-                        ) {
-                            locations.forEachIndexed { index, location ->
-                                DropdownMenuItem(
-                                    text = { Text(text = location) },
-                                    onClick = {
-                                        selectedLocationIndex = index
-                                        showLocationDropdown = false
-                                    }
+                            
+                            Spacer(modifier = Modifier.width(8.dp))
+                            
+                            Text(
+                                text = "位置: ${locations[selectedLocationIndex]}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            
+                            IconButton(
+                                onClick = { showLocationDropdown = true }
+                            ) {
+                                Icon(
+                                    imageVector = if (showLocationDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = "選擇位置",
+                                    tint = MaterialTheme.colorScheme.onSurface
                                 )
+                            }
+                            
+                            DropdownMenu(
+                                expanded = showLocationDropdown,
+                                onDismissRequest = { showLocationDropdown = false },
+                                modifier = Modifier.background(
+                                    if (isDarkTheme) 
+                                        MaterialTheme.colorScheme.surfaceVariant 
+                                    else 
+                                        Color.White
+                                )
+                            ) {
+                                locations.forEachIndexed { index, location ->
+                                    DropdownMenuItem(
+                                        text = { 
+                                            Text(
+                                                text = location,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        },
+                                        onClick = {
+                                            selectedLocationIndex = index
+                                            showLocationDropdown = false
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -401,7 +480,7 @@ fun EmergencyButtonScreen(navController: NavController) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 32.dp),
+                        .padding(horizontal = 16.dp, vertical = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
@@ -409,7 +488,11 @@ fun EmergencyButtonScreen(navController: NavController) {
                             .size(160.dp)
                             .scale(scale)
                             .clip(CircleShape)
-                            .background(Color(0xFFE53935))
+                            .background(if (isDarkTheme) Color(0xFFEC407A) else Color(0xFFEC407A))
+                            .border(
+                                BorderStroke(4.dp, if (isDarkTheme) Color(0x80EC407A) else Color(0x80F48FB1)),
+                                CircleShape
+                            )
                             .clickable { showEmergencyDialog = true },
                         contentAlignment = Alignment.Center
                     ) {
@@ -431,7 +514,8 @@ fun EmergencyButtonScreen(navController: NavController) {
                 text = "呼叫記錄",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 8.dp)
+                modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
         
@@ -447,13 +531,14 @@ fun EmergencyButtonScreen(navController: NavController) {
                     Text(
                         text = "暫無呼叫記錄",
                         fontSize = 16.sp,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        textAlign = TextAlign.Center
                     )
                 }
             }
         } else {
             items(emergencyCallRecords.sortedByDescending { it.callTime }) { record ->
-                EmergencyRecordItem(record = record)
+                EmergencyRecordItem(record = record, isDarkTheme = isDarkTheme)
             }
         }
     }
@@ -466,11 +551,16 @@ fun EmergencyButtonScreen(navController: NavController) {
                 Text(
                     text = "選擇緊急類型",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             },
             text = {
-                Column {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
                     EmergencyType.values().forEach { type ->
                         Button(
                             onClick = {
@@ -494,15 +584,23 @@ fun EmergencyButtonScreen(navController: NavController) {
                                 
                                 showEmergencyDialog = false
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = type.color),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isDarkTheme) 
+                                    type.color.copy(alpha = 0.7f)
+                                else 
+                                    type.color
+                            ),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp)
+                                .height(56.dp)
+                                .padding(vertical = 4.dp),
+                            shape = RoundedCornerShape(28.dp)
                         ) {
                             Text(
                                 text = type.label,
                                 color = Color.White,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
                             )
                         }
                     }
@@ -510,10 +608,18 @@ fun EmergencyButtonScreen(navController: NavController) {
             },
             confirmButton = { },
             dismissButton = {
-                TextButton(onClick = { showEmergencyDialog = false }) {
-                    Text("取消")
+                TextButton(
+                    onClick = { showEmergencyDialog = false },
+                    modifier = Modifier.padding(end = 8.dp).padding(bottom = 8.dp)
+                ) {
+                    Text(
+                        "取消",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
-            }
+            },
+            containerColor = if (ThemeManager.isDarkTheme) MaterialTheme.colorScheme.surface else Color.White
         )
     }
     
@@ -574,7 +680,8 @@ fun EmergencyButtonScreen(navController: NavController) {
                 TextButton(onClick = { showResponseDialog = false }) {
                     Text("返回")
                 }
-            }
+            },
+            containerColor = if (ThemeManager.isDarkTheme) MaterialTheme.colorScheme.surface else Color.White
         )
     }
 }
@@ -585,6 +692,7 @@ fun EmergencyActiveCard(
     onCancel: () -> Unit
 ) {
     val isResponding = emergency.status == EmergencyStatus.RESPONDING
+    val isDarkTheme = ThemeManager.isDarkTheme
     
     // 計算等待時間
     val currentTime = System.currentTimeMillis()
@@ -609,11 +717,16 @@ fun EmergencyActiveCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 16.dp),
+            .padding(horizontal = 16.dp).padding(bottom = 16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isResponding) Color(0xFFFFF9C4) else Color(0xFFFFEBEE)
-        )
+            containerColor = if (isDarkTheme) {
+                if (isResponding) Color(0xFF3E2723) else Color(0xFF3F2323)
+            } else {
+                if (isResponding) Color(0xFFFFF9C4) else Color(0xFFFFEBEE)
+            }
+        ),
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(
             modifier = Modifier
@@ -629,7 +742,11 @@ fun EmergencyActiveCard(
                     text = if (isResponding) "正在響應中..." else "緊急呼叫中...",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isResponding) Color(0xFFFF9800) else Color(0xFFE53935)
+                    color = if (isDarkTheme) {
+                        if (isResponding) Color(0xFFFFB74D) else Color(0xFFEF9A9A)
+                    } else {
+                        if (isResponding) Color(0xFFFF9800) else Color(0xFFE53935)
+                    }
                 )
                 
                 AnimatedVisibility(
@@ -650,51 +767,62 @@ fun EmergencyActiveCard(
             EmergencyInfoRow(
                 label = "患者:",
                 value = emergency.patientName,
-                valueColor = Color.Black
+                valueColor = if (isDarkTheme) Color.White else Color.Black,
+                isDarkTheme = isDarkTheme
             )
             
             EmergencyInfoRow(
                 label = "位置:",
                 value = emergency.location,
-                valueColor = Color.Black
+                valueColor = if (isDarkTheme) Color.White else Color.Black,
+                isDarkTheme = isDarkTheme
             )
             
             EmergencyInfoRow(
                 label = "類型:",
                 value = emergency.type.label,
-                valueColor = emergency.type.color
+                valueColor = emergency.type.color,
+                isDarkTheme = isDarkTheme
             )
             
             EmergencyInfoRow(
                 label = "呼叫時間:",
                 value = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(emergency.callTime),
-                valueColor = Color.Black
+                valueColor = if (isDarkTheme) Color.White else Color.Black,
+                isDarkTheme = isDarkTheme
             )
             
             EmergencyInfoRow(
                 label = "等待時間:",
                 value = displayWaitTime,
-                valueColor = if (isResponding) Color(0xFFFF9800) else Color(0xFFE53935)
+                valueColor = if (isDarkTheme) {
+                    if (isResponding) Color(0xFFFFB74D) else Color(0xFFEF9A9A)
+                } else {
+                    if (isResponding) Color(0xFFFF9800) else Color(0xFFE53935)
+                },
+                isDarkTheme = isDarkTheme
             )
             
             if (isResponding) {
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                Divider()
+                Divider(color = if (isDarkTheme) Color.Gray.copy(alpha = 0.3f) else Color.Gray.copy(alpha = 0.2f))
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 EmergencyInfoRow(
                     label = "響應人員:",
                     value = emergency.responder ?: "",
-                    valueColor = Color.Black
+                    valueColor = if (isDarkTheme) Color.White else Color.Black,
+                    isDarkTheme = isDarkTheme
                 )
                 
                 if (emergency.responseTime != null) {
                     EmergencyInfoRow(
                         label = "響應時間:",
                         value = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(emergency.responseTime),
-                        valueColor = Color.Black
+                        valueColor = if (isDarkTheme) Color.White else Color.Black,
+                        isDarkTheme = isDarkTheme
                     )
                 }
                 
@@ -702,7 +830,7 @@ fun EmergencyActiveCard(
                     text = "護理人員正趕往現場...",
                     fontSize = 14.sp,
                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                    color = Color(0xFFFF9800),
+                    color = if (isDarkTheme) Color(0xFFFFB74D) else Color(0xFFFF9800),
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
@@ -712,19 +840,29 @@ fun EmergencyActiveCard(
             Button(
                 onClick = onCancel,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isResponding) Color(0xFF9E9E9E) else Color(0xFFE53935)
+                    containerColor = if (isResponding) {
+                        if (isDarkTheme) Color(0xFF757575) else Color(0xFF9E9E9E)
+                    } else {
+                        if (isDarkTheme) Color(0xFFD32F2F) else Color(0xFFE53935)
+                    }
                 ),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(28.dp)
             ) {
                 Icon(
                     imageVector = if (isResponding) Icons.Default.Refresh else Icons.Default.Check,
-                    contentDescription = null
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
                 )
                 
                 Spacer(modifier = Modifier.width(8.dp))
                 
                 Text(
-                    text = if (isResponding) "刷新狀態" else "取消呼叫"
+                    text = if (isResponding) "刷新狀態" else "取消呼叫",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 )
             }
         }
@@ -735,7 +873,8 @@ fun EmergencyActiveCard(
 fun EmergencyInfoRow(
     label: String,
     value: String,
-    valueColor: Color
+    valueColor: Color,
+    isDarkTheme: Boolean
 ) {
     Row(
         modifier = Modifier
@@ -747,7 +886,7 @@ fun EmergencyInfoRow(
             text = label,
             fontSize = 16.sp,
             fontWeight = FontWeight.Normal,
-            color = Color.DarkGray,
+            color = if (isDarkTheme) Color.Gray else Color.DarkGray,
             modifier = Modifier.width(80.dp)
         )
         
@@ -762,7 +901,8 @@ fun EmergencyInfoRow(
 
 @Composable
 fun EmergencyRecordItem(
-    record: EmergencyCallRecord
+    record: EmergencyCallRecord,
+    isDarkTheme: Boolean
 ) {
     val dateFormat = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())
     
@@ -773,9 +913,9 @@ fun EmergencyRecordItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = when (record.status) {
-                EmergencyStatus.PENDING -> Color(0xFFFFEBEE)
-                EmergencyStatus.RESPONDING -> Color(0xFFFFF9C4)
-                EmergencyStatus.RESOLVED -> Color.White
+                EmergencyStatus.PENDING -> if (isDarkTheme) DarkCardBackground else LightCardBackground
+                EmergencyStatus.RESPONDING -> if (isDarkTheme) Color(0xFF5D4037) else Color(0xFFFFF9C4)
+                EmergencyStatus.RESOLVED -> if (isDarkTheme) MaterialTheme.colorScheme.surfaceVariant else Color.White
             }
         )
     ) {
@@ -832,7 +972,7 @@ fun EmergencyRecordItem(
                 Text(
                     text = dateFormat.format(record.callTime),
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) else Color.Gray
                 )
             }
             
@@ -845,7 +985,7 @@ fun EmergencyRecordItem(
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
-                    tint = Color.Gray,
+                    tint = if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) else Color.Gray,
                     modifier = Modifier.size(16.dp)
                 )
                 
@@ -854,7 +994,7 @@ fun EmergencyRecordItem(
                 Text(
                     text = record.patientName,
                     fontSize = 14.sp,
-                    color = Color.DarkGray
+                    color = if (isDarkTheme) MaterialTheme.colorScheme.onSurface else Color.DarkGray
                 )
                 
                 Spacer(modifier = Modifier.width(16.dp))
@@ -862,7 +1002,7 @@ fun EmergencyRecordItem(
                 Icon(
                     imageVector = Icons.Default.LocationOn,
                     contentDescription = null,
-                    tint = Color.Gray,
+                    tint = if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) else Color.Gray,
                     modifier = Modifier.size(16.dp)
                 )
                 
@@ -871,7 +1011,7 @@ fun EmergencyRecordItem(
                 Text(
                     text = record.location,
                     fontSize = 14.sp,
-                    color = Color.DarkGray
+                    color = if (isDarkTheme) MaterialTheme.colorScheme.onSurface else Color.DarkGray
                 )
             }
             
@@ -885,7 +1025,7 @@ fun EmergencyRecordItem(
                     Icon(
                         imageVector = Icons.Default.AccessTime,
                         contentDescription = null,
-                        tint = Color.Gray,
+                        tint = if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) else Color.Gray,
                         modifier = Modifier.size(16.dp)
                     )
                     
@@ -894,7 +1034,7 @@ fun EmergencyRecordItem(
                     Text(
                         text = "處理時間: ${calculateTimeDifference(record.callTime, record.resolvedTime!!)}",
                         fontSize = 14.sp,
-                        color = Color.DarkGray
+                        color = if (isDarkTheme) MaterialTheme.colorScheme.onSurface else Color.DarkGray
                     )
                 }
             }
@@ -905,7 +1045,7 @@ fun EmergencyRecordItem(
                 Text(
                     text = record.notes,
                     fontSize = 14.sp,
-                    color = Color.Gray,
+                    color = if (isDarkTheme) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) else Color.Gray,
                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                 )
             }

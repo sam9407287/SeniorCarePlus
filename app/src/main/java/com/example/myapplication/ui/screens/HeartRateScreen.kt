@@ -23,7 +23,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -33,6 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -58,6 +61,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import com.example.myapplication.ui.theme.DarkCardBackground
+import com.example.myapplication.ui.theme.DarkChartBackground
+import com.example.myapplication.ui.theme.DarkChartLine
+import com.example.myapplication.ui.theme.LightCardBackground
+import com.example.myapplication.ui.theme.LightChartBackground
+import com.example.myapplication.ui.theme.LightChartLine
+import com.example.myapplication.ui.theme.ThemeManager
+import kotlin.random.Random
 
 // 心率數據類
 data class HeartRateRecord(
@@ -70,6 +81,9 @@ data class HeartRateRecord(
 
 @Composable
 fun HeartRateMonitorScreen(navController: NavController) {
+    // 判断是否为深色模式
+    val isDarkTheme = ThemeManager.isDarkTheme
+    
     // 示例數據
     val patients = listOf(
         "張三" to "001",
@@ -100,13 +114,12 @@ fun HeartRateMonitorScreen(navController: NavController) {
         for (day in 0..6) {
             for (hour in 0..23) {
                 val time = now.minusDays(day.toLong()).withHour(hour).withMinute(0)
-                // 模擬一個合理的心率範圍內的波動
-                val heartRate = 75 + (-15..15).random() + if ((0..10).random() > 8) (20..40).random() * (if ((0..1).random() == 0) 1 else -1) else 0
+                val rate = 70 + Random.nextInt(-20, 30)
                 records.add(
                     HeartRateRecord(
                         patientId = patient.second,
                         patientName = patient.first,
-                        heartRate = heartRate,
+                        heartRate = rate,
                         timestamp = time
                     )
                 )
@@ -119,16 +132,40 @@ fun HeartRateMonitorScreen(navController: NavController) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // 顶部标题
         item {
-            Text(
-                text = "心率監測",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "心率監測",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                
+                // 主題切換按鈕
+                IconButton(
+                    onClick = { ThemeManager.toggleTheme() },
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                ) {
+                    Icon(
+                        imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                        contentDescription = "切換主題",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
         }
         
         // 病患选择
@@ -136,55 +173,76 @@ fun HeartRateMonitorScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
-                        .padding(12.dp)
-                        .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
-                        .clip(RoundedCornerShape(8.dp))
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isDarkTheme) 
+                            MaterialTheme.colorScheme.surface 
+                        else 
+                            Color.White
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "患者",
-                        tint = Color(0xFFE91E63),
-                        modifier = Modifier.size(24.dp)
-                    )
-                    
-                    Spacer(modifier = Modifier.width(8.dp))
-                    
-                    Text(
-                        text = "患者: ${patients[selectedPatientIndex].first}",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
-                    )
-                    
-                    IconButton(
-                        onClick = { showPatientDropdown = true }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                            contentDescription = "選擇患者"
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "患者",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
                         )
-                    }
-                    
-                    DropdownMenu(
-                        expanded = showPatientDropdown,
-                        onDismissRequest = { showPatientDropdown = false }
-                    ) {
-                        patients.forEachIndexed { index, patient ->
-                            DropdownMenuItem(
-                                text = { Text(text = patient.first) },
-                                onClick = {
-                                    selectedPatientIndex = index
-                                    showPatientDropdown = false
-                                }
+                        
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        Text(
+                            text = "患者: ${patients[selectedPatientIndex].first}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        
+                        IconButton(
+                            onClick = { showPatientDropdown = true }
+                        ) {
+                            Icon(
+                                imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                contentDescription = "選擇患者",
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
+                        }
+                        
+                        DropdownMenu(
+                            expanded = showPatientDropdown,
+                            onDismissRequest = { showPatientDropdown = false },
+                            modifier = Modifier.background(
+                                if (isDarkTheme) 
+                                    MaterialTheme.colorScheme.surfaceVariant 
+                                else 
+                                    Color.White
+                            )
+                        ) {
+                            patients.forEachIndexed { index, patient ->
+                                DropdownMenuItem(
+                                    text = { 
+                                        Text(
+                                            text = patient.first,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    },
+                                    onClick = {
+                                        selectedPatientIndex = index
+                                        showPatientDropdown = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -195,13 +253,27 @@ fun HeartRateMonitorScreen(navController: NavController) {
         item {
             TabRow(
                 selectedTabIndex = selectedTabIndex,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                containerColor = if (isDarkTheme) 
+                    MaterialTheme.colorScheme.surface 
+                else 
+                    MaterialTheme.colorScheme.surfaceVariant
             ) {
                 tabTitles.forEachIndexed { index, title ->
                     Tab(
                         selected = selectedTabIndex == index,
                         onClick = { selectedTabIndex = index },
-                        text = { Text(text = title) }
+                        text = { 
+                            Text(
+                                text = title, 
+                                color = if (selectedTabIndex == index) 
+                                    MaterialTheme.colorScheme.primary 
+                                else 
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            ) 
+                        }
                     )
                 }
             }
@@ -209,13 +281,17 @@ fun HeartRateMonitorScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
         }
         
-        // 心率图表
+        // 心率趋势图表
         item {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(240.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    .height(240.dp)
+                    .padding(horizontal = 16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isDarkTheme) DarkCardBackground else LightCardBackground
+                )
             ) {
                 Column(
                     modifier = Modifier
@@ -224,28 +300,36 @@ fun HeartRateMonitorScreen(navController: NavController) {
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = "心率趨勢圖",
                             fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f)
                         )
                         
                         Text(
                             text = "目標心率: ${targetHeartRate.toInt()} BPM",
-                            fontSize = 14.sp,
-                            color = Color(0xFFE91E63)
+                            fontSize = 16.sp,
+                            color = if (isDarkTheme) DarkChartLine else LightChartLine
                         )
                     }
                     
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // 滑块用于设置目标心率
                     Slider(
                         value = targetHeartRate,
                         onValueChange = { targetHeartRate = it },
-                        valueRange = 50f..120f,
-                        steps = 70,
-                        modifier = Modifier.padding(vertical = 4.dp)
+                        valueRange = 40f..130f,
+                        steps = 90,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = SliderDefaults.colors(
+                            thumbColor = if (isDarkTheme) DarkChartLine else LightChartLine,
+                            activeTrackColor = if (isDarkTheme) DarkChartLine else LightChartLine
+                        )
                     )
                     
                     Box(
@@ -254,8 +338,9 @@ fun HeartRateMonitorScreen(navController: NavController) {
                             .weight(1f)
                     ) {
                         HeartRateChart(
-                            heartRateRecords = heartRateRecords,
-                            targetHeartRate = targetHeartRate.toInt()
+                            heartRateRecords = heartRateRecords, 
+                            targetHeartRate = targetHeartRate.toInt(),
+                            isDarkTheme = isDarkTheme
                         )
                     }
                 }
@@ -264,13 +349,17 @@ fun HeartRateMonitorScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
         }
         
-        // 心率记录列表 - 使用Card包含，并设置足够长的固定高度
+        // 心率记录列表
         item {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(500.dp), // 设置为足够长的固定高度
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    .height(500.dp)
+                    .padding(horizontal = 16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isDarkTheme) DarkCardBackground else LightCardBackground
+                )
             ) {
                 Column(
                     modifier = Modifier
@@ -281,31 +370,40 @@ fun HeartRateMonitorScreen(navController: NavController) {
                         text = "心率記錄",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     
-                    Divider(modifier = Modifier.padding(bottom = 8.dp))
+                    Divider(
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        color = if (isDarkTheme) Color.DarkGray else Color.LightGray
+                    )
                     
                     // 在Card内使用LazyColumn显示记录
                     LazyColumn(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(heartRateRecords.sortedByDescending { it.timestamp }) { record ->
-                            HeartRateRecordItem(record = record)
+                            HeartRateRecordItem(record = record, isDarkTheme = isDarkTheme)
                             Divider(
                                 modifier = Modifier.padding(vertical = 4.dp),
-                                color = Color.LightGray.copy(alpha = 0.5f)
+                                color = if (isDarkTheme) Color.DarkGray.copy(alpha = 0.5f) else Color.LightGray.copy(alpha = 0.5f)
                             )
                         }
                     }
                 }
             }
         }
+        
+        // 底部空间，确保内容可以滚动到底部
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
     }
 }
 
 @Composable
-fun HeartRateChart(heartRateRecords: List<HeartRateRecord>, targetHeartRate: Int) {
+fun HeartRateChart(heartRateRecords: List<HeartRateRecord>, targetHeartRate: Int, isDarkTheme: Boolean) {
     // 排序記錄，按時間順序
     val sortedRecords = heartRateRecords.sortedBy { it.timestamp }
     
@@ -316,24 +414,26 @@ fun HeartRateChart(heartRateRecords: List<HeartRateRecord>, targetHeartRate: Int
         ) {
             Text(
                 text = "無心率數據",
-                color = Color.Gray
+                color = if (isDarkTheme) Color.LightGray else Color.Gray
             )
         }
         return
     }
     
     // 獲取最高和最低心率，添加一些邊界
-    val minRate = (sortedRecords.minOfOrNull { it.heartRate }?.minus(10) ?: 50).coerceAtLeast(40)
-    val maxRate = (sortedRecords.maxOfOrNull { it.heartRate }?.plus(10) ?: 100).coerceAtMost(180)
+    val minRate = (sortedRecords.minOfOrNull { it.heartRate }?.minus(10) ?: 40).coerceAtLeast(40)
+    val maxRate = (sortedRecords.maxOfOrNull { it.heartRate }?.plus(10) ?: 130).coerceAtMost(130)
     
     Canvas(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(if (isDarkTheme) DarkChartBackground else LightChartBackground)
     ) {
         val height = size.height
         val width = size.width
         
         val yAxisWidth = 50f
-        val xAxisHeight = 40f
+        val xAxisHeight = 50f
         
         val chartHeight = height - xAxisHeight
         val chartWidth = width - yAxisWidth
@@ -341,9 +441,13 @@ fun HeartRateChart(heartRateRecords: List<HeartRateRecord>, targetHeartRate: Int
         val verticalStepSize = chartHeight / (maxRate - minRate)
         val horizontalStepSize = chartWidth / (sortedRecords.size - 1).coerceAtLeast(1)
         
+        // 设置网格和轴线颜色
+        val gridColor = if (isDarkTheme) Color(0xFF444444) else Color.LightGray
+        val textColor = if (isDarkTheme) Color(0xFFCCCCCC) else Color.DarkGray
+        
         // 畫Y軸
         drawLine(
-            color = Color.LightGray,
+            color = gridColor,
             start = Offset(yAxisWidth, 0f),
             end = Offset(yAxisWidth, chartHeight),
             strokeWidth = 1f
@@ -351,7 +455,7 @@ fun HeartRateChart(heartRateRecords: List<HeartRateRecord>, targetHeartRate: Int
         
         // 畫X軸
         drawLine(
-            color = Color.LightGray,
+            color = gridColor,
             start = Offset(yAxisWidth, chartHeight),
             end = Offset(width, chartHeight),
             strokeWidth = 1f
@@ -367,7 +471,7 @@ fun HeartRateChart(heartRateRecords: List<HeartRateRecord>, targetHeartRate: Int
             val rate = minRate + (i * yStepValue)
             
             drawLine(
-                color = Color.LightGray,
+                color = gridColor,
                 start = Offset(yAxisWidth, y),
                 end = Offset(width, y),
                 strokeWidth = 0.5f
@@ -379,7 +483,7 @@ fun HeartRateChart(heartRateRecords: List<HeartRateRecord>, targetHeartRate: Int
                     5f,
                     y + 5f,
                     Paint().apply {
-                        color = Color.Black.toArgb()
+                        color = textColor.toArgb()
                         textSize = 12.sp.toPx()
                         textAlign = Paint.Align.LEFT
                     }
@@ -402,7 +506,7 @@ fun HeartRateChart(heartRateRecords: List<HeartRateRecord>, targetHeartRate: Int
                     x,
                     height - 10f,
                     Paint().apply {
-                        color = Color.Black.toArgb()
+                        color = textColor.toArgb()
                         textSize = 12.sp.toPx()
                         textAlign = Paint.Align.CENTER
                     }
@@ -410,21 +514,23 @@ fun HeartRateChart(heartRateRecords: List<HeartRateRecord>, targetHeartRate: Int
             }
         }
         
-        // 正常範圍區域
-        val normalLowY = chartHeight - (60 - minRate) * verticalStepSize
-        val normalHighY = chartHeight - (100 - minRate) * verticalStepSize
-        
-        // 目標心率線
+        // 目标心率线
         val targetY = chartHeight - (targetHeartRate - minRate) * verticalStepSize
+        drawLine(
+            color = if (isDarkTheme) Color(0xFF4FC3F7) else Color(0xFF2196F3),
+            start = Offset(yAxisWidth, targetY),
+            end = Offset(width, targetY),
+            strokeWidth = 2f
+        )
         
-        // 畫填充區域
+        // 绘制点和线
         val points = sortedRecords.mapIndexed { index, record ->
             val x = yAxisWidth + index * horizontalStepSize
             val y = chartHeight - (record.heartRate - minRate) * verticalStepSize
             Offset(x, y)
         }
         
-        // 绘制整个折线图下方的淡红色填充
+        // 绘制整个折线图下方的填充
         val belowCurvePath = Path()
         belowCurvePath.moveTo(yAxisWidth, chartHeight)
         for (point in points) {
@@ -433,47 +539,34 @@ fun HeartRateChart(heartRateRecords: List<HeartRateRecord>, targetHeartRate: Int
         belowCurvePath.lineTo(width, chartHeight)
         belowCurvePath.close()
         
-        // 使用统一的淡红色填充折线图下方区域
+        // 使用根据主题调整的填充颜色
         drawPath(
             path = belowCurvePath,
-            color = Color(0x55FFB6C1) // 淡红色
+            color = if (isDarkTheme) 
+                DarkChartLine.copy(alpha = 0.15f) 
+            else 
+                Color(0x33E91E63) // 浅色模式保持原来的淡红色
         )
         
-        // 绘制目标心率线（增加粗细）
-        drawLine(
-            color = Color(0xFFE91E63),
-            start = Offset(yAxisWidth, targetY),
-            end = Offset(width, targetY),
-            strokeWidth = 2.5f // 增加线的粗细
-        )
-        
-        drawContext.canvas.nativeCanvas.apply {
-            drawText(
-                "目標",
-                width - 5f,
-                targetY - 5f,
-                Paint().apply {
-                    color = Color(0xFFE91E63).toArgb()
-                    textSize = 12.sp.toPx()
-                    textAlign = Paint.Align.RIGHT
-                }
-            )
-        }
-        
-        // 绘制折线和数据点，确保它们在最上层
+        // 畫折線
         for (i in 0 until points.size - 1) {
             drawLine(
-                color = Color(0xFFE91E63),
+                color = if (isDarkTheme) DarkChartLine else LightChartLine,
                 start = points[i],
                 end = points[i + 1],
-                strokeWidth = 2f
+                strokeWidth = 2.5f
             )
         }
         
         // 畫數據點
         points.forEachIndexed { index, offset ->
             val record = sortedRecords[index]
-            val pointColor = if (record.isAbnormal) Color.Red else Color(0xFFE91E63)
+            // 根据深色模式调整点的颜色
+            val pointColor = if (record.isAbnormal) {
+                if (isDarkTheme) Color(0xFFFF5252) else Color.Red
+            } else {
+                if (isDarkTheme) DarkChartLine else LightChartLine
+            }
             
             drawCircle(
                 color = pointColor,
@@ -485,16 +578,15 @@ fun HeartRateChart(heartRateRecords: List<HeartRateRecord>, targetHeartRate: Int
 }
 
 @Composable
-fun HeartRateRecordItem(record: HeartRateRecord) {
+fun HeartRateRecordItem(record: HeartRateRecord, isDarkTheme: Boolean) {
     val timeFormatter = DateTimeFormatter.ofPattern("MM-dd HH:mm")
     val formattedTime = record.timestamp.format(timeFormatter)
     
+    // 根据深色模式调整颜色
     val heartRateColor = when {
-        record.heartRate > 120 -> Color.Red
-        record.heartRate > 100 -> Color(0xFFFF9800) // Orange
-        record.heartRate < 50 -> Color.Red
-        record.heartRate < 60 -> Color(0xFF2196F3) // Blue
-        else -> Color(0xFFE91E63) // Pink
+        record.heartRate > 100 -> if (isDarkTheme) Color(0xFFFF5252) else Color.Red
+        record.heartRate < 60 -> if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3) // Blue
+        else -> if (isDarkTheme) Color(0xFF81C784) else Color(0xFF4CAF50) // Green
     }
     
     Row(
@@ -507,7 +599,7 @@ fun HeartRateRecordItem(record: HeartRateRecord) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(heartRateColor.copy(alpha = 0.2f)),
+                .background(heartRateColor.copy(alpha = if (isDarkTheme) 0.3f else 0.2f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -525,7 +617,7 @@ fun HeartRateRecordItem(record: HeartRateRecord) {
             Text(
                 text = formattedTime,
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
             
             Text(
@@ -538,11 +630,13 @@ fun HeartRateRecordItem(record: HeartRateRecord) {
         
         Text(
             text = if (record.isAbnormal) "異常" else "正常",
-            color = if (record.isAbnormal) Color.Red else Color(0xFF4CAF50),
+            color = if (record.isAbnormal) {
+                if (isDarkTheme) Color(0xFFFF5252) else Color.Red
+            } else {
+                if (isDarkTheme) Color(0xFF81C784) else Color(0xFF4CAF50)
+            },
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
         )
     }
-    
-    Divider(color = Color.LightGray.copy(alpha = 0.5f))
 } 

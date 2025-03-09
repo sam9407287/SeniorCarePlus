@@ -2,7 +2,6 @@ package com.example.myapplication.ui.theme
 
 import android.app.Activity
 import android.os.Build
-import android.view.WindowManager
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -11,28 +10,62 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+// 自定义的深色主题配色方案
+private val CustomDarkColorScheme = darkColorScheme(
+    primary = DarkPrimary,
+    secondary = DarkSecondary,
+    tertiary = DarkTertiary,
+    background = DarkBackground,
+    surface = DarkSurface,
+    error = DarkError,
+    onPrimary = DarkOnPrimary,
+    onSecondary = DarkOnSecondary,
+    onBackground = DarkOnBackground,
+    onSurface = DarkOnSurface
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+// 自定义的浅色主题配色方案
+private val CustomLightColorScheme = lightColorScheme(
+    primary = LightPrimary,
+    secondary = LightSecondary,
+    tertiary = LightTertiary,
+    background = LightBackground,
+    surface = LightSurface,
+    error = LightError,
+    onPrimary = LightOnPrimary,
+    onSecondary = LightOnSecondary,
+    onBackground = LightOnBackground,
+    onSurface = LightOnSurface
 )
+
+// 定义一个全局可访问的主题模式状态
+object ThemeManager {
+    var isDarkTheme by mutableStateOf(false)
+    
+    fun toggleTheme() {
+        isDarkTheme = !isDarkTheme
+    }
+}
+
+// 创建一个composition local来访问当前的主题模式
+val LocalThemeIsDark = staticCompositionLocalOf { false }
 
 @Composable
 fun MyApplicationTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    // 使用ThemeManager的状态，而不是系统的深色模式
+    darkTheme: Boolean = ThemeManager.isDarkTheme,
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false, // 默认禁用动态颜色，使用我们自定义的颜色方案
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -40,8 +73,8 @@ fun MyApplicationTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> CustomDarkColorScheme
+        else -> CustomLightColorScheme
     }
     val view = LocalView.current
     if (!view.isInEditMode) {

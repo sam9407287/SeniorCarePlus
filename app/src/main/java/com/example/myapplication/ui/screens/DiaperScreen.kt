@@ -24,9 +24,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -46,6 +48,8 @@ import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -69,6 +73,11 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import com.example.myapplication.ui.theme.DarkCardBackground
+import com.example.myapplication.ui.theme.LightCardBackground
+import com.example.myapplication.ui.theme.ThemeManager
 
 // 尿布狀態類型
 enum class DiaperStatus(val label: String, val color: Color) {
@@ -92,6 +101,9 @@ data class DiaperChangeRecord(
 
 @Composable
 fun DiaperMonitorScreen(navController: NavController) {
+    // 判断是否为深色模式
+    val isDarkTheme = ThemeManager.isDarkTheme
+    
     // 示例數據
     val patients = listOf(
         "張三" to "001",
@@ -107,165 +119,226 @@ fun DiaperMonitorScreen(navController: NavController) {
     var selectedPatientIndex by remember { mutableIntStateOf(0) }
     var showPatientDropdown by remember { mutableStateOf(false) }
     
-    // 尿布狀態
-    var currentStatus by remember { mutableStateOf(DiaperStatus.DRY) }
+    // 選中的時間範圍
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val tabTitles = listOf("今日", "本週", "本月")
     
-    // 上次更換時間
-    var lastChangeTime by remember { mutableLongStateOf(System.currentTimeMillis() - TimeUnit.HOURS.toMillis(3) - TimeUnit.MINUTES.toMillis(Random.nextInt(30).toLong())) }
+    // 模拟尿布状态
+    var needChange by remember { mutableStateOf(true) }
+    var wetness by remember { mutableStateOf(0.75f) }
+    var autoNotify by remember { mutableStateOf(true) }
     
-    // 更換記錄
-    var diaperChangeRecords by remember { 
-        mutableStateOf(
-            listOf(
-                DiaperChangeRecord(
-                    id = 1L,
-                    patientId = patients[0].second,
-                    patientName = patients[0].first,
-                    changeTime = Date(System.currentTimeMillis() - TimeUnit.HOURS.toMillis(3)),
-                    status = DiaperStatus.WET,
-                    notes = "定時更換",
-                    changedBy = caregivers[0]
-                ),
-                DiaperChangeRecord(
-                    id = 2L,
-                    patientId = patients[0].second,
-                    patientName = patients[0].first,
-                    changeTime = Date(System.currentTimeMillis() - TimeUnit.HOURS.toMillis(6)),
-                    status = DiaperStatus.SLIGHTLY_WET,
-                    notes = "患者要求",
-                    changedBy = caregivers[1]
-                ),
-                DiaperChangeRecord(
-                    id = 3L,
-                    patientId = patients[0].second,
-                    patientName = patients[0].first,
-                    changeTime = Date(System.currentTimeMillis() - TimeUnit.HOURS.toMillis(9)),
-                    status = DiaperStatus.SOILED,
-                    notes = "晨間護理",
-                    changedBy = caregivers[2]
+    // 模擬尿布更換記錄
+    val changeRecords = remember {
+        val records = mutableListOf<DiaperChangeRecord>()
+        val now = LocalDateTime.now()
+        val patient = patients[selectedPatientIndex]
+        
+        // 生成过去7天的记录，每天有2-4条随机记录
+        for (day in 0..6) {
+            val recordsPerDay = Random.nextInt(2, 5)
+            for (record in 0 until recordsPerDay) {
+                val hour = Random.nextInt(6, 23)
+                val minute = Random.nextInt(0, 59)
+                val time = now.minusDays(day.toLong()).withHour(hour).withMinute(minute)
+                
+                records.add(
+                    DiaperChangeRecord(
+                        id = System.currentTimeMillis(),
+                        patientId = patient.second,
+                        patientName = patient.first,
+                        changeTime = Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(day.toLong()) - TimeUnit.HOURS.toMillis((23 - hour).toLong()) - TimeUnit.MINUTES.toMillis((59 - minute).toLong())),
+                        status = if (Random.nextBoolean()) DiaperStatus.WET else DiaperStatus.DRY,
+                        notes = "",
+                        changedBy = caregivers[Random.nextInt(caregivers.size)]
+                    )
                 )
-            )
-        )
+            }
+        }
+        records
     }
     
     // 添加記錄對話框
     var showAddDialog by remember { mutableStateOf(false) }
     
-    // 自動通知
-    var autoNotify by remember { mutableStateOf(true) }
-    
     // 計算濕度百分比
-    val timeSinceLastChange = System.currentTimeMillis() - lastChangeTime
+    val timeSinceLastChange = System.currentTimeMillis() - changeRecords.maxOf { it.changeTime.time }
     val hoursSinceLastChange = TimeUnit.MILLISECONDS.toHours(timeSinceLastChange)
     
-    // 模擬濕度隨時間變化
-    val wetness = when {
-        hoursSinceLastChange >= 4 -> 90 // 4小時以上，非常潮濕
-        hoursSinceLastChange >= 3 -> 70 // 3-4小時，潮濕
-        hoursSinceLastChange >= 2 -> 40 // 2-3小時，微濕
-        else -> 10 // 2小時內，基本乾燥
-    }
-    
     // 更新狀態
-    currentStatus = when {
-        wetness >= 90 -> DiaperStatus.VERY_WET
-        wetness >= 70 -> DiaperStatus.WET
-        wetness >= 30 -> DiaperStatus.SLIGHTLY_WET
-        else -> DiaperStatus.DRY
-    }
+    needChange = hoursSinceLastChange >= 4 || changeRecords.any { it.status == DiaperStatus.VERY_WET || it.status == DiaperStatus.SOILED }
     
     // 需要更換的時間閾值（小時）
     val changeThresholdHours = 4
     
     // 是否需要更換
-    val needsChange = hoursSinceLastChange >= changeThresholdHours || currentStatus == DiaperStatus.VERY_WET || currentStatus == DiaperStatus.SOILED
+    val needsChange = hoursSinceLastChange >= changeThresholdHours || needChange
     
-    // 使用LazyColumn替代Column让整个页面可以滚动
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // 顶部标题
         item {
-            Text(
-                text = "尿布監測",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "尿布監測",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                
+                // 主題切換按鈕
+                IconButton(
+                    onClick = { ThemeManager.toggleTheme() },
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                ) {
+                    Icon(
+                        imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                        contentDescription = "切換主題",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
         }
         
-        // 病患选择
+        // 患者选择
         item {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
-                        .padding(12.dp)
-                        .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
-                        .clip(RoundedCornerShape(8.dp))
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isDarkTheme) 
+                            MaterialTheme.colorScheme.surface 
+                        else 
+                            Color.White
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "患者",
-                        tint = Color(0xFF2196F3),
-                        modifier = Modifier.size(24.dp)
-                    )
-                    
-                    Spacer(modifier = Modifier.width(8.dp))
-                    
-                    Text(
-                        text = "患者: ${patients[selectedPatientIndex].first}",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
-                    )
-                    
-                    IconButton(
-                        onClick = { showPatientDropdown = true }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                            contentDescription = "選擇患者"
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "患者",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
                         )
-                    }
-                    
-                    DropdownMenu(
-                        expanded = showPatientDropdown,
-                        onDismissRequest = { showPatientDropdown = false }
-                    ) {
-                        patients.forEachIndexed { index, patient ->
-                            DropdownMenuItem(
-                                text = { Text(text = patient.first) },
-                                onClick = {
-                                    selectedPatientIndex = index
-                                    showPatientDropdown = false
-                                }
+                        
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        Text(
+                            text = "患者: ${patients[selectedPatientIndex].first}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        
+                        IconButton(
+                            onClick = { showPatientDropdown = true }
+                        ) {
+                            Icon(
+                                imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                contentDescription = "選擇患者",
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
+                        }
+                        
+                        DropdownMenu(
+                            expanded = showPatientDropdown,
+                            onDismissRequest = { showPatientDropdown = false },
+                            modifier = Modifier.background(
+                                if (isDarkTheme) 
+                                    MaterialTheme.colorScheme.surfaceVariant 
+                                else 
+                                    Color.White
+                            )
+                        ) {
+                            patients.forEachIndexed { index, patient ->
+                                DropdownMenuItem(
+                                    text = { 
+                                        Text(
+                                            text = patient.first,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    },
+                                    onClick = {
+                                        selectedPatientIndex = index
+                                        showPatientDropdown = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
             }
         }
         
-        // 当前状态卡片
+        // 时间范围选项卡
+        item {
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                containerColor = if (isDarkTheme) 
+                    MaterialTheme.colorScheme.surface 
+                else 
+                    MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                tabTitles.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { 
+                            Text(
+                                text = title, 
+                                color = if (selectedTabIndex == index) 
+                                    MaterialTheme.colorScheme.primary 
+                                else 
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                        }
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+        
+        // 当前尿布状态卡片
         item {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    .padding(horizontal = 16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (needsChange) Color(0xFFFCE4EC) else Color.White
-                )
+                    containerColor = if (needChange)
+                        if (isDarkTheme) Color(0xFF442536) else Color(0xFFFCE4EC)
+                    else
+                        if (isDarkTheme) DarkCardBackground else LightCardBackground
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(
                     modifier = Modifier
@@ -274,13 +347,14 @@ fun DiaperMonitorScreen(navController: NavController) {
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = "當前尿布狀態",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         
                         Row(
@@ -288,15 +362,18 @@ fun DiaperMonitorScreen(navController: NavController) {
                         ) {
                             Text(
                                 text = "自動通知",
-                                fontSize = 14.sp
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
+                            
+                            Spacer(modifier = Modifier.width(8.dp))
                             
                             Switch(
                                 checked = autoNotify,
                                 onCheckedChange = { autoNotify = it },
                                 colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = Color(0xFF2196F3)
+                                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
                                 )
                             )
                         }
@@ -304,24 +381,38 @@ fun DiaperMonitorScreen(navController: NavController) {
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    // 狀態顯示
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // 尿布状态指示图标
                         Box(
                             modifier = Modifier
-                                .size(60.dp)
+                                .size(64.dp)
                                 .clip(CircleShape)
-                                .background(currentStatus.color.copy(alpha = 0.2f)),
+                                .background(
+                                    if (needChange)
+                                        if (isDarkTheme) Color(0xFF9F4D6D) else Color(0xFFFFCDD2)
+                                    else
+                                        if (isDarkTheme) Color(0xFF2E7D32) else Color(0xFFE8F5E9)
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = if (needsChange) Icons.Default.Warning else Icons.Default.WaterDrop,
-                                contentDescription = null,
-                                tint = currentStatus.color,
-                                modifier = Modifier.size(36.dp)
-                            )
+                            if (needChange) {
+                                Icon(
+                                    imageVector = Icons.Default.Warning,
+                                    contentDescription = "需要更換",
+                                    tint = if (isDarkTheme) Color.White else Color(0xFFE53935),
+                                    modifier = Modifier.size(36.dp)
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.WaterDrop,
+                                    contentDescription = "狀態良好",
+                                    tint = if (isDarkTheme) Color.White else Color(0xFF4CAF50),
+                                    modifier = Modifier.size(36.dp)
+                                )
+                            }
                         }
                         
                         Spacer(modifier = Modifier.width(16.dp))
@@ -330,93 +421,87 @@ fun DiaperMonitorScreen(navController: NavController) {
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = currentStatus.label,
-                                fontSize = 20.sp,
+                                text = if (needChange) "需要更換尿布！" else "尿布狀態良好",
+                                fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = currentStatus.color
+                                color = if (needChange)
+                                    if (isDarkTheme) Color(0xFFFF8A80) else Color(0xFFE53935)
+                                else
+                                    if (isDarkTheme) Color(0xFFA5D6A7) else Color(0xFF4CAF50)
                             )
                             
                             Spacer(modifier = Modifier.height(4.dp))
                             
-                            Text(
-                                text = if (needsChange) "需要更換尿布！" else "尿布狀態良好",
-                                color = if (needsChange) Color.Red else Color(0xFF4CAF50),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "濕度: ",
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                
+                                LinearProgressIndicator(
+                                    progress = { wetness },
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(8.dp),
+                                    color = if (wetness > 0.6f)
+                                        if (isDarkTheme) Color(0xFFFF8A80) else Color(0xFFE53935)
+                                    else
+                                        if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3)
+                                )
+                                
+                                Text(
+                                    text = " ${(wetness * 100).toInt()}%",
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                             
                             Spacer(modifier = Modifier.height(8.dp))
                             
-                            // 濕度進度條
-                            LinearProgressIndicator(
-                                progress = wetness / 100f,
-                                modifier = Modifier.fillMaxWidth(),
-                                color = currentStatus.color
-                            )
-                            
-                            Spacer(modifier = Modifier.height(4.dp))
-                            
-                            Text(
-                                text = "濕度: $wetness%",
-                                fontSize = 12.sp,
-                                color = Color.Gray
-                            )
+                            val lastChange = changeRecords.maxByOrNull { it.changeTime.time }
+                            if (lastChange != null) {
+                                Text(
+                                    text = "上次更換時間: ${SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date(lastChange.changeTime.time))} (${formatTimeSince(timeSinceLastChange)}前)",
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                )
+                            }
                         }
                     }
                     
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    // 上次更換時間
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AccessTime,
-                            contentDescription = null,
-                            tint = Color.Gray,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        
-                        Spacer(modifier = Modifier.width(8.dp))
-                        
-                        Text(
-                            text = "上次更換: ${SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date(lastChangeTime))} (${formatTimeSince(timeSinceLastChange)}前)",
-                            fontSize = 14.sp,
-                            color = Color.Gray
-                        )
-                    }
-                    
-                    if (needsChange) {
+                    if (needChange) {
                         Spacer(modifier = Modifier.height(16.dp))
                         
                         Button(
                             onClick = { showAddDialog = true },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3))
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = null,
-                                tint = Color.White
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
                             )
-                            
-                            Spacer(modifier = Modifier.width(8.dp))
-                            
+                        ) {
                             Text("記錄尿布更換")
                         }
                     }
                 }
             }
+            
+            Spacer(modifier = Modifier.height(16.dp))
         }
         
-        // 更換記錄列表
+        // 尿布更换记录
         item {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(500.dp), // 设置为足够长的固定高度
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    .height(500.dp)
+                    .padding(horizontal = 16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isDarkTheme) DarkCardBackground else LightCardBackground
+                )
             ) {
                 Column(
                     modifier = Modifier
@@ -424,43 +509,52 @@ fun DiaperMonitorScreen(navController: NavController) {
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = "更換記錄",
+                        text = "尿布更換記錄",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     
-                    Divider(modifier = Modifier.padding(bottom = 8.dp))
+                    Divider(
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        color = if (isDarkTheme) Color.DarkGray else Color.LightGray
+                    )
                     
-                    if (diaperChangeRecords.isEmpty()) {
+                    if (changeRecords.isEmpty()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 32.dp),
+                                .weight(1f),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = "暫無記錄",
-                                color = Color.Gray,
-                                fontSize = 16.sp
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                textAlign = TextAlign.Center
                             )
                         }
                     } else {
-                        // 在Card内使用LazyColumn显示记录
                         LazyColumn(
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            items(diaperChangeRecords.sortedByDescending { it.changeTime }) { record ->
-                                DiaperChangeRecordItem(record = record)
+                            items(changeRecords.sortedByDescending { it.changeTime.time }) { record ->
+                                DiaperChangeRecordItem(record = record, isDarkTheme = isDarkTheme)
                                 Divider(
                                     modifier = Modifier.padding(vertical = 4.dp),
-                                    color = Color.LightGray.copy(alpha = 0.5f)
+                                    color = if (isDarkTheme) Color.DarkGray.copy(alpha = 0.5f) else Color.LightGray.copy(alpha = 0.5f)
                                 )
                             }
                         }
                     }
                 }
             }
+        }
+        
+        // 底部空间，确保内容可以滚动到底部
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
     
@@ -480,35 +574,49 @@ fun DiaperMonitorScreen(navController: NavController) {
                     changedBy = caregiver
                 )
                 
-                diaperChangeRecords = diaperChangeRecords + newRecord
-                lastChangeTime = System.currentTimeMillis()
+                changeRecords.add(newRecord)
                 showAddDialog = false
             },
             caregivers = caregivers,
-            initialStatus = currentStatus
+            initialStatus = changeRecords.first().status
         )
     }
 }
 
 @Composable
-fun DiaperChangeRecordItem(record: DiaperChangeRecord) {
+fun DiaperChangeRecordItem(record: DiaperChangeRecord, isDarkTheme: Boolean) {
+    val dateFormat = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())
+    val formattedTime = dateFormat.format(record.changeTime)
+    
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(record.status.color.copy(alpha = 0.2f)),
+                .background(
+                    if (record.status == DiaperStatus.WET)
+                        if (isDarkTheme) Color(0xFF90CAF9).copy(alpha = 0.3f) else Color(0xFFE3F2FD)
+                    else if (record.status == DiaperStatus.SOILED)
+                        if (isDarkTheme) Color(0xFF795548).copy(alpha = 0.3f) else Color(0xFFEFEBE9)
+                    else
+                        if (isDarkTheme) Color(0xFF64B5F6).copy(alpha = 0.3f) else Color(0xFFE3F2FD)
+                ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.WaterDrop,
                 contentDescription = null,
-                tint = record.status.color
+                tint = if (record.status == DiaperStatus.WET)
+                    if (isDarkTheme) Color(0xFF90CAF9) else Color(0xFF2196F3)
+                else if (record.status == DiaperStatus.SOILED)
+                    if (isDarkTheme) Color(0xFFA1887F) else Color(0xFF795548)
+                else
+                    if (isDarkTheme) Color(0xFF90CAF9) else Color(0xFF2196F3)
             )
         }
         
@@ -518,9 +626,9 @@ fun DiaperChangeRecordItem(record: DiaperChangeRecord) {
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(record.changeTime),
+                text = formattedTime,
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
             
             Text(
@@ -529,25 +637,15 @@ fun DiaperChangeRecordItem(record: DiaperChangeRecord) {
                 fontWeight = FontWeight.Bold,
                 color = record.status.color
             )
-            
-            if (record.notes.isNotEmpty()) {
-                Text(
-                    text = "備註: ${record.notes}",
-                    fontSize = 14.sp,
-                    color = Color.Gray
-                )
-            }
         }
         
         Text(
             text = "更換人: ${record.changedBy}",
             fontSize = 14.sp,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             modifier = Modifier.padding(start = 8.dp)
         )
     }
-    
-    Divider(color = Color.LightGray.copy(alpha = 0.5f))
 }
 
 @Composable

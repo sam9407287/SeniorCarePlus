@@ -351,6 +351,7 @@ fun NotificationEditDialog(
 ) {
     // 狀態
     val isChineseLanguage = LanguageManager.isChineseLanguage
+    val isDarkTheme = ThemeManager.isDarkTheme
     var pushEnabled by remember { mutableStateOf(notification.getNotificationMethods(isChineseLanguage).contains(if (isChineseLanguage) "推送" else "Push")) }
     var emailEnabled by remember { mutableStateOf(notification.getNotificationMethods(isChineseLanguage).contains(if (isChineseLanguage) "電子" else "Email")) }
     var priority by remember { mutableStateOf(if (notification.type == NotificationType.ABNORMAL) if (isChineseLanguage) "高" else "High" else if (isChineseLanguage) "普通" else "Normal") }
@@ -358,9 +359,8 @@ fun NotificationEditDialog(
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0x88000000))
             .clickable(onClick = onDismiss),
-        color = Color.Transparent
+        color = Color(0x88000000)
     ) {
         Card(
             modifier = Modifier
@@ -368,7 +368,9 @@ fun NotificationEditDialog(
                 .fillMaxWidth()
                 .clickable { /* 防止點擊穿透 */ },
             shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         ) {
             Column(
                 modifier = Modifier
@@ -379,23 +381,26 @@ fun NotificationEditDialog(
                     text = if (isChineseLanguage) "編輯通知設定" else "Edit Notification Settings",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = 16.dp),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
                 Text(
                     text = notification.getTitle(isChineseLanguage),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
-                Divider(color = Color.LightGray, thickness = 1.dp)
+                Divider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp)
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
                     text = if (isChineseLanguage) "通知方式" else "Notification Methods",
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
                 Row(
@@ -411,11 +416,15 @@ fun NotificationEditDialog(
                     Checkbox(
                         checked = pushEnabled,
                         onCheckedChange = { pushEnabled = it },
-                        colors = CheckboxDefaults.colors(checkedColor = Color(0xFF4169E1))
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = MaterialTheme.colorScheme.primary,
+                            uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                     Text(
                         text = if (isChineseLanguage) "推送通知" else "Push Notification",
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier.padding(start = 8.dp),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 
@@ -432,23 +441,28 @@ fun NotificationEditDialog(
                     Checkbox(
                         checked = emailEnabled,
                         onCheckedChange = { emailEnabled = it },
-                        colors = CheckboxDefaults.colors(checkedColor = Color(0xFF4169E1))
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = MaterialTheme.colorScheme.primary,
+                            uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                     Text(
                         text = if (isChineseLanguage) "電子郵件" else "Email",
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier.padding(start = 8.dp),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 
                 Spacer(modifier = Modifier.height(16.dp))
-                Divider(color = Color.LightGray, thickness = 1.dp)
+                Divider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp)
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
                     text = if (isChineseLanguage) "優先級" else "Priority",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
                 Row(
@@ -463,11 +477,15 @@ fun NotificationEditDialog(
                     RadioButton(
                         selected = priority == (if (isChineseLanguage) "高" else "High"),
                         onClick = { priority = if (isChineseLanguage) "高" else "High" },
-                        colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF4169E1))
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = MaterialTheme.colorScheme.primary,
+                            unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                     Text(
                         text = if (isChineseLanguage) "高優先級" else "High Priority",
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier.padding(start = 8.dp),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 
@@ -483,22 +501,27 @@ fun NotificationEditDialog(
                     RadioButton(
                         selected = priority == (if (isChineseLanguage) "普通" else "Normal"),
                         onClick = { priority = if (isChineseLanguage) "普通" else "Normal" },
-                        colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF4169E1))
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = MaterialTheme.colorScheme.primary,
+                            unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                     Text(
                         text = if (isChineseLanguage) "普通優先級" else "Normal Priority",
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier.padding(start = 8.dp),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 
                 Spacer(modifier = Modifier.height(16.dp))
-                Divider(color = Color.LightGray, thickness = 1.dp)
+                Divider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp)
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
                     text = if (isChineseLanguage) "啟用通知" else "Enable Notifications",
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 
                 Row(
@@ -508,13 +531,18 @@ fun NotificationEditDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = if (isChineseLanguage) "接收此類型通知" else "Receive this notification type")
+                    Text(
+                        text = if (isChineseLanguage) "接收此類型通知" else "Receive this notification type",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                     Switch(
                         checked = true,
                         onCheckedChange = { },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = Color(0xFF4169E1)
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                         )
                     )
                 }
@@ -528,25 +556,25 @@ fun NotificationEditDialog(
                     Button(
                         onClick = onDismiss,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.LightGray
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
                         ),
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
                         Text(
                             text = if (isChineseLanguage) "取消" else "Cancel",
-                            color = Color.Black
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     
                     Button(
                         onClick = onDismiss,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF4169E1)
+                            containerColor = MaterialTheme.colorScheme.primary
                         )
                     ) {
                         Text(
                             text = if (isChineseLanguage) "保存" else "Save",
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }

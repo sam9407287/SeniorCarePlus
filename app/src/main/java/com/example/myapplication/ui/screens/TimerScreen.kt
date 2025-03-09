@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material3.Button
@@ -99,7 +100,7 @@ enum class ReminderType(val zhLabel: String, val enLabel: String, val color: Col
     MEAL("用餐", "Meal", Color(0xFFF57C00), Color(0xFFFFB74D)),
     HEART_RATE("心率", "Heart Rate", Color(0xFFE91E63), Color(0xFFF48FB1)),
     TEMPERATURE("體溫", "Temperature", Color(0xFF7B1FA2), Color(0xFFAB47BC)),
-    GENERAL("一般", "Normal", Color(0xFF009688), Color(0xFF4DB6AC))
+    GENERAL("一般", "Norm", Color(0xFF009688), Color(0xFF4DB6AC))
 }
 
 // 根據語言獲取標籤
@@ -371,7 +372,7 @@ fun ReminderItemCard(
                         modifier = Modifier.size(24.dp)
                     )
                     ReminderType.TEMPERATURE -> Icon(
-                        imageVector = Icons.Default.MedicalServices, 
+                        imageVector = Icons.Default.Thermostat, 
                         contentDescription = null,
                         tint = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
                         modifier = Modifier.size(24.dp)
@@ -1021,7 +1022,7 @@ fun AddEditReminderDialog(
                                     ReminderType.MEAL -> "Meal"
                                     ReminderType.HEART_RATE -> "Heart"
                                     ReminderType.TEMPERATURE -> "Temp"
-                                    ReminderType.GENERAL -> "Normal"
+                                    ReminderType.GENERAL -> "Norm"
                                 }
                             }
                             
@@ -1075,7 +1076,7 @@ fun AddEditReminderDialog(
                                             modifier = Modifier.size(20.dp)
                                         )
                                         ReminderType.TEMPERATURE -> Icon(
-                                            imageVector = Icons.Default.MedicalServices, 
+                                            imageVector = Icons.Default.Thermostat, 
                                             contentDescription = null,
                                             tint = if (isDarkTheme) type.darkColor else type.color,
                                             modifier = Modifier.size(20.dp)
@@ -1094,7 +1095,7 @@ fun AddEditReminderDialog(
                                 // 調整標籤字體大小
                                 Text(
                                     text = labelText,
-                                    fontSize = if (isChineseLanguage) 12.sp else 9.sp,  // 中文字體增大，英文字體縮小
+                                    fontSize = if (isChineseLanguage) 12.sp else 12.sp,  // 增大英文字體大小
                                     color = if (isDarkTheme) type.darkColor else type.color,
                                     textAlign = TextAlign.Center,
                                     maxLines = 1,

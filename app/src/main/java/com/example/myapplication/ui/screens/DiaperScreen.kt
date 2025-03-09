@@ -78,15 +78,20 @@ import java.time.format.DateTimeFormatter
 import com.example.myapplication.ui.theme.DarkCardBackground
 import com.example.myapplication.ui.theme.LightCardBackground
 import com.example.myapplication.ui.theme.ThemeManager
+import com.example.myapplication.ui.theme.LanguageManager
 
 // 尿布狀態類型
-enum class DiaperStatus(val label: String, val color: Color) {
-    DRY("乾燥", Color(0xFF4CAF50)), // 綠色
-    SLIGHTLY_WET("微濕", Color(0xFFFFC107)), // 黃色
-    WET("潮濕", Color(0xFFFF9800)), // 橙色
-    VERY_WET("非常潮濕", Color(0xFFF44336)), // 紅色
-    SOILED("髒污", Color(0xFF9C27B0)) // 紫色
+enum class DiaperStatus(val chineseLabel: String, val englishLabel: String, val color: Color) {
+    DRY("乾燥", "Dry", Color(0xFF4CAF50)), // 綠色
+    SLIGHTLY_WET("微濕", "Slightly Wet", Color(0xFFFFC107)), // 黃色
+    WET("潮濕", "Wet", Color(0xFFFF9800)), // 橙色
+    VERY_WET("非常潮濕", "Very Wet", Color(0xFFF44336)), // 紅色
+    SOILED("髒污", "Soiled", Color(0xFF9C27B0)) // 紫色
 }
+
+// 根據語言設置獲取標籤
+val DiaperStatus.label: String
+    get() = if (LanguageManager.isChineseLanguage) this.chineseLabel else this.englishLabel
 
 // 尿布更換記錄
 data class DiaperChangeRecord(
@@ -103,17 +108,33 @@ data class DiaperChangeRecord(
 fun DiaperMonitorScreen(navController: NavController) {
     // 判断是否为深色模式
     val isDarkTheme = ThemeManager.isDarkTheme
+    // 判断当前语言
+    val isChineseLanguage = LanguageManager.isChineseLanguage
     
     // 示例數據
-    val patients = listOf(
-        "張三" to "001",
-        "李四" to "002",
-        "王五" to "003",
-        "趙六" to "004",
-        "孫七" to "005"
-    )
+    val patients = if (isChineseLanguage) {
+        listOf(
+            "張三" to "001",
+            "李四" to "002",
+            "王五" to "003",
+            "趙六" to "004",
+            "孫七" to "005"
+        )
+    } else {
+        listOf(
+            "Zhang San" to "001", 
+            "Li Si" to "002",
+            "Wang Wu" to "003",
+            "Zhao Liu" to "004",
+            "Sun Qi" to "005"
+        )
+    }
     
-    val caregivers = listOf("護工A", "護工B", "護工C", "護工D")
+    val caregivers = if (isChineseLanguage) {
+        listOf("護工A", "護工B", "護工C", "護工D")
+    } else {
+        listOf("Caregiver A", "Caregiver B", "Caregiver C", "Caregiver D")
+    }
     
     // 選中的病患
     var selectedPatientIndex by remember { mutableIntStateOf(0) }
@@ -121,7 +142,11 @@ fun DiaperMonitorScreen(navController: NavController) {
     
     // 選中的時間範圍
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabTitles = listOf("今日", "本週", "本月")
+    val tabTitles = if (isChineseLanguage) {
+        listOf("今日", "本週", "本月") 
+    } else {
+        listOf("Today", "This Week", "This Month")
+    }
     
     // 模拟尿布状态
     var needChange by remember { mutableStateOf(true) }
@@ -188,7 +213,7 @@ fun DiaperMonitorScreen(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "尿布監測",
+                    text = if (isChineseLanguage) "尿布監測" else "Diaper Monitor",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
@@ -205,7 +230,7 @@ fun DiaperMonitorScreen(navController: NavController) {
                 ) {
                     Icon(
                         imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                        contentDescription = "切換主題",
+                        contentDescription = if (isChineseLanguage) "切換主題" else "Toggle Theme",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
@@ -239,7 +264,7 @@ fun DiaperMonitorScreen(navController: NavController) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.Person,
-                            contentDescription = "患者",
+                            contentDescription = if (isChineseLanguage) "患者" else "Patient",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(24.dp)
                         )
@@ -247,7 +272,7 @@ fun DiaperMonitorScreen(navController: NavController) {
                         Spacer(modifier = Modifier.width(8.dp))
                         
                         Text(
-                            text = "患者: ${patients[selectedPatientIndex].first}",
+                            text = if (isChineseLanguage) "患者: ${patients[selectedPatientIndex].first}" else "Patient: ${patients[selectedPatientIndex].first}",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.weight(1f),
@@ -259,7 +284,7 @@ fun DiaperMonitorScreen(navController: NavController) {
                         ) {
                             Icon(
                                 imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                contentDescription = "選擇患者",
+                                contentDescription = if (isChineseLanguage) "選擇患者" else "Select Patient",
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -351,7 +376,7 @@ fun DiaperMonitorScreen(navController: NavController) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "當前尿布狀態",
+                            text = if (isChineseLanguage) "當前尿布狀態" else "Current Diaper Status",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -361,7 +386,7 @@ fun DiaperMonitorScreen(navController: NavController) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "自動通知",
+                                text = if (isChineseLanguage) "自動通知" else "Auto Notify",
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -401,14 +426,14 @@ fun DiaperMonitorScreen(navController: NavController) {
                             if (needChange) {
                                 Icon(
                                     imageVector = Icons.Default.Warning,
-                                    contentDescription = "需要更換",
+                                    contentDescription = if (isChineseLanguage) "需要更換" else "Change Needed",
                                     tint = if (isDarkTheme) Color.White else Color(0xFFE53935),
                                     modifier = Modifier.size(36.dp)
                                 )
                             } else {
                                 Icon(
                                     imageVector = Icons.Default.WaterDrop,
-                                    contentDescription = "狀態良好",
+                                    contentDescription = if (isChineseLanguage) "狀態良好" else "Status Good",
                                     tint = if (isDarkTheme) Color.White else Color(0xFF4CAF50),
                                     modifier = Modifier.size(36.dp)
                                 )
@@ -421,7 +446,11 @@ fun DiaperMonitorScreen(navController: NavController) {
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = if (needChange) "需要更換尿布！" else "尿布狀態良好",
+                                text = if (isChineseLanguage) {
+                                    if (needChange) "需要更換尿布！" else "尿布狀態良好"
+                                } else {
+                                    if (needChange) "Diaper Change Needed!" else "Diaper Status Good"
+                                },
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (needChange)
@@ -436,7 +465,7 @@ fun DiaperMonitorScreen(navController: NavController) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "濕度: ",
+                                    text = if (isChineseLanguage) "濕度: " else "Wetness: ",
                                     fontSize = 14.sp,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -464,7 +493,11 @@ fun DiaperMonitorScreen(navController: NavController) {
                             val lastChange = changeRecords.maxByOrNull { it.changeTime.time }
                             if (lastChange != null) {
                                 Text(
-                                    text = "上次更換時間: ${SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date(lastChange.changeTime.time))} (${formatTimeSince(timeSinceLastChange)}前)",
+                                    text = if (isChineseLanguage) {
+                                        "上次更換時間: ${SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date(lastChange.changeTime.time))} (${formatTimeSince(timeSinceLastChange, isChineseLanguage)}前)"
+                                    } else {
+                                        "Last change: ${SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date(lastChange.changeTime.time))} (${formatTimeSince(timeSinceLastChange, isChineseLanguage)} ago)"
+                                    },
                                     fontSize = 14.sp,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                 )
@@ -482,7 +515,7 @@ fun DiaperMonitorScreen(navController: NavController) {
                                 containerColor = MaterialTheme.colorScheme.primary
                             )
                         ) {
-                            Text("記錄尿布更換")
+                            Text(if (isChineseLanguage) "記錄尿布更換" else "Record Diaper Change")
                         }
                     }
                 }
@@ -509,7 +542,7 @@ fun DiaperMonitorScreen(navController: NavController) {
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = "尿布更換記錄",
+                        text = if (isChineseLanguage) "尿布更換記錄" else "Diaper Change Records",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 8.dp),
@@ -529,7 +562,7 @@ fun DiaperMonitorScreen(navController: NavController) {
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "暫無記錄",
+                                text = if (isChineseLanguage) "暫無記錄" else "No Records",
                                 fontSize = 16.sp,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                                 textAlign = TextAlign.Center
@@ -540,7 +573,11 @@ fun DiaperMonitorScreen(navController: NavController) {
                             modifier = Modifier.fillMaxSize()
                         ) {
                             items(changeRecords.sortedByDescending { it.changeTime.time }) { record ->
-                                DiaperChangeRecordItem(record = record, isDarkTheme = isDarkTheme)
+                                DiaperChangeRecordItem(
+                                    record = record,
+                                    isDarkTheme = isDarkTheme,
+                                    isChineseLanguage = isChineseLanguage
+                                )
                                 Divider(
                                     modifier = Modifier.padding(vertical = 4.dp),
                                     color = if (isDarkTheme) Color.DarkGray.copy(alpha = 0.5f) else Color.LightGray.copy(alpha = 0.5f)
@@ -578,13 +615,14 @@ fun DiaperMonitorScreen(navController: NavController) {
                 showAddDialog = false
             },
             caregivers = caregivers,
-            initialStatus = changeRecords.first().status
+            initialStatus = changeRecords.first().status,
+            isChineseLanguage = isChineseLanguage
         )
     }
 }
 
 @Composable
-fun DiaperChangeRecordItem(record: DiaperChangeRecord, isDarkTheme: Boolean) {
+fun DiaperChangeRecordItem(record: DiaperChangeRecord, isDarkTheme: Boolean, isChineseLanguage: Boolean) {
     val dateFormat = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())
     val formattedTime = dateFormat.format(record.changeTime)
     
@@ -632,7 +670,7 @@ fun DiaperChangeRecordItem(record: DiaperChangeRecord, isDarkTheme: Boolean) {
             )
             
             Text(
-                text = "狀態: ${record.status.label}",
+                text = if (isChineseLanguage) "狀態: ${record.status.label}" else "Status: ${record.status.label}",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = record.status.color
@@ -640,7 +678,7 @@ fun DiaperChangeRecordItem(record: DiaperChangeRecord, isDarkTheme: Boolean) {
         }
         
         Text(
-            text = "更換人: ${record.changedBy}",
+            text = if (isChineseLanguage) "更換人: ${record.changedBy}" else "Changed by: ${record.changedBy}",
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             modifier = Modifier.padding(start = 8.dp)
@@ -653,7 +691,8 @@ fun AddDiaperChangeDialog(
     onDismiss: () -> Unit,
     onConfirm: (DiaperStatus, String, String) -> Unit,
     caregivers: List<String>,
-    initialStatus: DiaperStatus
+    initialStatus: DiaperStatus,
+    isChineseLanguage: Boolean
 ) {
     var selectedStatus by remember { mutableStateOf(initialStatus) }
     var notes by remember { mutableStateOf("") }
@@ -663,7 +702,7 @@ fun AddDiaperChangeDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "記錄尿布更換",
+                text = if (isChineseLanguage) "記錄尿布更換" else "Record Diaper Change",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -675,7 +714,7 @@ fun AddDiaperChangeDialog(
                     .padding(vertical = 8.dp)
             ) {
                 Text(
-                    text = "尿布狀態",
+                    text = if (isChineseLanguage) "尿布狀態" else "Diaper Status",
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -699,7 +738,7 @@ fun AddDiaperChangeDialog(
                             
                             Text(
                                 text = status.label,
-                                color = if (selectedStatus == status) status.color else Color.Black,
+                                color = if (selectedStatus == status) status.color else MaterialTheme.colorScheme.onSurface,
                                 fontWeight = if (selectedStatus == status) FontWeight.Bold else FontWeight.Normal
                             )
                         }
@@ -709,7 +748,7 @@ fun AddDiaperChangeDialog(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
-                    text = "護理人員",
+                    text = if (isChineseLanguage) "護理人員" else "Caregiver",
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -733,7 +772,7 @@ fun AddDiaperChangeDialog(
                             
                             Text(
                                 text = caregiver,
-                                color = if (selectedCaregiver == caregiver) Color(0xFF2196F3) else Color.Black,
+                                color = if (selectedCaregiver == caregiver) Color(0xFF2196F3) else MaterialTheme.colorScheme.onSurface,
                                 fontWeight = if (selectedCaregiver == caregiver) FontWeight.Bold else FontWeight.Normal
                             )
                         }
@@ -745,7 +784,7 @@ fun AddDiaperChangeDialog(
                 OutlinedTextField(
                     value = notes,
                     onValueChange = { notes = it },
-                    label = { Text("備註（可選）") },
+                    label = { Text(if (isChineseLanguage) "備註（可選）" else "Notes (Optional)") },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -755,24 +794,31 @@ fun AddDiaperChangeDialog(
                 onClick = { onConfirm(selectedStatus, notes, selectedCaregiver) },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3))
             ) {
-                Text("確認")
+                Text(if (isChineseLanguage) "確認" else "Confirm")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("取消")
+                Text(if (isChineseLanguage) "取消" else "Cancel")
             }
         }
     )
 }
 
 // 格式化時間差
-fun formatTimeSince(timeDiff: Long): String {
+fun formatTimeSince(timeDiff: Long, isChineseLanguage: Boolean): String {
     val hours = TimeUnit.MILLISECONDS.toHours(timeDiff)
     val minutes = TimeUnit.MILLISECONDS.toMinutes(timeDiff) % 60
     
-    return when {
-        hours > 0 -> "$hours 小時 $minutes 分鐘"
-        else -> "$minutes 分鐘"
+    return if (isChineseLanguage) {
+        when {
+            hours > 0 -> "$hours 小時 $minutes 分鐘"
+            else -> "$minutes 分鐘"
+        }
+    } else {
+        when {
+            hours > 0 -> "$hours hours $minutes minutes"
+            else -> "$minutes minutes"
+        }
     }
 } 

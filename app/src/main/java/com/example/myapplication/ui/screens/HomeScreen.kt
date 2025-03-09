@@ -44,62 +44,81 @@ import androidx.navigation.NavController
 import com.example.myapplication.ui.theme.DarkCardBackground
 import com.example.myapplication.ui.theme.LightCardBackground
 import com.example.myapplication.ui.theme.ThemeManager
+import com.example.myapplication.ui.theme.LanguageManager
 
 data class FeatureItem(
-    val name: String,
+    val nameZh: String,
+    val nameEn: String,
     val icon: ImageVector,
     val route: String,
-    val description: String,
+    val descriptionZh: String,
+    val descriptionEn: String,
     val iconTint: Color
-)
+) {
+    fun getName(isChinese: Boolean): String = if (isChinese) nameZh else nameEn
+    fun getDescription(isChinese: Boolean): String = if (isChinese) descriptionZh else descriptionEn
+}
 
 @Composable
 fun HomeScreen(navController: NavController) {
-    // 获取当前主题状态
+    // 获取当前主题状态和语言状态
     val isDarkTheme = ThemeManager.isDarkTheme
+    val isChineseLanguage = LanguageManager.isChineseLanguage
     
     // 功能列表 - 根据深色模式调整图标颜色
     val features = listOf(
         FeatureItem(
-            name = "體溫監測",
+            nameZh = "體溫監測",
+            nameEn = "Temperature Monitor",
             icon = Icons.Default.Thermostat,
             route = "temperature_monitor",
-            description = "監測患者體溫變化，及時發現異常",
+            descriptionZh = "監測患者體溫變化，及時發現異常",
+            descriptionEn = "Monitor patient temperature changes, detect abnormalities in time",
             iconTint = if (isDarkTheme) Color(0xFFF48FB1) else Color(0xFFE91E63)
         ),
         FeatureItem(
-            name = "心率監測",
+            nameZh = "心率監測",
+            nameEn = "Heart Rate Monitor",
             icon = Icons.Default.Favorite,
             route = "heart_rate_monitor",
-            description = "實時記錄心率數據，設置預警值",
+            descriptionZh = "實時記錄心率數據，設置預警值",
+            descriptionEn = "Record heart rate data in real-time, set alert thresholds",
             iconTint = if (isDarkTheme) Color(0xFFF48FB1) else Color(0xFFE91E63)
         ),
         FeatureItem(
-            name = "尿布監測",
+            nameZh = "尿布監測",
+            nameEn = "Diaper Monitor",
             icon = Icons.Default.Bathroom,
             route = "diaper_monitor",
-            description = "監測尿布狀態，提醒及時更換",
+            descriptionZh = "監測尿布狀態，提醒及時更換",
+            descriptionEn = "Monitor diaper status, remind for timely replacement",
             iconTint = if (isDarkTheme) Color(0xFF81D4FA) else Color(0xFF2196F3)
         ),
         FeatureItem(
-            name = "緊急呼叫",
+            nameZh = "緊急呼叫",
+            nameEn = "Emergency Call",
             icon = Icons.Default.Call,
             route = "emergency_button",
-            description = "一鍵呼叫護理人員緊急援助",
+            descriptionZh = "一鍵呼叫護理人員緊急援助",
+            descriptionEn = "One-click call for emergency assistance from care staff",
             iconTint = if (isDarkTheme) Color(0xFFFF7A7A) else Color(0xFFE53935)
         ),
         FeatureItem(
-            name = "定時提醒",
+            nameZh = "定時提醒",
+            nameEn = "Timer Reminder",
             icon = Icons.Default.Schedule,
             route = "timer",
-            description = "設置藥物、進食等定時提醒",
+            descriptionZh = "設置藥物、進食等定時提醒",
+            descriptionEn = "Set timed reminders for medication, meals, etc.",
             iconTint = if (isDarkTheme) Color(0xFFA5D6A7) else Color(0xFF4CAF50)
         ),
         FeatureItem(
-            name = "區域管理",
+            nameZh = "區域管理",
+            nameEn = "Region Management",
             icon = Icons.Default.LocationOn,
             route = "region",
-            description = "查看患者位置，管理區域分配",
+            descriptionZh = "查看患者位置，管理區域分配",
+            descriptionEn = "View patient locations, manage area assignments",
             iconTint = if (isDarkTheme) Color(0xFFCE93D8) else Color(0xFF9C27B0)
         )
     )
@@ -117,7 +136,7 @@ fun HomeScreen(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "智慧照護系統",
+                    text = if (isChineseLanguage) "智慧照護系統" else "Smart Care System",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
@@ -134,7 +153,7 @@ fun HomeScreen(navController: NavController) {
                 ) {
                     Icon(
                         imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                        contentDescription = "切換主題",
+                        contentDescription = if (isChineseLanguage) "切換主題" else "Toggle Theme",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
@@ -149,6 +168,7 @@ fun HomeScreen(navController: NavController) {
             FeatureCard(
                 feature = feature,
                 isDarkTheme = isDarkTheme,
+                isChineseLanguage = isChineseLanguage,
                 onClick = { 
                     navController.navigate(feature.route) {
                         launchSingleTop = true
@@ -162,7 +182,7 @@ fun HomeScreen(navController: NavController) {
 }
 
 @Composable
-fun FeatureCard(feature: FeatureItem, isDarkTheme: Boolean, onClick: () -> Unit) {
+fun FeatureCard(feature: FeatureItem, isDarkTheme: Boolean, isChineseLanguage: Boolean, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -189,7 +209,7 @@ fun FeatureCard(feature: FeatureItem, isDarkTheme: Boolean, onClick: () -> Unit)
             ) {
                 Icon(
                     imageVector = feature.icon,
-                    contentDescription = feature.name,
+                    contentDescription = feature.getName(isChineseLanguage),
                     tint = feature.iconTint,
                     modifier = Modifier.size(32.dp)
                 )
@@ -202,7 +222,7 @@ fun FeatureCard(feature: FeatureItem, isDarkTheme: Boolean, onClick: () -> Unit)
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = feature.name,
+                    text = feature.getName(isChineseLanguage),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -211,7 +231,7 @@ fun FeatureCard(feature: FeatureItem, isDarkTheme: Boolean, onClick: () -> Unit)
                 Spacer(modifier = Modifier.height(4.dp))
                 
                 Text(
-                    text = feature.description,
+                    text = feature.getDescription(isChineseLanguage),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )

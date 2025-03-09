@@ -90,6 +90,7 @@ import com.example.myapplication.ui.screens.DiaperMonitorScreen
 import com.example.myapplication.ui.screens.HeartRateMonitorScreen
 import com.example.myapplication.ui.screens.TemperatureMonitorScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.ui.theme.ThemeManager
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -99,6 +100,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            // 使用我们的自定义主题，isDarkTheme会从ThemeManager中获取
             MyApplicationTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -114,10 +116,13 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -> Unit = {}) {
+    // 使用MaterialTheme的颜色而不是硬编码的颜色
+    val isDarkTheme = ThemeManager.isDarkTheme
+    
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFCFD8DC))
+            .background(if (isDarkTheme) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant)
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Row(
@@ -132,7 +137,7 @@ fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
                     contentDescription = "用户菜单",
-                    tint = Color.Black,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(40.dp)
                 )
             }
@@ -143,7 +148,8 @@ fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
                 modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             
             // 右侧通知图标
@@ -155,7 +161,7 @@ fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -
                     imageVector = Icons.Default.Notifications,
                     contentDescription = "通知",
                     modifier = Modifier.size(40.dp),
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

@@ -2,130 +2,218 @@ package com.example.myapplication.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bathroom
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Thermostat
-import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.myapplication.ui.theme.DarkCardBackground
+import com.example.myapplication.ui.theme.LightCardBackground
+import com.example.myapplication.ui.theme.ThemeManager
 
 data class FeatureItem(
     val name: String,
     val icon: ImageVector,
     val route: String,
-    val alertCount: Int = 1
+    val description: String,
+    val iconTint: Color
 )
 
 @Composable
 fun HomeScreen(navController: NavController) {
-    Column(
+    // 获取当前主题状态
+    val isDarkTheme = ThemeManager.isDarkTheme
+    
+    // 功能列表 - 根据深色模式调整图标颜色
+    val features = listOf(
+        FeatureItem(
+            name = "體溫監測",
+            icon = Icons.Default.Thermostat,
+            route = "temperature_monitor",
+            description = "監測患者體溫變化，及時發現異常",
+            iconTint = if (isDarkTheme) Color(0xFFF48FB1) else Color(0xFFE91E63)
+        ),
+        FeatureItem(
+            name = "心率監測",
+            icon = Icons.Default.Favorite,
+            route = "heart_rate_monitor",
+            description = "實時記錄心率數據，設置預警值",
+            iconTint = if (isDarkTheme) Color(0xFFF48FB1) else Color(0xFFE91E63)
+        ),
+        FeatureItem(
+            name = "尿布監測",
+            icon = Icons.Default.Bathroom,
+            route = "diaper_monitor",
+            description = "監測尿布狀態，提醒及時更換",
+            iconTint = if (isDarkTheme) Color(0xFF81D4FA) else Color(0xFF2196F3)
+        ),
+        FeatureItem(
+            name = "緊急呼叫",
+            icon = Icons.Default.Call,
+            route = "emergency_button",
+            description = "一鍵呼叫護理人員緊急援助",
+            iconTint = if (isDarkTheme) Color(0xFFFF7A7A) else Color(0xFFE53935)
+        ),
+        FeatureItem(
+            name = "定時提醒",
+            icon = Icons.Default.Schedule,
+            route = "timer",
+            description = "設置藥物、進食等定時提醒",
+            iconTint = if (isDarkTheme) Color(0xFFA5D6A7) else Color(0xFF4CAF50)
+        ),
+        FeatureItem(
+            name = "區域管理",
+            icon = Icons.Default.LocationOn,
+            route = "region",
+            description = "查看患者位置，管理區域分配",
+            iconTint = if (isDarkTheme) Color(0xFFCE93D8) else Color(0xFF9C27B0)
+        )
+    )
+    
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        Text(
-            text = "主頁",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(vertical = 16.dp)
-        )
-        
-        val features = listOf(
-            FeatureItem("區域", Icons.Default.LocationOn, "region"),
-            FeatureItem("體溫監測", Icons.Default.Thermostat, "temperature_monitor"),
-            FeatureItem("定時", Icons.Default.Schedule, "timer"),
-            FeatureItem("尿布監測", Icons.Default.Bathroom, "diaper_monitor"),
-            FeatureItem("緊急呼叫", Icons.Default.Call, "emergency_button"),
-            FeatureItem("心率監測", Icons.Default.Favorite, "heart_rate_monitor")
-        )
-        
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(features) { feature ->
-                FeatureCard(
-                    feature = feature,
-                    onClick = { 
-                        navController.navigate(feature.route) {
-                            launchSingleTop = false
-                        }
-                    }
+        // 顶部标题和主题切换按钮
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "智慧照護系統",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colorScheme.onBackground
                 )
+                
+                // 主题切换按钮
+                IconButton(
+                    onClick = { ThemeManager.toggleTheme() },
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                ) {
+                    Icon(
+                        imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                        contentDescription = "切換主題",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+        
+        // 功能卡片列表
+        items(features) { feature ->
+            FeatureCard(
+                feature = feature,
+                isDarkTheme = isDarkTheme,
+                onClick = { 
+                    navController.navigate(feature.route) {
+                        launchSingleTop = true
+                    }
+                }
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
 @Composable
-fun FeatureCard(feature: FeatureItem, onClick: () -> Unit) {
+fun FeatureCard(feature: FeatureItem, isDarkTheme: Boolean, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(180.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF4169E1))
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isDarkTheme) DarkCardBackground else LightCardBackground
+        )
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = feature.icon,
-                contentDescription = feature.name,
-                tint = Color.White,
-                modifier = Modifier.size(64.dp)
-            )
+            // 图标容器
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(CircleShape)
+                    .background(feature.iconTint.copy(alpha = if (isDarkTheme) 0.2f else 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = feature.icon,
+                    contentDescription = feature.name,
+                    tint = feature.iconTint,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
             
-            Text(
-                text = feature.name,
-                color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 8.dp)
-            )
+            Spacer(modifier = Modifier.width(16.dp))
             
-            if (feature.alertCount > 0) {
+            // 文字内容
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
-                    text = "${feature.alertCount} patient calling!",
-                    color = Color.White,
+                    text = feature.name,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                Text(
+                    text = feature.description,
                     fontSize = 14.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 4.dp)
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
             }
         }

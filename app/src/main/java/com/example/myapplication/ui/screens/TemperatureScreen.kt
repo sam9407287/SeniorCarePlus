@@ -66,6 +66,7 @@ import com.example.myapplication.ui.theme.LightCardBackground
 import com.example.myapplication.ui.theme.LightChartBackground
 import com.example.myapplication.ui.theme.LightChartLine
 import com.example.myapplication.ui.theme.ThemeManager
+import com.example.myapplication.ui.theme.LanguageManager
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import java.time.temporal.ChronoUnit
@@ -86,14 +87,16 @@ data class TemperatureRecord(
 fun TemperatureMonitorScreen(navController: NavController) {
     // 判断是否为深色模式
     val isDarkTheme = ThemeManager.isDarkTheme
+    // 檢查語言設置
+    val isChineseLanguage = LanguageManager.isChineseLanguage
     
     // 示例數據
     val patients = listOf(
-        "張三" to "001",
-        "李四" to "002",
-        "王五" to "003",
-        "趙六" to "004",
-        "孫七" to "005"
+        (if (isChineseLanguage) "張三" else "Zhang San") to "001",
+        (if (isChineseLanguage) "李四" else "Li Si") to "002",
+        (if (isChineseLanguage) "王五" else "Wang Wu") to "003",
+        (if (isChineseLanguage) "趙六" else "Zhao Liu") to "004",
+        (if (isChineseLanguage) "孫七" else "Sun Qi") to "005"
     )
     
     // 選中的病患
@@ -102,7 +105,11 @@ fun TemperatureMonitorScreen(navController: NavController) {
     
     // 選中的時間範圍
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabTitles = listOf("今日", "本週", "本月")
+    val tabTitles = if (isChineseLanguage) {
+        listOf("今日", "本週", "本月")
+    } else {
+        listOf("Today", "This Week", "This Month")
+    }
     
     // 記錄過濾設置
     var showOnlyAbnormal by remember { mutableStateOf(false) }
@@ -258,12 +265,13 @@ fun TemperatureMonitorScreen(navController: NavController) {
                     .padding(horizontal = 16.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // 主標題和主題切換按鈕
                 Text(
-                    text = "體溫監測",
+                    text = if (isChineseLanguage) "體溫監測" else "Temperature Monitor",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f),
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.weight(1f)
                 )
                 
                 // 主題切換按鈕
@@ -276,7 +284,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
                 ) {
                     Icon(
                         imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                        contentDescription = "切換主題",
+                        contentDescription = if (isChineseLanguage) "切換主題" else "Toggle Theme",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
@@ -310,7 +318,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.Person,
-                            contentDescription = "患者",
+                            contentDescription = if (isChineseLanguage) "患者" else "Patient",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(24.dp)
                         )
@@ -318,7 +326,10 @@ fun TemperatureMonitorScreen(navController: NavController) {
                         Spacer(modifier = Modifier.width(8.dp))
                         
                         Text(
-                            text = "患者: ${patients[selectedPatientIndex].first}",
+                            text = if (isChineseLanguage)
+                                "患者: ${patients[selectedPatientIndex].first}"
+                            else
+                                "Patient: ${patients[selectedPatientIndex].first}",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.weight(1f),
@@ -330,7 +341,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
                         ) {
                             Icon(
                                 imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                contentDescription = "選擇患者",
+                                contentDescription = if (isChineseLanguage) "選擇患者" else "Select Patient",
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -415,7 +426,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = "體溫趨勢圖",
+                        text = if (isChineseLanguage) "體溫趨勢圖" else "Temperature Trend",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 8.dp),
@@ -427,7 +438,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
                             .fillMaxSize()
                             .weight(1f)
                     ) {
-                        TemperatureChart(temperatureRecords = temperatureRecords, isDarkTheme = isDarkTheme)
+                        TemperatureChart(temperatureRecords = temperatureRecords, isDarkTheme = isDarkTheme, isChineseLanguage = isChineseLanguage)
                     }
                 }
             }
@@ -452,63 +463,56 @@ fun TemperatureMonitorScreen(navController: NavController) {
                         .fillMaxSize()
                         .padding(16.dp)
                 ) {
+                    // 標題單獨一行
+                    Text(
+                        text = if (isChineseLanguage) "體溫記錄" else "Temperature Records",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    
+                    // 過濾器單獨一行
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "體溫記錄",
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            text = if (isChineseLanguage) "過濾:" else "Filter:",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            modifier = Modifier.padding(end = 8.dp)
                         )
                         
-                        // 替換原有的過濾開關為過濾類型選擇
+                        // 過濾類型選擇按鈕
                         Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "過濾:",
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            AbnormalFilterChip(
+                                text = if (isChineseLanguage) "全部" else "All",
+                                isSelected = filterType == 0,
+                                onClick = { filterType = 0 },
+                                isDarkTheme = isDarkTheme
                             )
                             
-                            Spacer(modifier = Modifier.width(4.dp))
+                            AbnormalFilterChip(
+                                text = if (isChineseLanguage) "高溫" else "High Temp",
+                                isSelected = filterType == 1,
+                                onClick = { filterType = 1 },
+                                isDarkTheme = isDarkTheme,
+                                color = if (isDarkTheme) Color(0xFFFF5252) else Color.Red
+                            )
                             
-                            // 過濾類型選擇按鈕
-                            Row(
-                                modifier = Modifier
-                                    .padding(vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                AbnormalFilterChip(
-                                    text = "全部",
-                                    isSelected = filterType == 0,
-                                    onClick = { filterType = 0 },
-                                    isDarkTheme = isDarkTheme
-                                )
-                                
-                                Spacer(modifier = Modifier.width(4.dp))
-                                
-                                AbnormalFilterChip(
-                                    text = "高溫",
-                                    isSelected = filterType == 1,
-                                    onClick = { filterType = 1 },
-                                    isDarkTheme = isDarkTheme,
-                                    color = if (isDarkTheme) Color(0xFFFF5252) else Color.Red
-                                )
-                                
-                                Spacer(modifier = Modifier.width(4.dp))
-                                
-                                AbnormalFilterChip(
-                                    text = "低溫",
-                                    isSelected = filterType == 2,
-                                    onClick = { filterType = 2 },
-                                    isDarkTheme = isDarkTheme,
-                                    color = if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3)
-                                )
-                            }
+                            AbnormalFilterChip(
+                                text = if (isChineseLanguage) "低溫" else "Low Temp",
+                                isSelected = filterType == 2,
+                                onClick = { filterType = 2 },
+                                isDarkTheme = isDarkTheme,
+                                color = if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3)
+                            )
                         }
                     }
                     
@@ -520,21 +524,21 @@ fun TemperatureMonitorScreen(navController: NavController) {
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         TimeRangeChip(
-                            text = "1天",
+                            text = if (isChineseLanguage) "1天" else "1 Day",
                             isSelected = selectedTimeRange == 1,
                             onClick = { selectedTimeRange = 1 },
                             isDarkTheme = isDarkTheme
                         )
                         
                         TimeRangeChip(
-                            text = "3天",
+                            text = if (isChineseLanguage) "3天" else "3 Days",
                             isSelected = selectedTimeRange == 3,
                             onClick = { selectedTimeRange = 3 },
                             isDarkTheme = isDarkTheme
                         )
                         
                         TimeRangeChip(
-                            text = "7天",
+                            text = if (isChineseLanguage) "7天" else "7 Days",
                             isSelected = selectedTimeRange == 7,
                             onClick = { selectedTimeRange = 7 },
                             isDarkTheme = isDarkTheme
@@ -570,12 +574,11 @@ fun TemperatureMonitorScreen(navController: NavController) {
                     if (filteredRecords.isEmpty()) {
                         Box(
                             modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
+                                .fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "無符合條件的數據",
+                                text = if (isChineseLanguage) "無符合條件的數據" else "No matching data",
                                 fontSize = 16.sp,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                             )
@@ -585,7 +588,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
                             modifier = Modifier.fillMaxSize()
                         ) {
                             items(filteredRecords) { record ->
-                                TemperatureRecordItem(record = record, isDarkTheme = isDarkTheme)
+                                TemperatureRecordItem(record = record, isDarkTheme = isDarkTheme, isChineseLanguage = isChineseLanguage)
                                 Divider(
                                     modifier = Modifier.padding(vertical = 4.dp),
                                     color = if (isDarkTheme) Color.DarkGray.copy(alpha = 0.5f) else Color.LightGray.copy(alpha = 0.5f)
@@ -605,7 +608,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
 }
 
 @Composable
-fun TemperatureChart(temperatureRecords: List<TemperatureRecord>, isDarkTheme: Boolean) {
+fun TemperatureChart(temperatureRecords: List<TemperatureRecord>, isDarkTheme: Boolean, isChineseLanguage: Boolean) {
     // 排序記錄，按時間順序
     val sortedRecords = temperatureRecords.sortedBy { it.timestamp }
     
@@ -615,7 +618,7 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>, isDarkTheme: B
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "無體溫數據",
+                text = if (isChineseLanguage) "無體溫數據" else "No temperature data",
                 color = if (isDarkTheme) Color.LightGray else Color.Gray
             )
         }
@@ -778,9 +781,8 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>, isDarkTheme: B
 }
 
 @Composable
-fun TemperatureRecordItem(record: TemperatureRecord, isDarkTheme: Boolean) {
-    val timeFormatter = DateTimeFormatter.ofPattern("MM-dd HH:mm")
-    val formattedTime = record.timestamp.format(timeFormatter)
+fun TemperatureRecordItem(record: TemperatureRecord, isDarkTheme: Boolean, isChineseLanguage: Boolean) {
+    val formattedTime = record.timestamp.format(DateTimeFormatter.ofPattern("MM-dd HH:mm"))
     
     // 根据深色模式调整颜色
     val temperatureColor = when {
@@ -791,9 +793,9 @@ fun TemperatureRecordItem(record: TemperatureRecord, isDarkTheme: Boolean) {
     
     // 體溫狀態文本
     val statusText = when {
-        record.temperature > 37.5f -> "體溫過高"
-        record.temperature < 36.0f -> "體溫過低"
-        else -> "正常"
+        record.temperature > 37.5f -> if (isChineseLanguage) "體溫過高" else "Temp Too High"
+        record.temperature < 36.0f -> if (isChineseLanguage) "體溫過低" else "Temp Too Low"
+        else -> if (isChineseLanguage) "正常" else "Normal"
     }
     
     Row(

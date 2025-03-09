@@ -53,16 +53,22 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myapplication.R
 import com.example.myapplication.ui.theme.ThemeManager
+import com.example.myapplication.ui.theme.LanguageManager
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 
 // 通知項目數據類
 data class NotificationItem(
-    val title: String,
-    val notificationMethods: String,
+    val titleZh: String,
+    val titleEn: String,
+    val notificationMethodsZh: String,
+    val notificationMethodsEn: String,
     val type: NotificationType
-)
+) {
+    fun getTitle(isChinese: Boolean): String = if (isChinese) titleZh else titleEn
+    fun getNotificationMethods(isChinese: Boolean): String = if (isChinese) notificationMethodsZh else notificationMethodsEn
+}
 
 enum class NotificationType {
     NORMAL,
@@ -88,6 +94,8 @@ fun NotificationScreen(navController: NavController) {
 fun NotificationContent(navController: NavController) {
     // 檢查深色模式
     val isDarkTheme = ThemeManager.isDarkTheme
+    // 檢查語言設置
+    val isChineseLanguage = LanguageManager.isChineseLanguage
     
     // 篩選狀態
     var currentFilter by remember { mutableStateOf(FilterType.ALL) }
@@ -99,13 +107,55 @@ fun NotificationContent(navController: NavController) {
     // 模擬通知數據
     val notifications = remember {
         listOf(
-            NotificationItem("Fire Alarm", "Push notification, Email", NotificationType.ABNORMAL),
-            NotificationItem("Temperature Alarm", "Push notification, Email", NotificationType.ABNORMAL),
-            NotificationItem("Burglary Alarm", "Push notification, Email", NotificationType.ABNORMAL),
-            NotificationItem("Gas Alarm", "Push notification, Email", NotificationType.ABNORMAL),
-            NotificationItem("Daily Report", "Email", NotificationType.NORMAL),
-            NotificationItem("Medication Reminder", "Push notification", NotificationType.NORMAL),
-            NotificationItem("System Update", "Push notification", NotificationType.NORMAL)
+            NotificationItem(
+                titleZh = "火災警報", 
+                titleEn = "Fire Alarm",
+                notificationMethodsZh = "推送通知, 電子郵件", 
+                notificationMethodsEn = "Push notification, Email", 
+                type = NotificationType.ABNORMAL
+            ),
+            NotificationItem(
+                titleZh = "溫度警報", 
+                titleEn = "Temperature Alarm",
+                notificationMethodsZh = "推送通知, 電子郵件", 
+                notificationMethodsEn = "Push notification, Email", 
+                type = NotificationType.ABNORMAL
+            ),
+            NotificationItem(
+                titleZh = "入侵警報", 
+                titleEn = "Burglary Alarm",
+                notificationMethodsZh = "推送通知, 電子郵件", 
+                notificationMethodsEn = "Push notification, Email", 
+                type = NotificationType.ABNORMAL
+            ),
+            NotificationItem(
+                titleZh = "燃氣警報", 
+                titleEn = "Gas Alarm",
+                notificationMethodsZh = "推送通知, 電子郵件", 
+                notificationMethodsEn = "Push notification, Email", 
+                type = NotificationType.ABNORMAL
+            ),
+            NotificationItem(
+                titleZh = "每日報告", 
+                titleEn = "Daily Report",
+                notificationMethodsZh = "電子郵件", 
+                notificationMethodsEn = "Email", 
+                type = NotificationType.NORMAL
+            ),
+            NotificationItem(
+                titleZh = "服藥提醒", 
+                titleEn = "Medication Reminder",
+                notificationMethodsZh = "推送通知", 
+                notificationMethodsEn = "Push notification", 
+                type = NotificationType.NORMAL
+            ),
+            NotificationItem(
+                titleZh = "系統更新", 
+                titleEn = "System Update",
+                notificationMethodsZh = "推送通知", 
+                notificationMethodsEn = "Push notification", 
+                type = NotificationType.NORMAL
+            )
         )
     }
     
@@ -134,7 +184,7 @@ fun NotificationContent(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "通知",
+                    text = if (isChineseLanguage) "通知" else "Notifications",
                     fontSize = 30.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
@@ -151,7 +201,7 @@ fun NotificationContent(navController: NavController) {
                 ) {
                     Icon(
                         imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                        contentDescription = "切換主題",
+                        contentDescription = if (isChineseLanguage) "切換主題" else "Toggle Theme",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
@@ -166,17 +216,17 @@ fun NotificationContent(navController: NavController) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FilterButton(
-                    text = "All",
+                    text = if (isChineseLanguage) "全部" else "All",
                     isSelected = currentFilter == FilterType.ALL,
                     onClick = { currentFilter = FilterType.ALL }
                 )
                 FilterButton(
-                    text = "Abnormal",
+                    text = if (isChineseLanguage) "異常" else "Abnormal",
                     isSelected = currentFilter == FilterType.ABNORMAL,
                     onClick = { currentFilter = FilterType.ABNORMAL }
                 )
                 FilterButton(
-                    text = "Normal",
+                    text = if (isChineseLanguage) "正常" else "Normal",
                     isSelected = currentFilter == FilterType.NORMAL,
                     onClick = { currentFilter = FilterType.NORMAL }
                 )
@@ -243,6 +293,9 @@ fun NotificationItemCard(
     notification: NotificationItem,
     onEditClick: () -> Unit
 ) {
+    // 獲取語言設置
+    val isChineseLanguage = LanguageManager.isChineseLanguage
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -262,14 +315,14 @@ fun NotificationItemCard(
                     .padding(end = 8.dp)
             ) {
                 Text(
-                    text = notification.title,
+                    text = notification.getTitle(isChineseLanguage),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 
                 Text(
-                    text = notification.notificationMethods,
+                    text = notification.getNotificationMethods(isChineseLanguage),
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -283,7 +336,7 @@ fun NotificationItemCard(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text(
-                    text = "Edit",
+                    text = if (isChineseLanguage) "編輯" else "Edit",
                     color = MaterialTheme.colorScheme.onSecondary
                 )
             }
@@ -297,9 +350,10 @@ fun NotificationEditDialog(
     onDismiss: () -> Unit
 ) {
     // 狀態
-    var pushEnabled by remember { mutableStateOf(notification.notificationMethods.contains("Push")) }
-    var emailEnabled by remember { mutableStateOf(notification.notificationMethods.contains("Email")) }
-    var priority by remember { mutableStateOf(if (notification.type == NotificationType.ABNORMAL) "High" else "Normal") }
+    val isChineseLanguage = LanguageManager.isChineseLanguage
+    var pushEnabled by remember { mutableStateOf(notification.getNotificationMethods(isChineseLanguage).contains(if (isChineseLanguage) "推送" else "Push")) }
+    var emailEnabled by remember { mutableStateOf(notification.getNotificationMethods(isChineseLanguage).contains(if (isChineseLanguage) "電子" else "Email")) }
+    var priority by remember { mutableStateOf(if (notification.type == NotificationType.ABNORMAL) if (isChineseLanguage) "高" else "High" else if (isChineseLanguage) "普通" else "Normal") }
     
     Surface(
         modifier = Modifier
@@ -322,14 +376,14 @@ fun NotificationEditDialog(
                     .fillMaxWidth()
             ) {
                 Text(
-                    text = "編輯通知設定",
+                    text = if (isChineseLanguage) "編輯通知設定" else "Edit Notification Settings",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
                 
                 Text(
-                    text = notification.title,
+                    text = notification.getTitle(isChineseLanguage),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -339,7 +393,7 @@ fun NotificationEditDialog(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
-                    text = "通知方式",
+                    text = if (isChineseLanguage) "通知方式" else "Notification Methods",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -360,7 +414,7 @@ fun NotificationEditDialog(
                         colors = CheckboxDefaults.colors(checkedColor = Color(0xFF4169E1))
                     )
                     Text(
-                        text = "推送通知",
+                        text = if (isChineseLanguage) "推送通知" else "Push Notification",
                         modifier = Modifier.padding(start = 8.dp)
                     )
                 }
@@ -381,7 +435,7 @@ fun NotificationEditDialog(
                         colors = CheckboxDefaults.colors(checkedColor = Color(0xFF4169E1))
                     )
                     Text(
-                        text = "電子郵件",
+                        text = if (isChineseLanguage) "電子郵件" else "Email",
                         modifier = Modifier.padding(start = 8.dp)
                     )
                 }
@@ -391,7 +445,7 @@ fun NotificationEditDialog(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
-                    text = "優先級",
+                    text = if (isChineseLanguage) "優先級" else "Priority",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -401,18 +455,18 @@ fun NotificationEditDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .selectable(
-                            selected = priority == "High",
-                            onClick = { priority = "High" }
+                            selected = priority == (if (isChineseLanguage) "高" else "High"),
+                            onClick = { priority = if (isChineseLanguage) "高" else "High" }
                         ),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
-                        selected = priority == "High",
-                        onClick = { priority = "High" },
+                        selected = priority == (if (isChineseLanguage) "高" else "High"),
+                        onClick = { priority = if (isChineseLanguage) "高" else "High" },
                         colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF4169E1))
                     )
                     Text(
-                        text = "高優先級",
+                        text = if (isChineseLanguage) "高優先級" else "High Priority",
                         modifier = Modifier.padding(start = 8.dp)
                     )
                 }
@@ -421,18 +475,18 @@ fun NotificationEditDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .selectable(
-                            selected = priority == "Normal",
-                            onClick = { priority = "Normal" }
+                            selected = priority == (if (isChineseLanguage) "普通" else "Normal"),
+                            onClick = { priority = if (isChineseLanguage) "普通" else "Normal" }
                         ),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
-                        selected = priority == "Normal",
-                        onClick = { priority = "Normal" },
+                        selected = priority == (if (isChineseLanguage) "普通" else "Normal"),
+                        onClick = { priority = if (isChineseLanguage) "普通" else "Normal" },
                         colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF4169E1))
                     )
                     Text(
-                        text = "普通優先級",
+                        text = if (isChineseLanguage) "普通優先級" else "Normal Priority",
                         modifier = Modifier.padding(start = 8.dp)
                     )
                 }
@@ -442,7 +496,7 @@ fun NotificationEditDialog(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
-                    text = "啟用通知",
+                    text = if (isChineseLanguage) "啟用通知" else "Enable Notifications",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -454,7 +508,7 @@ fun NotificationEditDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "接收此類型通知")
+                    Text(text = if (isChineseLanguage) "接收此類型通知" else "Receive this notification type")
                     Switch(
                         checked = true,
                         onCheckedChange = { },
@@ -479,7 +533,7 @@ fun NotificationEditDialog(
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
                         Text(
-                            text = "取消",
+                            text = if (isChineseLanguage) "取消" else "Cancel",
                             color = Color.Black
                         )
                     }
@@ -491,7 +545,7 @@ fun NotificationEditDialog(
                         )
                     ) {
                         Text(
-                            text = "保存",
+                            text = if (isChineseLanguage) "保存" else "Save",
                             color = Color.White
                         )
                     }

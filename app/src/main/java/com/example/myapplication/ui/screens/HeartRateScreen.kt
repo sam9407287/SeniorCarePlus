@@ -69,6 +69,7 @@ import com.example.myapplication.ui.theme.LightCardBackground
 import com.example.myapplication.ui.theme.LightChartBackground
 import com.example.myapplication.ui.theme.LightChartLine
 import com.example.myapplication.ui.theme.ThemeManager
+import com.example.myapplication.ui.theme.LanguageManager
 import kotlin.random.Random
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -89,14 +90,15 @@ data class HeartRateRecord(
 fun HeartRateMonitorScreen(navController: NavController) {
     // 判断是否为深色模式
     val isDarkTheme = ThemeManager.isDarkTheme
+    val isChineseLanguage = LanguageManager.isChineseLanguage
     
     // 示例數據
     val patients = listOf(
-        "張三" to "001",
-        "李四" to "002",
-        "王五" to "003",
-        "趙六" to "004",
-        "孫七" to "005"
+        (if (isChineseLanguage) "張三" else "Zhang San") to "001",
+        (if (isChineseLanguage) "李四" else "Li Si") to "002",
+        (if (isChineseLanguage) "王五" else "Wang Wu") to "003",
+        (if (isChineseLanguage) "趙六" else "Zhao Liu") to "004",
+        (if (isChineseLanguage) "孫七" else "Sun Qi") to "005"
     )
     
     // 選中的病患
@@ -192,7 +194,7 @@ fun HeartRateMonitorScreen(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "心率監測",
+                    text = if (isChineseLanguage) "心率監測" else "Heart Rate Monitor",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
@@ -243,7 +245,7 @@ fun HeartRateMonitorScreen(navController: NavController) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.Person,
-                            contentDescription = "患者",
+                            contentDescription = if (isChineseLanguage) "患者" else "Patient",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(24.dp)
                         )
@@ -251,7 +253,10 @@ fun HeartRateMonitorScreen(navController: NavController) {
                         Spacer(modifier = Modifier.width(8.dp))
                         
                         Text(
-                            text = "患者: ${patients[selectedPatientIndex].first}",
+                            text = if (isChineseLanguage)
+                                "患者: ${patients[selectedPatientIndex].first}"
+                            else
+                                "Patient: ${patients[selectedPatientIndex].first}",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.weight(1f),
@@ -352,7 +357,7 @@ fun HeartRateMonitorScreen(navController: NavController) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "心率趨勢圖",
+                            text = if (isChineseLanguage) "心率趨勢圖" else "Heart Rate Trend",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -360,7 +365,10 @@ fun HeartRateMonitorScreen(navController: NavController) {
                         )
                         
                         Text(
-                            text = "目標心率: ${targetHeartRate.toInt()} BPM",
+                            text = if (isChineseLanguage)
+                                "目標心率: ${targetHeartRate.toInt()} BPM"
+                            else
+                                "Target Heart Rate: ${targetHeartRate.toInt()} BPM",
                             fontSize = 16.sp,
                             color = if (isDarkTheme) DarkChartLine else LightChartLine
                         )
@@ -403,8 +411,7 @@ fun HeartRateMonitorScreen(navController: NavController) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(500.dp)
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp),  // 移除固定高度，讓內容自然延展
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = if (isDarkTheme) DarkCardBackground else LightCardBackground
@@ -412,92 +419,78 @@ fun HeartRateMonitorScreen(navController: NavController) {
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()  // 不使用fillMaxSize，避免強制擴展
                         .padding(16.dp)
                 ) {
+                    // 標題和過濾器分成兩行顯示，避免擁擠
+                    Text(
+                        text = if (isChineseLanguage) "心率記錄" else "Heart Rate Records",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 8.dp)  // 添加底部間距
+                    )
+                    
+                    // 過濾按鈕
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),  // 減少間距
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(
-                            text = "心率記錄",
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                        // 全部
+                        AbnormalFilterChip(
+                            text = if (isChineseLanguage) "全部" else "All",
+                            isSelected = filterType == 0,
+                            onClick = { filterType = 0 },
+                            isDarkTheme = isDarkTheme
                         )
                         
-                        // 替換原有的過濾開關為過濾類型選擇
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "過濾:",
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                            )
-                            
-                            Spacer(modifier = Modifier.width(4.dp))
-                            
-                            // 過濾類型選擇按鈕
-                            Row(
-                                modifier = Modifier
-                                    .padding(vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                AbnormalFilterChip(
-                                    text = "全部",
-                                    isSelected = filterType == 0,
-                                    onClick = { filterType = 0 },
-                                    isDarkTheme = isDarkTheme
-                                )
-                                
-                                Spacer(modifier = Modifier.width(4.dp))
-                                
-                                AbnormalFilterChip(
-                                    text = "高心率",
-                                    isSelected = filterType == 1,
-                                    onClick = { filterType = 1 },
-                                    isDarkTheme = isDarkTheme,
-                                    color = if (isDarkTheme) Color(0xFFFF5252) else Color.Red
-                                )
-                                
-                                Spacer(modifier = Modifier.width(4.dp))
-                                
-                                AbnormalFilterChip(
-                                    text = "低心率",
-                                    isSelected = filterType == 2,
-                                    onClick = { filterType = 2 },
-                                    isDarkTheme = isDarkTheme,
-                                    color = if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3)
-                                )
-                            }
-                        }
+                        // 高心率
+                        AbnormalFilterChip(
+                            text = if (isChineseLanguage) "高心率" else "High Heart Rate",
+                            isSelected = filterType == 1,
+                            onClick = { filterType = 1 },
+                            isDarkTheme = isDarkTheme,
+                            color = if (isDarkTheme) Color(0xFFFF5252) else Color.Red
+                        )
+                        
+                        // 低心率
+                        AbnormalFilterChip(
+                            text = if (isChineseLanguage) "低心率" else "Low Heart Rate",
+                            isSelected = filterType == 2,
+                            onClick = { filterType = 2 },
+                            isDarkTheme = isDarkTheme,
+                            color = if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3)
+                        )
                     }
                     
                     // 時間範圍選擇
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                            .padding(bottom = 8.dp),  // 減少間距
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        // 1天
                         TimeRangeChip(
-                            text = "1天",
+                            text = if (isChineseLanguage) "1天" else "1 Day",
                             isSelected = selectedTimeRange == 1,
                             onClick = { selectedTimeRange = 1 },
                             isDarkTheme = isDarkTheme
                         )
                         
+                        // 3天
                         TimeRangeChip(
-                            text = "3天",
+                            text = if (isChineseLanguage) "3天" else "3 Days",
                             isSelected = selectedTimeRange == 3,
                             onClick = { selectedTimeRange = 3 },
                             isDarkTheme = isDarkTheme
                         )
                         
+                        // 7天
                         TimeRangeChip(
-                            text = "7天",
+                            text = if (isChineseLanguage) "7天" else "7 Days",
                             isSelected = selectedTimeRange == 7,
                             onClick = { selectedTimeRange = 7 },
                             isDarkTheme = isDarkTheme
@@ -529,30 +522,35 @@ fun HeartRateMonitorScreen(navController: NavController) {
                         }
                         .sortedByDescending { it.timestamp }
                     
-                    // 在Card内使用LazyColumn显示记录
-                    if (filteredRecords.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "無符合條件的數據",
-                                fontSize = 16.sp,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                            )
-                        }
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            items(filteredRecords) { record ->
-                                HeartRateRecordItem(record = record, isDarkTheme = isDarkTheme)
-                                Divider(
-                                    modifier = Modifier.padding(vertical = 4.dp),
-                                    color = if (isDarkTheme) Color.DarkGray.copy(alpha = 0.5f) else Color.LightGray.copy(alpha = 0.5f)
+                    // 在Box内使用LazyColumn显示记录，设置固定高度
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)  // 給記錄列表一個合適的固定高度
+                    ) {
+                        if (filteredRecords.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (isChineseLanguage) "無符合條件的數據" else "No matching data",
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                 )
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                items(filteredRecords) { record ->
+                                    HeartRateRecordItem(record = record, isDarkTheme = isDarkTheme, isChineseLanguage = isChineseLanguage)
+                                    Divider(
+                                        modifier = Modifier.padding(vertical = 4.dp),
+                                        color = if (isDarkTheme) Color.DarkGray.copy(alpha = 0.5f) else Color.LightGray.copy(alpha = 0.5f)
+                                    )
+                                }
                             }
                         }
                     }
@@ -743,22 +741,24 @@ fun HeartRateChart(heartRateRecords: List<HeartRateRecord>, targetHeartRate: Int
 }
 
 @Composable
-fun HeartRateRecordItem(record: HeartRateRecord, isDarkTheme: Boolean) {
-    val timeFormatter = DateTimeFormatter.ofPattern("MM-dd HH:mm")
-    val formattedTime = record.timestamp.format(timeFormatter)
+fun HeartRateRecordItem(record: HeartRateRecord, isDarkTheme: Boolean, isChineseLanguage: Boolean) {
+    val formattedTime = record.timestamp.format(DateTimeFormatter.ofPattern("MM-dd HH:mm"))
+    val statusText = when {
+        record.heartRate > 150 -> if (isChineseLanguage) "心率過高" else "Heart Rate Too High"
+        record.heartRate < 60 -> if (isChineseLanguage) "心率過低" else "Heart Rate Too Low"
+        else -> if (isChineseLanguage) "正常" else "Normal"
+    }
+    val statusColor = when {
+        record.heartRate > 150 -> Color(0xFFE53935)
+        record.heartRate < 60 -> Color(0xFF2196F3)
+        else -> Color(0xFF4CAF50)
+    }
     
     // 根据深色模式调整颜色
     val heartRateColor = when {
         record.heartRate > 150 -> if (isDarkTheme) Color(0xFFFF5252) else Color.Red
         record.heartRate < 60 -> if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3) // Blue
         else -> if (isDarkTheme) Color(0xFF81C784) else Color(0xFF4CAF50) // Green
-    }
-    
-    // 心率狀態文本
-    val statusText = when {
-        record.heartRate > 150 -> "心率過高"
-        record.heartRate < 60 -> "心率過低"
-        else -> "正常"
     }
     
     Row(
@@ -802,7 +802,7 @@ fun HeartRateRecordItem(record: HeartRateRecord, isDarkTheme: Boolean) {
         
         Text(
             text = statusText,
-            color = heartRateColor,
+            color = statusColor,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
         )

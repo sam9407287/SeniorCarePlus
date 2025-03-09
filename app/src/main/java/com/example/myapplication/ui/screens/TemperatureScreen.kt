@@ -4,7 +4,6 @@ import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -59,6 +58,14 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
+import com.example.myapplication.ui.theme.DarkCardBackground
+import com.example.myapplication.ui.theme.DarkCardContentBackground
+import com.example.myapplication.ui.theme.DarkChartBackground
+import com.example.myapplication.ui.theme.DarkChartLine
+import com.example.myapplication.ui.theme.LightCardBackground
+import com.example.myapplication.ui.theme.LightChartBackground
+import com.example.myapplication.ui.theme.LightChartLine
+import com.example.myapplication.ui.theme.ThemeManager
 
 // 體溫數據類
 data class TemperatureRecord(
@@ -71,6 +78,9 @@ data class TemperatureRecord(
 
 @Composable
 fun TemperatureMonitorScreen(navController: NavController) {
+    // 判断是否为深色模式
+    val isDarkTheme = ThemeManager.isDarkTheme
+    
     // 示例數據
     val patients = listOf(
         "張三" to "001",
@@ -116,7 +126,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // 顶部标题
         item {
@@ -124,7 +134,8 @@ fun TemperatureMonitorScreen(navController: NavController) {
                 text = "體溫監測",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
         
@@ -133,55 +144,76 @@ fun TemperatureMonitorScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
-                        .padding(12.dp)
-                        .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
-                        .clip(RoundedCornerShape(8.dp))
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isDarkTheme) 
+                            MaterialTheme.colorScheme.surface 
+                        else 
+                            Color.White
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "患者",
-                        tint = Color(0xFF4169E1),
-                        modifier = Modifier.size(24.dp)
-                    )
-                    
-                    Spacer(modifier = Modifier.width(8.dp))
-                    
-                    Text(
-                        text = "患者: ${patients[selectedPatientIndex].first}",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
-                    )
-                    
-                    IconButton(
-                        onClick = { showPatientDropdown = true }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                            contentDescription = "選擇患者"
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "患者",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
                         )
-                    }
-                    
-                    DropdownMenu(
-                        expanded = showPatientDropdown,
-                        onDismissRequest = { showPatientDropdown = false }
-                    ) {
-                        patients.forEachIndexed { index, patient ->
-                            DropdownMenuItem(
-                                text = { Text(text = patient.first) },
-                                onClick = {
-                                    selectedPatientIndex = index
-                                    showPatientDropdown = false
-                                }
+                        
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        Text(
+                            text = "患者: ${patients[selectedPatientIndex].first}",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        
+                        IconButton(
+                            onClick = { showPatientDropdown = true }
+                        ) {
+                            Icon(
+                                imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                contentDescription = "選擇患者",
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
+                        }
+                        
+                        DropdownMenu(
+                            expanded = showPatientDropdown,
+                            onDismissRequest = { showPatientDropdown = false },
+                            modifier = Modifier.background(
+                                if (isDarkTheme) 
+                                    MaterialTheme.colorScheme.surfaceVariant 
+                                else 
+                                    Color.White
+                            )
+                        ) {
+                            patients.forEachIndexed { index, patient ->
+                                DropdownMenuItem(
+                                    text = { 
+                                        Text(
+                                            text = patient.first,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    },
+                                    onClick = {
+                                        selectedPatientIndex = index
+                                        showPatientDropdown = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -192,13 +224,27 @@ fun TemperatureMonitorScreen(navController: NavController) {
         item {
             TabRow(
                 selectedTabIndex = selectedTabIndex,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                containerColor = if (isDarkTheme) 
+                    MaterialTheme.colorScheme.surface 
+                else 
+                    MaterialTheme.colorScheme.surfaceVariant
             ) {
                 tabTitles.forEachIndexed { index, title ->
                     Tab(
                         selected = selectedTabIndex == index,
                         onClick = { selectedTabIndex = index },
-                        text = { Text(text = title) }
+                        text = { 
+                            Text(
+                                text = title, 
+                                color = if (selectedTabIndex == index) 
+                                    MaterialTheme.colorScheme.primary 
+                                else 
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            ) 
+                        }
                     )
                 }
             }
@@ -211,8 +257,12 @@ fun TemperatureMonitorScreen(navController: NavController) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(240.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    .height(240.dp)
+                    .padding(horizontal = 16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isDarkTheme) DarkCardBackground else LightCardBackground
+                )
             ) {
                 Column(
                     modifier = Modifier
@@ -223,7 +273,8 @@ fun TemperatureMonitorScreen(navController: NavController) {
                         text = "體溫趨勢圖",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     
                     Box(
@@ -231,7 +282,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
                             .fillMaxSize()
                             .weight(1f)
                     ) {
-                        TemperatureChart(temperatureRecords = temperatureRecords)
+                        TemperatureChart(temperatureRecords = temperatureRecords, isDarkTheme = isDarkTheme)
                     }
                 }
             }
@@ -244,8 +295,12 @@ fun TemperatureMonitorScreen(navController: NavController) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(500.dp), // 设置为足够长的固定高度
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    .height(500.dp) // 设置为足够长的固定高度
+                    .padding(horizontal = 16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isDarkTheme) DarkCardBackground else LightCardBackground
+                )
             ) {
                 Column(
                     modifier = Modifier
@@ -256,31 +311,40 @@ fun TemperatureMonitorScreen(navController: NavController) {
                         text = "體溫記錄",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     
-                    Divider(modifier = Modifier.padding(bottom = 8.dp))
+                    Divider(
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        color = if (isDarkTheme) Color.DarkGray else Color.LightGray
+                    )
                     
                     // 在Card内使用LazyColumn显示记录
                     LazyColumn(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(temperatureRecords.sortedByDescending { it.timestamp }) { record ->
-                            TemperatureRecordItem(record = record)
+                            TemperatureRecordItem(record = record, isDarkTheme = isDarkTheme)
                             Divider(
                                 modifier = Modifier.padding(vertical = 4.dp),
-                                color = Color.LightGray.copy(alpha = 0.5f)
+                                color = if (isDarkTheme) Color.DarkGray.copy(alpha = 0.5f) else Color.LightGray.copy(alpha = 0.5f)
                             )
                         }
                     }
                 }
             }
         }
+        
+        // 底部空间，确保内容可以滚动到底部
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
     }
 }
 
 @Composable
-fun TemperatureChart(temperatureRecords: List<TemperatureRecord>) {
+fun TemperatureChart(temperatureRecords: List<TemperatureRecord>, isDarkTheme: Boolean) {
     // 排序記錄，按時間順序
     val sortedRecords = temperatureRecords.sortedBy { it.timestamp }
     
@@ -291,7 +355,7 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>) {
         ) {
             Text(
                 text = "無體溫數據",
-                color = Color.Gray
+                color = if (isDarkTheme) Color.LightGray else Color.Gray
             )
         }
         return
@@ -302,7 +366,9 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>) {
     val maxTemp = sortedRecords.maxOfOrNull { it.temperature }?.plus(0.5f) ?: 39.5f
     
     Canvas(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(if (isDarkTheme) DarkChartBackground else LightChartBackground)
     ) {
         val height = size.height
         val width = size.width
@@ -316,9 +382,13 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>) {
         val verticalStepSize = chartHeight / (maxTemp - minTemp)
         val horizontalStepSize = chartWidth / (sortedRecords.size - 1).coerceAtLeast(1)
         
+        // 设置网格和轴线颜色
+        val gridColor = if (isDarkTheme) Color(0xFF444444) else Color.LightGray
+        val textColor = if (isDarkTheme) Color(0xFFCCCCCC) else Color.DarkGray
+        
         // 畫Y軸
         drawLine(
-            color = Color.LightGray,
+            color = gridColor,
             start = Offset(yAxisWidth, 0f),
             end = Offset(yAxisWidth, chartHeight),
             strokeWidth = 1f
@@ -326,7 +396,7 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>) {
         
         // 畫X軸
         drawLine(
-            color = Color.LightGray,
+            color = gridColor,
             start = Offset(yAxisWidth, chartHeight),
             end = Offset(width, chartHeight),
             strokeWidth = 1f
@@ -342,7 +412,7 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>) {
             val temp = minTemp + (i * yStepValue)
             
             drawLine(
-                color = Color.LightGray,
+                color = gridColor,
                 start = Offset(yAxisWidth, y),
                 end = Offset(width, y),
                 strokeWidth = 0.5f
@@ -354,7 +424,7 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>) {
                     5f,
                     y + 5f,
                     Paint().apply {
-                        color = Color.Black.toArgb()
+                        color = textColor.toArgb()
                         textSize = 12.sp.toPx()
                         textAlign = Paint.Align.LEFT
                     }
@@ -377,7 +447,7 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>) {
                     x,
                     height - 10f,
                     Paint().apply {
-                        color = Color.Black.toArgb()
+                        color = textColor.toArgb()
                         textSize = 12.sp.toPx()
                         textAlign = Paint.Align.CENTER
                     }
@@ -396,7 +466,7 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>) {
             Offset(x, y)
         }
         
-        // 绘制整个折线图下方的淡红色填充
+        // 绘制整个折线图下方的填充
         val belowCurvePath = Path()
         belowCurvePath.moveTo(yAxisWidth, chartHeight)
         for (point in points) {
@@ -405,10 +475,13 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>) {
         belowCurvePath.lineTo(width, chartHeight)
         belowCurvePath.close()
         
-        // 使用统一的淡红色填充折线图下方区域
+        // 使用根据主题调整的填充颜色
         drawPath(
             path = belowCurvePath,
-            color = Color(0x55FFB6C1) // 淡红色
+            color = if (isDarkTheme) 
+                DarkChartLine.copy(alpha = 0.15f) 
+            else 
+                Color(0x55FFB6C1) // 浅色模式保持原来的淡红色
         )
         
         // 畫折線
@@ -417,17 +490,22 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>) {
             val endPoint = points[i + 1]
             
             drawLine(
-                color = Color(0xFFE91E63), // 深红色
+                color = if (isDarkTheme) DarkChartLine else LightChartLine,
                 start = startPoint,
                 end = endPoint,
-                strokeWidth = 2f
+                strokeWidth = 2.5f
             )
         }
         
         // 畫數據點
         points.forEachIndexed { index, offset ->
             val record = sortedRecords[index]
-            val pointColor = if (record.isAbnormal) Color.Red else Color(0xFFE91E63) // 深红色
+            // 根据深色模式调整点的颜色
+            val pointColor = if (record.isAbnormal) {
+                if (isDarkTheme) Color(0xFFFF5252) else Color.Red
+            } else {
+                if (isDarkTheme) DarkChartLine else LightChartLine
+            }
             
             drawCircle(
                 color = pointColor,
@@ -439,15 +517,16 @@ fun TemperatureChart(temperatureRecords: List<TemperatureRecord>) {
 }
 
 @Composable
-fun TemperatureRecordItem(record: TemperatureRecord) {
+fun TemperatureRecordItem(record: TemperatureRecord, isDarkTheme: Boolean) {
     val timeFormatter = DateTimeFormatter.ofPattern("MM-dd HH:mm")
     val formattedTime = record.timestamp.format(timeFormatter)
     
+    // 根据深色模式调整颜色
     val temperatureColor = when {
-        record.temperature > 38.0f -> Color.Red
-        record.temperature > 37.5f -> Color(0xFFFF9800) // Orange
-        record.temperature < 36.0f -> Color(0xFF2196F3) // Blue
-        else -> Color(0xFF4CAF50) // Green
+        record.temperature > 38.0f -> if (isDarkTheme) Color(0xFFFF5252) else Color.Red
+        record.temperature > 37.5f -> if (isDarkTheme) Color(0xFFFFB74D) else Color(0xFFFF9800) // Orange
+        record.temperature < 36.0f -> if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3) // Blue
+        else -> if (isDarkTheme) Color(0xFF81C784) else Color(0xFF4CAF50) // Green
     }
     
     Row(
@@ -460,7 +539,7 @@ fun TemperatureRecordItem(record: TemperatureRecord) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(temperatureColor.copy(alpha = 0.2f)),
+                .background(temperatureColor.copy(alpha = if (isDarkTheme) 0.3f else 0.2f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -478,7 +557,7 @@ fun TemperatureRecordItem(record: TemperatureRecord) {
             Text(
                 text = formattedTime,
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
             
             Text(
@@ -491,7 +570,11 @@ fun TemperatureRecordItem(record: TemperatureRecord) {
         
         Text(
             text = if (record.isAbnormal) "異常" else "正常",
-            color = if (record.isAbnormal) Color.Red else Color(0xFF4CAF50),
+            color = if (record.isAbnormal) {
+                if (isDarkTheme) Color(0xFFFF5252) else Color.Red
+            } else {
+                if (isDarkTheme) Color(0xFF81C784) else Color(0xFF4CAF50)
+            },
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp
         )

@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bathroom
+import androidx.compose.material.icons.filled.BabyChangingStation
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Favorite
@@ -88,7 +89,7 @@ fun HomeScreen(navController: NavController) {
         FeatureItem(
             nameZh = "尿布監測",
             nameEn = "Diaper Monitor",
-            icon = Icons.Default.Bathroom,
+            icon = Icons.Default.BabyChangingStation,
             route = "diaper_monitor",
             descriptionZh = "監測尿布狀態，提醒及時更換",
             descriptionEn = "Monitor diaper status, remind for timely replacement",

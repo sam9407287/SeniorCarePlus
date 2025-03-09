@@ -99,7 +99,7 @@ enum class ReminderType(val zhLabel: String, val enLabel: String, val color: Col
     MEAL("用餐", "Meal", Color(0xFFF57C00), Color(0xFFFFB74D)),
     HEART_RATE("心率", "Heart Rate", Color(0xFFE91E63), Color(0xFFF48FB1)),
     TEMPERATURE("體溫", "Temperature", Color(0xFF7B1FA2), Color(0xFFAB47BC)),
-    GENERAL("一般提醒", "General", Color(0xFF009688), Color(0xFF4DB6AC))
+    GENERAL("一般", "Normal", Color(0xFF009688), Color(0xFF4DB6AC))
 }
 
 // 根據語言獲取標籤
@@ -616,8 +616,8 @@ fun DayPickerDialog(
     ) {
         Card(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+                .fillMaxWidth(0.98f) // 增大對話框寬度
+                .padding(12.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
@@ -671,7 +671,7 @@ fun DayPickerDialog(
                             )
                         }
                         
-                        // 工作日按鈕
+                        // 平日按鈕
                         Button(
                             onClick = { 
                                 selectedDays.clear()
@@ -686,13 +686,13 @@ fun DayPickerDialog(
                                 .padding(horizontal = 4.dp)
                         ) {
                             Text(
-                                text = if (isChineseLanguage) "工作日" else "Weekdays",
+                                text = if (isChineseLanguage) "平日" else "Weekday",
                                 fontSize = 14.sp,
                                 maxLines = 1
                             )
                         }
                         
-                        // 週末按鈕
+                        // 假日按鈕
                         Button(
                             onClick = { 
                                 selectedDays.clear()
@@ -707,7 +707,7 @@ fun DayPickerDialog(
                                 .padding(start = 4.dp)
                         ) {
                             Text(
-                                text = if (isChineseLanguage) "週末" else "Weekend",
+                                text = if (isChineseLanguage) "假日" else "Weekend",
                                 fontSize = 14.sp,
                                 maxLines = 1
                             )
@@ -734,7 +734,7 @@ fun DayPickerDialog(
                             for (i in 0 until 7) {
                                 val day = daysOfWeek[i]
                                 val isSelected = selectedDays.contains(day)
-                                val buttonSize = if (isChineseLanguage) 32.dp else 38.dp // 英文版本按鈕略大
+                                val buttonSize = if (isChineseLanguage) 36.dp else 42.dp // 增大按鈕尺寸
                                 
                                 Button(
                                     onClick = {
@@ -763,7 +763,7 @@ fun DayPickerDialog(
                                         else 
                                             MaterialTheme.colorScheme.onSurface,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = if (isChineseLanguage) 12.sp else 10.sp, // 英文更小字體
+                                        fontSize = if (isChineseLanguage) 12.sp else 11.sp, // 增大字體
                                         maxLines = 1,
                                         overflow = TextOverflow.Clip
                                     )
@@ -793,7 +793,8 @@ fun DayPickerDialog(
                     ) {
                         Text(
                             text = if (isChineseLanguage) "取消" else "Cancel",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 16.sp // 增大字體
                         )
                     }
                     
@@ -815,7 +816,8 @@ fun DayPickerDialog(
                             color = if (selectedDays.isNotEmpty()) 
                                 MaterialTheme.colorScheme.onPrimary 
                             else 
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                                MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 16.sp // 增大字體
                         )
                     }
                 }
@@ -933,8 +935,8 @@ fun AddEditReminderDialog(
     ) {
         Card(
             modifier = Modifier
-                .fillMaxWidth(0.95f) // 增加對話框寬度
-                .padding(10.dp),
+                .fillMaxWidth(0.98f) // 進一步增加對話框寬度
+                .padding(8.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
@@ -943,7 +945,7 @@ fun AddEditReminderDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp) // 增加內部間距
+                    .padding(horizontal = 20.dp, vertical = 16.dp) // 調整內部間距
             ) {
                 // 标题
                 Text(
@@ -952,9 +954,9 @@ fun AddEditReminderDialog(
                     } else {
                         if (isChineseLanguage) "添加提醒" else "Add Reminder"
                     },
-                    fontSize = 22.sp, // 增大標題字體
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 20.dp),
+                    modifier = Modifier.padding(bottom = 16.dp),
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 
@@ -967,7 +969,7 @@ fun AddEditReminderDialog(
                     singleLine = true
                 )
                 
-                Spacer(modifier = Modifier.height(20.dp)) // 增加間距
+                Spacer(modifier = Modifier.height(16.dp))
                 
                 // 类型选择
                 Text(
@@ -977,9 +979,9 @@ fun AddEditReminderDialog(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 
-                // 提醒類型選擇器
+                // 提醒類型選擇器 - 改為更寬闊的設計
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
@@ -1007,12 +1009,12 @@ fun AddEditReminderDialog(
                                             Color.Transparent,
                                         RoundedCornerShape(8.dp)
                                     )
-                                    .padding(vertical = 8.dp, horizontal = 2.dp) // 增加垂直間距
+                                    .padding(vertical = 8.dp, horizontal = 2.dp)
                             ) {
-                                // 图标 - 增大尺寸
+                                // 圖標
                                 Box(
                                     modifier = Modifier
-                                        .size(40.dp) // 增大圖標容器
+                                        .size(38.dp)
                                         .clip(CircleShape)
                                         .background(
                                             if (isDarkTheme) type.darkColor.copy(alpha = 0.2f) else type.color.copy(alpha = 0.1f)
@@ -1024,65 +1026,70 @@ fun AddEditReminderDialog(
                                             imageVector = Icons.Default.Medication, 
                                             contentDescription = null,
                                             tint = if (isDarkTheme) type.darkColor else type.color,
-                                            modifier = Modifier.size(24.dp) // 保持圖標大小
+                                            modifier = Modifier.size(22.dp)
                                         )
                                         ReminderType.WATER -> Icon(
                                             imageVector = Icons.Default.WaterDrop, 
                                             contentDescription = null,
                                             tint = if (isDarkTheme) type.darkColor else type.color,
-                                            modifier = Modifier.size(24.dp)
+                                            modifier = Modifier.size(22.dp)
                                         )
                                         ReminderType.MEAL -> Icon(
                                             imageVector = Icons.Default.Restaurant, 
                                             contentDescription = null,
                                             tint = if (isDarkTheme) type.darkColor else type.color,
-                                            modifier = Modifier.size(24.dp)
+                                            modifier = Modifier.size(22.dp)
                                         )
                                         ReminderType.HEART_RATE -> Icon(
                                             imageVector = Icons.Default.Favorite, 
                                             contentDescription = null,
                                             tint = if (isDarkTheme) type.darkColor else type.color,
-                                            modifier = Modifier.size(24.dp)
+                                            modifier = Modifier.size(22.dp)
                                         )
                                         ReminderType.TEMPERATURE -> Icon(
                                             imageVector = Icons.Default.MedicalServices, 
                                             contentDescription = null,
                                             tint = if (isDarkTheme) type.darkColor else type.color,
-                                            modifier = Modifier.size(24.dp)
+                                            modifier = Modifier.size(22.dp)
                                         )
                                         ReminderType.GENERAL -> Icon(
                                             imageVector = Icons.Default.Timer, 
                                             contentDescription = null,
                                             tint = if (isDarkTheme) type.darkColor else type.color,
-                                            modifier = Modifier.size(24.dp)
+                                            modifier = Modifier.size(22.dp)
                                         )
                                     }
                                 }
                                 
-                                Spacer(modifier = Modifier.height(4.dp)) // 增加間距
+                                Spacer(modifier = Modifier.height(4.dp))
                                 
-                                // 顯示完整標籤
+                                // 簡化標籤顯示 - 確保單行
                                 Text(
-                                    text = if (isChineseLanguage) type.zhLabel else 
-                                          // 針對英文標籤進行處理
-                                          when (type) {
-                                              ReminderType.HEART_RATE -> "Heart"
-                                              ReminderType.TEMPERATURE -> "Temp"
-                                              ReminderType.GENERAL -> "Gen"
-                                              else -> type.enLabel.split(" ")[0]
-                                          },
-                                    fontSize = 12.sp, // 保持小字體
+                                    text = if (isChineseLanguage) {
+                                        type.zhLabel
+                                    } else {
+                                        // 更簡短的英文標籤
+                                        when (type) {
+                                            ReminderType.MEDICATION -> "Med"
+                                            ReminderType.WATER -> "Water"
+                                            ReminderType.MEAL -> "Meal"
+                                            ReminderType.HEART_RATE -> "Heart"
+                                            ReminderType.TEMPERATURE -> "Temp"
+                                            ReminderType.GENERAL -> "Normal"
+                                        }
+                                    },
+                                    fontSize = 12.sp,
                                     color = if (isDarkTheme) type.darkColor else type.color,
                                     textAlign = TextAlign.Center,
-                                    maxLines = 2, // 允許兩行顯示
-                                    overflow = TextOverflow.Ellipsis
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Visible
                                 )
                             }
                         }
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 
                 // 时间选择
                 Text(
@@ -1092,7 +1099,7 @@ fun AddEditReminderDialog(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 
                 // 時間選擇按鈕
                 Button(
@@ -1104,18 +1111,18 @@ fun AddEditReminderDialog(
                             MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                     ),
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp) // 增加按鈕高度
+                    shape = RoundedCornerShape(10.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp)
                 ) {
                     Text(
                         text = timeFormatted,
-                        fontSize = 22.sp, // 增大字體
+                        fontSize = 24.sp, // 進一步增大時間文字
                         fontWeight = FontWeight.Bold,
                         color = if (isDarkTheme) selectedType.darkColor else selectedType.color
                     )
                 }
                 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 
                 // 重复日期选择
                 Text(
@@ -1125,9 +1132,9 @@ fun AddEditReminderDialog(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 
-                // 日期選擇按鈕
+                // 日期選擇按鈕 - 增大並調整顯示
                 Button(
                     onClick = { showDayPicker = true },
                     colors = ButtonDefaults.buttonColors(
@@ -1137,22 +1144,31 @@ fun AddEditReminderDialog(
                             MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                     ),
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp) // 增加按鈕高度
+                    shape = RoundedCornerShape(10.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp)
                 ) {
-                    Text(
-                        text = selectedDays.joinToString(" · "),
-                        fontSize = 16.sp, // 增大字體
-                        color = if (isDarkTheme) selectedType.darkColor else selectedType.color
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // 將日期縮寫顯示為一行，使用較小字體
+                        Text(
+                            text = selectedDays.joinToString(" · "),
+                            fontSize = 16.sp, // 縮小字體
+                            color = if (isDarkTheme) selectedType.darkColor else selectedType.color,
+                            maxLines = 1,
+                            overflow = TextOverflow.Visible
+                        )
+                    }
                 }
                 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
                 
                 // 底部按钮 - 改為更明顯的按鈕樣式
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     // 取消按鈕
                     Button(
@@ -1161,7 +1177,7 @@ fun AddEditReminderDialog(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant
                         ),
                         shape = RoundedCornerShape(50),
-                        contentPadding = PaddingValues(vertical = 14.dp), // 增加按鈕高度
+                        contentPadding = PaddingValues(vertical = 14.dp),
                         modifier = Modifier
                             .weight(1f)
                             .padding(end = 8.dp)
@@ -1169,7 +1185,7 @@ fun AddEditReminderDialog(
                         Text(
                             text = if (isChineseLanguage) "取消" else "Cancel",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 16.sp // 增大字體
+                            fontSize = 16.sp
                         )
                     }
                     
@@ -1187,13 +1203,13 @@ fun AddEditReminderDialog(
                                 MaterialTheme.colorScheme.surfaceVariant
                         ),
                         shape = RoundedCornerShape(50),
-                        contentPadding = PaddingValues(vertical = 14.dp), // 增加按鈕高度
+                        contentPadding = PaddingValues(vertical = 14.dp),
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
                             text = if (isChineseLanguage) "確認" else "Confirm",
                             color = MaterialTheme.colorScheme.onPrimary,
-                            fontSize = 16.sp // 增大字體
+                            fontSize = 16.sp
                         )
                     }
                 }

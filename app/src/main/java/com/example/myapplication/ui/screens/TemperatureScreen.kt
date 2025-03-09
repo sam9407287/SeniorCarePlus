@@ -88,171 +88,190 @@ fun TemperatureMonitorScreen(navController: NavController) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabTitles = listOf("今日", "本週", "本月")
     
-    // 模擬體溫記錄
+    // 模擬體溫記錄 - 增加更多记录使页面可滚动
     val temperatureRecords = remember {
         val records = mutableListOf<TemperatureRecord>()
         val now = LocalDateTime.now()
         val patient = patients[selectedPatientIndex]
         
-        // 今日數據（每2小時一條）
-        for (hour in 0..23 step 2) {
-            val time = now.withHour(hour).withMinute(0)
-            // 模擬一個合理的體溫範圍內的波動
-            val temp = 36.5f + (Random.nextFloat() - 0.5f) * if ((0..10).random() > 8) 2.0f else 0.5f
-            records.add(
-                TemperatureRecord(
-                    patientId = patient.second,
-                    patientName = patient.first,
-                    temperature = temp,
-                    timestamp = time
+        // 模拟更多数据 - 过去7天每2小时一条记录
+        for (day in 0..6) {
+            for (hour in 0..23 step 2) {
+                val time = now.minusDays(day.toLong()).withHour(hour).withMinute(0)
+                val temp = 36.5f + (Random.nextFloat() - 0.5f) * if ((0..10).random() > 8) 2.0f else 0.5f
+                records.add(
+                    TemperatureRecord(
+                        patientId = patient.second,
+                        patientName = patient.first,
+                        temperature = temp,
+                        timestamp = time
+                    )
                 )
-            )
+            }
         }
         records
     }
     
-    Column(
+    // 使用LazyColumn替代Column让整个页面可以滚动
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // 頂部標題
-        Text(
-            text = "體溫監測",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        // 顶部标题
+        item {
+            Text(
+                text = "體溫監測",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        }
         
-        // 病患選擇
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
-        ) {
-            Row(
+        // 病患选择
+        item {
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
-                    .padding(12.dp)
-                    .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
-                    .clip(RoundedCornerShape(8.dp))
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(bottom = 16.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "患者",
-                    tint = Color(0xFF4169E1),
-                    modifier = Modifier.size(24.dp)
-                )
-                
-                Spacer(modifier = Modifier.width(8.dp))
-                
-                Text(
-                    text = "患者: ${patients[selectedPatientIndex].first}",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f)
-                )
-                
-                IconButton(
-                    onClick = { showPatientDropdown = true }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                        .padding(12.dp)
+                        .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(8.dp))
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = "選擇患者"
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "患者",
+                        tint = Color(0xFF4169E1),
+                        modifier = Modifier.size(24.dp)
                     )
-                }
-                
-                DropdownMenu(
-                    expanded = showPatientDropdown,
-                    onDismissRequest = { showPatientDropdown = false }
-                ) {
-                    patients.forEachIndexed { index, patient ->
-                        DropdownMenuItem(
-                            text = { Text(text = patient.first) },
-                            onClick = {
-                                selectedPatientIndex = index
-                                showPatientDropdown = false
-                            }
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    Text(
+                        text = "患者: ${patients[selectedPatientIndex].first}",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f)
+                    )
+                    
+                    IconButton(
+                        onClick = { showPatientDropdown = true }
+                    ) {
+                        Icon(
+                            imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = "選擇患者"
                         )
+                    }
+                    
+                    DropdownMenu(
+                        expanded = showPatientDropdown,
+                        onDismissRequest = { showPatientDropdown = false }
+                    ) {
+                        patients.forEachIndexed { index, patient ->
+                            DropdownMenuItem(
+                                text = { Text(text = patient.first) },
+                                onClick = {
+                                    selectedPatientIndex = index
+                                    showPatientDropdown = false
+                                }
+                            )
+                        }
                     }
                 }
             }
         }
         
-        // 時間範圍選項卡
-        TabRow(
-            selectedTabIndex = selectedTabIndex,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            tabTitles.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTabIndex == index,
-                    onClick = { selectedTabIndex = index },
-                    text = { Text(text = title) }
-                )
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        // 體溫圖表
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(240.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
+        // 时间范围选项卡
+        item {
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "體溫趨勢圖",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .weight(1f)
-                ) {
-                    TemperatureChart(temperatureRecords = temperatureRecords)
+                tabTitles.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(text = title) }
+                    )
                 }
             }
+            
+            Spacer(modifier = Modifier.height(16.dp))
         }
         
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        // 體溫記錄列表
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(
+        // 体温趋势图表 - 保持原来的高度
+        item {
+            Card(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .height(240.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
-                Text(
-                    text = "體溫記錄",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                
-                Divider()
-                
-                LazyColumn {
-                    items(temperatureRecords.sortedByDescending { it.timestamp }) { record ->
-                        TemperatureRecordItem(record = record)
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "體溫趨勢圖",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f)
+                    ) {
+                        TemperatureChart(temperatureRecords = temperatureRecords)
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+        
+        // 体温记录部分 - 使用Card包含，并设置足够长的固定高度
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(500.dp), // 设置为足够长的固定高度
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "體溫記錄",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    
+                    Divider(modifier = Modifier.padding(bottom = 8.dp))
+                    
+                    // 在Card内使用LazyColumn显示记录
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(temperatureRecords.sortedByDescending { it.timestamp }) { record ->
+                            TemperatureRecordItem(record = record)
+                            Divider(
+                                modifier = Modifier.padding(vertical = 4.dp),
+                                color = Color.LightGray.copy(alpha = 0.5f)
+                            )
+                        }
                     }
                 }
             }
@@ -477,6 +496,4 @@ fun TemperatureRecordItem(record: TemperatureRecord) {
             fontSize = 14.sp
         )
     }
-    
-    Divider(color = Color.LightGray.copy(alpha = 0.5f))
 } 

@@ -90,193 +90,213 @@ fun HeartRateMonitorScreen(navController: NavController) {
     // 參考心率值
     var targetHeartRate by remember { mutableFloatStateOf(75f) }
     
-    // 模擬心率記錄
+    // 模擬心率記錄 - 增加更多记录使页面可滚动
     val heartRateRecords = remember {
         val records = mutableListOf<HeartRateRecord>()
         val now = LocalDateTime.now()
         val patient = patients[selectedPatientIndex]
         
-        // 今日數據（每小時一條）
-        for (hour in 0..23) {
-            val time = now.withHour(hour).withMinute(0)
-            // 模擬一個合理的心率範圍內的波動
-            val heartRate = 75 + (-15..15).random() + if ((0..10).random() > 8) (20..40).random() * (if ((0..1).random() == 0) 1 else -1) else 0
-            records.add(
-                HeartRateRecord(
-                    patientId = patient.second,
-                    patientName = patient.first,
-                    heartRate = heartRate,
-                    timestamp = time
+        // 模拟更多数据 - 过去7天每小时一条记录
+        for (day in 0..6) {
+            for (hour in 0..23) {
+                val time = now.minusDays(day.toLong()).withHour(hour).withMinute(0)
+                // 模擬一個合理的心率範圍內的波動
+                val heartRate = 75 + (-15..15).random() + if ((0..10).random() > 8) (20..40).random() * (if ((0..1).random() == 0) 1 else -1) else 0
+                records.add(
+                    HeartRateRecord(
+                        patientId = patient.second,
+                        patientName = patient.first,
+                        heartRate = heartRate,
+                        timestamp = time
+                    )
                 )
-            )
+            }
         }
         records
     }
     
-    Column(
+    // 使用LazyColumn替代Column让整个页面可以滚动
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // 頂部標題
-        Text(
-            text = "心率監測",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        // 顶部标题
+        item {
+            Text(
+                text = "心率監測",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        }
         
-        // 病患選擇
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
-        ) {
-            Row(
+        // 病患选择
+        item {
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
-                    .padding(12.dp)
-                    .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
-                    .clip(RoundedCornerShape(8.dp))
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(bottom = 16.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "患者",
-                    tint = Color(0xFFE91E63),
-                    modifier = Modifier.size(24.dp)
-                )
-                
-                Spacer(modifier = Modifier.width(8.dp))
-                
-                Text(
-                    text = "患者: ${patients[selectedPatientIndex].first}",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f)
-                )
-                
-                IconButton(
-                    onClick = { showPatientDropdown = true }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                        .padding(12.dp)
+                        .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(8.dp))
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = "選擇患者"
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "患者",
+                        tint = Color(0xFFE91E63),
+                        modifier = Modifier.size(24.dp)
                     )
-                }
-                
-                DropdownMenu(
-                    expanded = showPatientDropdown,
-                    onDismissRequest = { showPatientDropdown = false }
-                ) {
-                    patients.forEachIndexed { index, patient ->
-                        DropdownMenuItem(
-                            text = { Text(text = patient.first) },
-                            onClick = {
-                                selectedPatientIndex = index
-                                showPatientDropdown = false
-                            }
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    Text(
+                        text = "患者: ${patients[selectedPatientIndex].first}",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f)
+                    )
+                    
+                    IconButton(
+                        onClick = { showPatientDropdown = true }
+                    ) {
+                        Icon(
+                            imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = "選擇患者"
                         )
+                    }
+                    
+                    DropdownMenu(
+                        expanded = showPatientDropdown,
+                        onDismissRequest = { showPatientDropdown = false }
+                    ) {
+                        patients.forEachIndexed { index, patient ->
+                            DropdownMenuItem(
+                                text = { Text(text = patient.first) },
+                                onClick = {
+                                    selectedPatientIndex = index
+                                    showPatientDropdown = false
+                                }
+                            )
+                        }
                     }
                 }
             }
         }
         
-        // 時間範圍選項卡
-        TabRow(
-            selectedTabIndex = selectedTabIndex,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            tabTitles.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTabIndex == index,
-                    onClick = { selectedTabIndex = index },
-                    text = { Text(text = title) }
-                )
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        // 心率圖表
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(240.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
+        // 时间范围选项卡
+        item {
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "心率趨勢圖",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    
-                    Text(
-                        text = "目標心率: ${targetHeartRate.toInt()} BPM",
-                        fontSize = 14.sp,
-                        color = Color(0xFFE91E63)
+                tabTitles.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(text = title) }
                     )
                 }
-                
-                Slider(
-                    value = targetHeartRate,
-                    onValueChange = { targetHeartRate = it },
-                    valueRange = 50f..120f,
-                    steps = 70,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-                
-                Box(
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+        
+        // 心率图表
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(240.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .weight(1f)
+                        .padding(16.dp)
                 ) {
-                    HeartRateChart(
-                        heartRateRecords = heartRateRecords,
-                        targetHeartRate = targetHeartRate.toInt()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "心率趨勢圖",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        
+                        Text(
+                            text = "目標心率: ${targetHeartRate.toInt()} BPM",
+                            fontSize = 14.sp,
+                            color = Color(0xFFE91E63)
+                        )
+                    }
+                    
+                    Slider(
+                        value = targetHeartRate,
+                        onValueChange = { targetHeartRate = it },
+                        valueRange = 50f..120f,
+                        steps = 70,
+                        modifier = Modifier.padding(vertical = 4.dp)
                     )
+                    
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f)
+                    ) {
+                        HeartRateChart(
+                            heartRateRecords = heartRateRecords,
+                            targetHeartRate = targetHeartRate.toInt()
+                        )
+                    }
                 }
             }
+            
+            Spacer(modifier = Modifier.height(16.dp))
         }
         
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        // 心率記錄列表
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(
+        // 心率记录列表 - 使用Card包含，并设置足够长的固定高度
+        item {
+            Card(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .height(500.dp), // 设置为足够长的固定高度
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
-                Text(
-                    text = "心率記錄",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                
-                Divider()
-                
-                LazyColumn {
-                    items(heartRateRecords.sortedByDescending { it.timestamp }) { record ->
-                        HeartRateRecordItem(record = record)
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "心率記錄",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    
+                    Divider(modifier = Modifier.padding(bottom = 8.dp))
+                    
+                    // 在Card内使用LazyColumn显示记录
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(heartRateRecords.sortedByDescending { it.timestamp }) { record ->
+                            HeartRateRecordItem(record = record)
+                            Divider(
+                                modifier = Modifier.padding(vertical = 4.dp),
+                                color = Color.LightGray.copy(alpha = 0.5f)
+                            )
+                        }
                     }
                 }
             }
@@ -394,19 +414,37 @@ fun HeartRateChart(heartRateRecords: List<HeartRateRecord>, targetHeartRate: Int
         val normalLowY = chartHeight - (60 - minRate) * verticalStepSize
         val normalHighY = chartHeight - (100 - minRate) * verticalStepSize
         
-        drawRect(
-            color = Color(0x1AE91E63),
-            topLeft = Offset(yAxisWidth, normalHighY),
-            size = androidx.compose.ui.geometry.Size(chartWidth, normalLowY - normalHighY)
-        )
-        
         // 目標心率線
         val targetY = chartHeight - (targetHeartRate - minRate) * verticalStepSize
+        
+        // 畫填充區域
+        val points = sortedRecords.mapIndexed { index, record ->
+            val x = yAxisWidth + index * horizontalStepSize
+            val y = chartHeight - (record.heartRate - minRate) * verticalStepSize
+            Offset(x, y)
+        }
+        
+        // 绘制整个折线图下方的淡红色填充
+        val belowCurvePath = Path()
+        belowCurvePath.moveTo(yAxisWidth, chartHeight)
+        for (point in points) {
+            belowCurvePath.lineTo(point.x, point.y)
+        }
+        belowCurvePath.lineTo(width, chartHeight)
+        belowCurvePath.close()
+        
+        // 使用统一的淡红色填充折线图下方区域
+        drawPath(
+            path = belowCurvePath,
+            color = Color(0x55FFB6C1) // 淡红色
+        )
+        
+        // 绘制目标心率线（增加粗细）
         drawLine(
             color = Color(0xFFE91E63),
             start = Offset(yAxisWidth, targetY),
             end = Offset(width, targetY),
-            strokeWidth = 1f
+            strokeWidth = 2.5f // 增加线的粗细
         )
         
         drawContext.canvas.nativeCanvas.apply {
@@ -422,27 +460,7 @@ fun HeartRateChart(heartRateRecords: List<HeartRateRecord>, targetHeartRate: Int
             )
         }
         
-        // 畫填充區域
-        val points = sortedRecords.mapIndexed { index, record ->
-            val x = yAxisWidth + index * horizontalStepSize
-            val y = chartHeight - (record.heartRate - minRate) * verticalStepSize
-            Offset(x, y)
-        }
-        
-        // 創建填充路徑
-        val path = Path()
-        path.moveTo(yAxisWidth, chartHeight) // 從左下角開始
-        points.forEach { path.lineTo(it.x, it.y) } // 添加每個點
-        path.lineTo(width, chartHeight) // 到右下角
-        path.close() // 閉合路徑
-        
-        // 畫填充區域
-        drawPath(
-            path = path,
-            color = Color(0x33E91E63)
-        )
-        
-        // 畫折線
+        // 绘制折线和数据点，确保它们在最上层
         for (i in 0 until points.size - 1) {
             drawLine(
                 color = Color(0xFFE91E63),

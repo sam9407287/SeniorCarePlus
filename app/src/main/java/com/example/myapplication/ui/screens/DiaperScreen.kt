@@ -180,289 +180,286 @@ fun DiaperMonitorScreen(navController: NavController) {
     // 是否需要更換
     val needsChange = hoursSinceLastChange >= changeThresholdHours || currentStatus == DiaperStatus.VERY_WET || currentStatus == DiaperStatus.SOILED
     
-    Column(
+    // 使用LazyColumn替代Column让整个页面可以滚动
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // 頂部標題
-        Text(
-            text = "尿布監測",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        
-        // 病患選擇
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
-                    .padding(12.dp)
-                    .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
-                    .clip(RoundedCornerShape(8.dp))
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "患者",
-                    tint = Color(0xFF2196F3),
-                    modifier = Modifier.size(24.dp)
-                )
-                
-                Spacer(modifier = Modifier.width(8.dp))
-                
-                Text(
-                    text = "患者: ${patients[selectedPatientIndex].first}",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f)
-                )
-                
-                IconButton(
-                    onClick = { showPatientDropdown = true }
-                ) {
-                    Icon(
-                        imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                        contentDescription = "選擇患者"
-                    )
-                }
-                
-                DropdownMenu(
-                    expanded = showPatientDropdown,
-                    onDismissRequest = { showPatientDropdown = false }
-                ) {
-                    patients.forEachIndexed { index, patient ->
-                        DropdownMenuItem(
-                            text = { Text(text = patient.first) },
-                            onClick = {
-                                selectedPatientIndex = index
-                                showPatientDropdown = false
-                            }
-                        )
-                    }
-                }
-            }
+        // 顶部标题
+        item {
+            Text(
+                text = "尿布監測",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
         }
         
-        // 尿布狀態卡片
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = if (needsChange) Color(0xFFFCE4EC) else Color.White
-            )
-        ) {
-            Column(
+        // 病患选择
+        item {
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(bottom = 16.dp)
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "當前尿布狀態",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "自動通知",
-                            fontSize = 14.sp
-                        )
-                        
-                        Switch(
-                            checked = autoNotify,
-                            onCheckedChange = { autoNotify = it },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = Color(0xFF2196F3)
-                            )
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // 狀態顯示
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(60.dp)
-                            .clip(CircleShape)
-                            .background(currentStatus.color.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = if (needsChange) Icons.Default.Warning else Icons.Default.WaterDrop,
-                            contentDescription = null,
-                            tint = currentStatus.color,
-                            modifier = Modifier.size(36.dp)
-                        )
-                    }
-                    
-                    Spacer(modifier = Modifier.width(16.dp))
-                    
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = currentStatus.label,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = currentStatus.color
-                        )
-                        
-                        Spacer(modifier = Modifier.height(4.dp))
-                        
-                        Text(
-                            text = if (needsChange) "需要更換尿布！" else "尿布狀態良好",
-                            color = if (needsChange) Color.Red else Color(0xFF4CAF50),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
-                        )
-                        
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        // 濕度進度條
-                        LinearProgressIndicator(
-                            progress = wetness / 100f,
-                            modifier = Modifier.fillMaxWidth(),
-                            color = currentStatus.color
-                        )
-                        
-                        Spacer(modifier = Modifier.height(4.dp))
-                        
-                        Text(
-                            text = "濕度: $wetness%",
-                            fontSize = 12.sp,
-                            color = Color.Gray
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // 上次更換時間
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                        .padding(12.dp)
+                        .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(8.dp))
+                        .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.AccessTime,
-                        contentDescription = null,
-                        tint = Color.Gray,
-                        modifier = Modifier.size(20.dp)
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "患者",
+                        tint = Color(0xFF2196F3),
+                        modifier = Modifier.size(24.dp)
                     )
                     
                     Spacer(modifier = Modifier.width(8.dp))
                     
                     Text(
-                        text = "上次更換: ${SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date(lastChangeTime))} (${formatTimeSince(timeSinceLastChange)}前)",
-                        fontSize = 14.sp,
-                        color = Color.Gray
+                        text = "患者: ${patients[selectedPatientIndex].first}",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f)
                     )
-                }
-                
-                if (needsChange) {
-                    Spacer(modifier = Modifier.height(16.dp))
                     
-                    Button(
-                        onClick = { showAddDialog = true },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3))
+                    IconButton(
+                        onClick = { showPatientDropdown = true }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = null,
-                            tint = Color.White
+                            imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = "選擇患者"
                         )
-                        
-                        Spacer(modifier = Modifier.width(8.dp))
-                        
-                        Text("記錄尿布更換")
                     }
-                }
-            }
-        }
-        
-        // 更換記錄列表
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = "更換記錄",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                
-                Divider()
-                
-                if (diaperChangeRecords.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 32.dp),
-                        contentAlignment = Alignment.Center
+                    
+                    DropdownMenu(
+                        expanded = showPatientDropdown,
+                        onDismissRequest = { showPatientDropdown = false }
                     ) {
-                        Text(
-                            text = "暫無記錄",
-                            color = Color.Gray,
-                            fontSize = 16.sp
-                        )
-                    }
-                } else {
-                    LazyColumn {
-                        items(diaperChangeRecords.sortedByDescending { it.changeTime }) { record ->
-                            DiaperChangeRecordItem(record = record)
+                        patients.forEachIndexed { index, patient ->
+                            DropdownMenuItem(
+                                text = { Text(text = patient.first) },
+                                onClick = {
+                                    selectedPatientIndex = index
+                                    showPatientDropdown = false
+                                }
+                            )
                         }
                     }
                 }
             }
         }
         
-        // 浮動按鈕 - 添加記錄
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            contentAlignment = Alignment.BottomEnd
-        ) {
-            FloatingActionButton(
-                onClick = { showAddDialog = true },
-                containerColor = Color(0xFF2196F3),
-                contentColor = Color.White
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "添加記錄"
+        // 当前状态卡片
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (needsChange) Color(0xFFFCE4EC) else Color.White
                 )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "當前尿布狀態",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "自動通知",
+                                fontSize = 14.sp
+                            )
+                            
+                            Switch(
+                                checked = autoNotify,
+                                onCheckedChange = { autoNotify = it },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = Color(0xFF2196F3)
+                                )
+                            )
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // 狀態顯示
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(60.dp)
+                                .clip(CircleShape)
+                                .background(currentStatus.color.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (needsChange) Icons.Default.Warning else Icons.Default.WaterDrop,
+                                contentDescription = null,
+                                tint = currentStatus.color,
+                                modifier = Modifier.size(36.dp)
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = currentStatus.label,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = currentStatus.color
+                            )
+                            
+                            Spacer(modifier = Modifier.height(4.dp))
+                            
+                            Text(
+                                text = if (needsChange) "需要更換尿布！" else "尿布狀態良好",
+                                color = if (needsChange) Color.Red else Color(0xFF4CAF50),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            // 濕度進度條
+                            LinearProgressIndicator(
+                                progress = wetness / 100f,
+                                modifier = Modifier.fillMaxWidth(),
+                                color = currentStatus.color
+                            )
+                            
+                            Spacer(modifier = Modifier.height(4.dp))
+                            
+                            Text(
+                                text = "濕度: $wetness%",
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // 上次更換時間
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AccessTime,
+                            contentDescription = null,
+                            tint = Color.Gray,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        Text(
+                            text = "上次更換: ${SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date(lastChangeTime))} (${formatTimeSince(timeSinceLastChange)}前)",
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                    }
+                    
+                    if (needsChange) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        Button(
+                            onClick = { showAddDialog = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+                            
+                            Spacer(modifier = Modifier.width(8.dp))
+                            
+                            Text("記錄尿布更換")
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 更換記錄列表
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(500.dp), // 设置为足够长的固定高度
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "更換記錄",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    
+                    Divider(modifier = Modifier.padding(bottom = 8.dp))
+                    
+                    if (diaperChangeRecords.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "暫無記錄",
+                                color = Color.Gray,
+                                fontSize = 16.sp
+                            )
+                        }
+                    } else {
+                        // 在Card内使用LazyColumn显示记录
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(diaperChangeRecords.sortedByDescending { it.changeTime }) { record ->
+                                DiaperChangeRecordItem(record = record)
+                                Divider(
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    color = Color.LightGray.copy(alpha = 0.5f)
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }

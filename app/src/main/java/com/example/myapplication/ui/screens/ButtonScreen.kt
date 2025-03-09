@@ -456,11 +456,6 @@ fun EmergencyButtonScreen(navController: NavController) {
                 EmergencyRecordItem(record = record)
             }
         }
-        
-        // 底部空間
-        item {
-            Spacer(modifier = Modifier.height(80.dp))
-        }
     }
     
     // 緊急類型選擇對話框

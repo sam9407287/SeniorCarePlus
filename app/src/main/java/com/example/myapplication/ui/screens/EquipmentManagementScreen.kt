@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -128,15 +129,27 @@ fun EquipmentManagementScreen(navController: NavController) {
     }
     
     // 篩選設備列表
-    val filteredDevices = remember(searchQuery, deviceList) {
+    val filteredDevices = remember(searchQuery, deviceList, isChineseLanguage) {
         if (searchQuery.isBlank()) {
             deviceList
         } else {
-            deviceList.filter { 
-                it.name.contains(searchQuery, ignoreCase = true) || 
-                it.id.contains(searchQuery, ignoreCase = true) ||
-                it.hardwareId.contains(searchQuery, ignoreCase = true) ||
-                it.patientName.contains(searchQuery, ignoreCase = true)
+            deviceList.filter { device -> 
+                // 確保支持中文搜索
+                val matchName = device.name.contains(searchQuery, ignoreCase = true)
+                val matchId = device.id.contains(searchQuery, ignoreCase = true)
+                val matchHardwareId = device.hardwareId.contains(searchQuery, ignoreCase = true)
+                val matchPatientName = device.patientName.contains(searchQuery, ignoreCase = true)
+                
+                // 針對不同類型的設備添加額外的關鍵詞匹配
+                val matchWatchKeyword = device.type == DeviceType.WATCH && 
+                    ((isChineseLanguage && (searchQuery.contains("手錶") || searchQuery.contains("手表"))) ||
+                    (!isChineseLanguage && searchQuery.contains("watch")))
+                    
+                val matchDiaperKeyword = device.type == DeviceType.DIAPER && 
+                    ((isChineseLanguage && (searchQuery.contains("尿布") || searchQuery.contains("傳感器") || searchQuery.contains("传感器"))) ||
+                    (!isChineseLanguage && (searchQuery.contains("diaper") || searchQuery.contains("sensor"))))
+                
+                matchName || matchId || matchHardwareId || matchPatientName || matchWatchKeyword || matchDiaperKeyword
             }
         }
     }
@@ -222,7 +235,7 @@ fun EquipmentManagementScreen(navController: NavController) {
                     label = { Text(if (isChineseLanguage) "全部" else "All") },
                     leadingIcon = {
                         Icon(
-                            Icons.Default.List,
+                            Icons.AutoMirrored.Filled.List,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
@@ -230,7 +243,9 @@ fun EquipmentManagementScreen(navController: NavController) {
                 )
                 
                 FilterChip(
-                    selected = searchQuery.equals("手錶", ignoreCase = true) || searchQuery.equals("watch", ignoreCase = true),
+                    selected = searchQuery.equals("手錶", ignoreCase = true) || 
+                             searchQuery.equals("手表", ignoreCase = true) || 
+                             searchQuery.equals("watch", ignoreCase = true),
                     onClick = { searchQuery = if (isChineseLanguage) "手錶" else "watch" },
                     label = { Text(if (isChineseLanguage) "智能手錶" else "Smart Watches") },
                     leadingIcon = {
@@ -243,7 +258,11 @@ fun EquipmentManagementScreen(navController: NavController) {
                 )
                 
                 FilterChip(
-                    selected = searchQuery.equals("尿布", ignoreCase = true) || searchQuery.equals("diaper", ignoreCase = true),
+                    selected = searchQuery.equals("尿布", ignoreCase = true) || 
+                             searchQuery.equals("傳感器", ignoreCase = true) || 
+                             searchQuery.equals("传感器", ignoreCase = true) || 
+                             searchQuery.equals("diaper", ignoreCase = true) || 
+                             searchQuery.equals("sensor", ignoreCase = true),
                     onClick = { searchQuery = if (isChineseLanguage) "尿布" else "diaper" },
                     label = { Text(if (isChineseLanguage) "尿布傳感器" else "Diaper Sensors") },
                     leadingIcon = {

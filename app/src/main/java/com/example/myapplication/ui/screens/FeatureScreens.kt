@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,11 +33,76 @@ import com.example.myapplication.SeniorCareTopBar
 
 @Composable
 fun RegionScreen(navController: NavController) {
-    FeatureScreenTemplate(
-        title = "區域",
-        content = "患者位置監控",
-        navController = navController
-    )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("區域管理") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "返回")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            )
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "區域管理",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Text(
+                    text = "查看和管理患者的位置信息",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 32.dp)
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                IconButton(
+                    onClick = { 
+                        navController.navigate("map") {
+                            launchSingleTop = true
+                        }
+                    },
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Map,
+                        contentDescription = "查看地图",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+                
+                Text(
+                    text = "點擊查看室內地圖",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
 }
 
 @Composable

@@ -56,25 +56,25 @@ enum class LocationType {
     UWB_ANCHOR // UWB三角定位锚点
 }
 
-// 多语言文本映射
+// 多語言文本映射
 private object MapTexts {
     val title = mapOf(
-        true to "室内地图与定位",
+        true to "室內地圖與定位",
         false to "Indoor Map & Positioning"
     )
     
     val mapTitle = mapOf(
-        true to "室内实时位置图",
+        true to "室內實時位置圖",
         false to "Real-time Indoor Positioning"
     )
     
     val legend = mapOf(
-        true to "图例",
+        true to "圖例",
         false to "Legend"
     )
     
     val uwbAnchor = mapOf(
-        true to "UWB锚点",
+        true to "UWB錨點",
         false to "UWB Anchor"
     )
     
@@ -84,27 +84,27 @@ private object MapTexts {
     )
     
     val elderlyNames = mapOf(
-        "E001" to mapOf(true to "张三", false to "Zhang San"),
+        "E001" to mapOf(true to "張三", false to "Zhang San"),
         "E002" to mapOf(true to "李四", false to "Li Si"),
         "E003" to mapOf(true to "王五", false to "Wang Wu"),
-        "E004" to mapOf(true to "赵六", false to "Zhao Liu"),
-        "E005" to mapOf(true to "钱七", false to "Qian Qi")
+        "E004" to mapOf(true to "趙六", false to "Zhao Liu"),
+        "E005" to mapOf(true to "錢七", false to "Qian Qi")
     )
     
     val anchorNames = mapOf(
-        "U001" to mapOf(true to "锚点1", false to "Anchor 1"),
-        "U002" to mapOf(true to "锚点2", false to "Anchor 2"),
-        "U003" to mapOf(true to "锚点3", false to "Anchor 3"),
-        "U004" to mapOf(true to "锚点4", false to "Anchor 4")
+        "U001" to mapOf(true to "錨點1", false to "Anchor 1"),
+        "U002" to mapOf(true to "錨點2", false to "Anchor 2"),
+        "U003" to mapOf(true to "錨點3", false to "Anchor 3"),
+        "U004" to mapOf(true to "錨點4", false to "Anchor 4")
     )
     
     val deviceInfo = mapOf(
-        true to "设备信息",
+        true to "設備信息",
         false to "Device Info"
     )
     
     val deviceType = mapOf(
-        true to "设备类型",
+        true to "設備類型",
         false to "Device Type"
     )
     
@@ -122,35 +122,35 @@ private object MapTexts {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(navController: NavController = rememberNavController()) {
-    // 获取当前语言和主题状态
+    // 獲取當前語言和主題狀態
     val isChineseLanguage = LanguageManager.isChineseLanguage
     val isDarkTheme = ThemeManager.isDarkTheme
     
-    // 定义老人头像图标（使用Material Icons中的不同人物图标）
+    // 定義老人頭像圖標（使用Material Icons中的不同人物圖標）
     val personIcons = listOf(
-        Icons.Default.Face,           // 脸部图标
-        Icons.Default.Person,         // 人物图标
-        Icons.Default.AccountCircle,  // 账户圆形图标
-        Icons.Default.SupervisedUserCircle, // 用户监控图标
-        Icons.Default.EmojiPeople     // 人物表情图标
+        Icons.Default.Face,           // 臉部圖標
+        Icons.Default.Person,         // 人物圖標
+        Icons.Default.AccountCircle,  // 賬戶圓形圖標
+        Icons.Default.SupervisedUserCircle, // 用戶監控圖標
+        Icons.Default.EmojiPeople     // 人物表情圖標
     )
     
-    // 定义颜色列表，给每个人物一个不同的颜色
+    // 定義顏色列表，給每個人物一個不同的顏色
     val personColors = listOf(
-        Color(0xFF2196F3), // 蓝色
-        Color(0xFF4CAF50), // 绿色
+        Color(0xFF2196F3), // 藍色
+        Color(0xFF4CAF50), // 綠色
         Color(0xFFFF9800), // 橙色
         Color(0xFFE91E63), // 粉色
         Color(0xFF9C27B0)  // 紫色
     )
     
-    // 获取适合当前主题的背景和文本颜色
+    // 獲取適合當前主題的背景和文本顏色
     val backgroundColor = MaterialTheme.colorScheme.background
     val cardBackgroundColor = if (isDarkTheme) Color(0xFF2D2D2D) else Color.White
     val textColor = MaterialTheme.colorScheme.onBackground
     val tooltipBgColor = if (isDarkTheme) Color(0xFF333333) else Color(0xFFFFFFFF)
     
-    // 用于记录当前悬停的设备
+    // 用於記錄當前懸停的設備
     var hoveredDeviceId by remember { mutableStateOf<String?>(null) }
     
     // 使用更大的坐标值，确保在大地图上分布更合理
@@ -159,7 +159,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
             // 老人位置 - 分配不同的头像图标和颜色，使用更大的坐标差距
             LocationData(
                 "E001", 
-                MapTexts.elderlyNames["E001"]?.get(isChineseLanguage) ?: "张三", 
+                MapTexts.elderlyNames["E001"]?.get(isChineseLanguage) ?: "張三", 
                 1000f, 1000f,
                 LocationType.ELDERLY, 
                 avatarIcon = personIcons[0]
@@ -180,14 +180,14 @@ fun MapScreen(navController: NavController = rememberNavController()) {
             ),
             LocationData(
                 "E004",
-                MapTexts.elderlyNames["E004"]?.get(isChineseLanguage) ?: "赵六",
+                MapTexts.elderlyNames["E004"]?.get(isChineseLanguage) ?: "趙六",
                 2500f, 4000f,
                 LocationType.ELDERLY,
                 avatarIcon = personIcons[3]
             ),
             LocationData(
                 "E005",
-                MapTexts.elderlyNames["E005"]?.get(isChineseLanguage) ?: "钱七", 
+                MapTexts.elderlyNames["E005"]?.get(isChineseLanguage) ?: "錢七", 
                 1800f, 3000f,
                 LocationType.ELDERLY, 
                 avatarIcon = personIcons[4]
@@ -196,32 +196,32 @@ fun MapScreen(navController: NavController = rememberNavController()) {
             // UWB锚点位置 - 放置在建筑物的四个角落，使用更大的坐标范围
             LocationData(
                 "U001", 
-                MapTexts.anchorNames["U001"]?.get(isChineseLanguage) ?: "锚点1", 
+                MapTexts.anchorNames["U001"]?.get(isChineseLanguage) ?: "錨點1", 
                 500f, 500f, 
                 LocationType.UWB_ANCHOR
             ),
             LocationData(
                 "U002", 
-                MapTexts.anchorNames["U002"]?.get(isChineseLanguage) ?: "锚点2", 
+                MapTexts.anchorNames["U002"]?.get(isChineseLanguage) ?: "錨點2", 
                 2500f, 500f, 
                 LocationType.UWB_ANCHOR
             ),
             LocationData(
                 "U003", 
-                MapTexts.anchorNames["U003"]?.get(isChineseLanguage) ?: "锚点3", 
+                MapTexts.anchorNames["U003"]?.get(isChineseLanguage) ?: "錨點3", 
                 2500f, 2500f, 
                 LocationType.UWB_ANCHOR
             ),
             LocationData(
                 "U004", 
-                MapTexts.anchorNames["U004"]?.get(isChineseLanguage) ?: "锚点4", 
+                MapTexts.anchorNames["U004"]?.get(isChineseLanguage) ?: "錨點4", 
                 500f, 2500f, 
                 LocationType.UWB_ANCHOR
             )
         )
     }
     
-    // 当语言改变时，更新位置数据的名称
+    // 當語言改變時，更新位置數據的名稱
     LaunchedEffect(isChineseLanguage) {
         for (i in locationDataList.indices) {
             val data = locationDataList[i]
@@ -233,7 +233,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
         }
     }
     
-    // 注意：已移除随机移动功能，将来会直接从后端接收位置数据
+    // 注意：已移除隨機移動功能，將來會直接從後端接收位置數據
     
     Column(
         modifier = Modifier
@@ -241,7 +241,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
             .background(backgroundColor)
             .padding(16.dp)
     ) {
-        // 顶部标题和主题切换按钮
+        // 頂部標題和主題切換按鈕
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -256,7 +256,29 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                 color = textColor
             )
             
-            // 主题切换按钮
+            // 區域管理按鈕
+            IconButton(
+                onClick = { 
+                    navController.navigate("region") {
+                        launchSingleTop = true
+                    }
+                },
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+            ) {
+                Icon(
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = if (isChineseLanguage) "區域管理" else "Region Management",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            // 主題切換按鈕
             IconButton(
                 onClick = { ThemeManager.toggleTheme() },
                 modifier = Modifier
@@ -273,13 +295,13 @@ fun MapScreen(navController: NavController = rememberNavController()) {
             }
         }
         
-        // 地图内容区域 - 占据整个页面
+        // 地圖內容區域 - 佔據整個頁面
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(backgroundColor)
         ) {
-            // 地图区域 - 现在占用整个空间
+            // 地圖區域 - 現在佔用整個空間
             Card(
                 modifier = Modifier
                     .fillMaxSize(),
@@ -292,10 +314,10 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        // 添加点击监听器到整个地图区域，点击非图标区域时隐藏详细信息
+                        // 添加點擊監聽器到整個地圖區域，點擊非圖標區域時隱藏詳細信息
                         .clickable { hoveredDeviceId = null }
                 ) {
-                    // 使用上传的地图图片作为背景
+                    // 使用上傳的地圖圖片作為背景
                     Image(
                         painter = painterResource(id = R.drawable.map),
                         contentDescription = "Floor Plan Map",
@@ -303,7 +325,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                         modifier = Modifier.fillMaxSize()
                     )
                     
-                    // 绘制UWB锚点位置 - 调整坐标系统的比例因子为1000f
+                    // 繪製UWB錨點位置 - 調整坐標系統的比例因子為1000f
                     locationDataList.filter { it.type == LocationType.UWB_ANCHOR }.forEach { data ->
                         val x = data.x / 1000f
                         val y = data.y / 1000f
@@ -317,13 +339,13 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                     y = (y * 100).toFloat().dp
                                 )
                         ) {
-                            // UWB锚点图标
+                            // UWB錨點圖標
                             Box(
                                 modifier = Modifier
                                     .size(10.dp)
                                     .background(Color.Red, CircleShape)
                                     .clickable(onClick = { 
-                                        // 切换悬停状态
+                                        // 切換懸停狀態
                                         hoveredDeviceId = if (hoveredDeviceId == data.id) null else data.id
                                     })
                                     .zIndex(1f)
@@ -331,7 +353,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                         }
                     }
                     
-                    // 老人位置图标 - 在地图上层显示 - 调整坐标系统的比例因子为1000f
+                    // 老人位置圖標 - 在地圖上層顯示 - 調整坐標系統的比例因子為1000f
                     locationDataList.filter { it.type == LocationType.ELDERLY }.forEachIndexed { index, data ->
                         val personColor = personColors[index % personColors.size]
                         
@@ -347,7 +369,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                     y = (y * 100).toFloat().dp
                                 )
                         ) {
-                            // 显示人物头像图标
+                            // 顯示人物頭像圖標
                             Box(
                                 modifier = Modifier
                                     .size(30.dp)
@@ -356,7 +378,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                         shape = CircleShape
                                     )
                                     .clickable(onClick = {
-                                        // 切换悬停状态
+                                        // 切換懸停狀態
                                         hoveredDeviceId = if (hoveredDeviceId == data.id) null else data.id
                                     })
                                     .padding(4.dp)
@@ -372,7 +394,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                 }
                             }
                             
-                            // 人物名称标签
+                            // 人物名稱標簽
                             Text(
                                 text = data.name,
                                 color = Color.White,
@@ -390,7 +412,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                         }
                     }
                     
-                    // 单独渲染所有设备的信息提示框，确保它们在最上层
+                    // 單獨渲染所有設備的信息提示框，確保它們在最上層
                     locationDataList.forEach { data ->
                         if (hoveredDeviceId == data.id) {
                             val x = data.x / 1000f
@@ -410,9 +432,9 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                         x = (x * 100).toFloat().dp,
                                         y = (y * 100).toFloat().dp
                                     )
-                                    .zIndex(10f) // 确保在最上层
+                                    .zIndex(10f) // 確保在最上層
                             ) {
-                                // 信息提示框显示在图标正下方，不会遮挡图标本身
+                                // 信息提示框顯示在圖標正下方，不會遮擋圖標本身
                                 Card(
                                     modifier = Modifier
                                         .width(200.dp)

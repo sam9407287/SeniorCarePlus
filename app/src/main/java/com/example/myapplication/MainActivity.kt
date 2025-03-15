@@ -102,7 +102,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // 使用我们的自定义主题，isDarkTheme会从ThemeManager中获取
+            // 使用我們的自定義主題，isDarkTheme會從ThemeManager中獲取
             MyApplicationTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -118,7 +118,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -> Unit = {}) {
-    // 使用MaterialTheme的颜色而不是硬编码的颜色
+    // 使用MaterialTheme的顏色而不是硬編碼的顏色
     val isDarkTheme = ThemeManager.isDarkTheme
     val isChineseLanguage = LanguageManager.isChineseLanguage
     
@@ -132,7 +132,7 @@ fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 左侧用户图标
+            // 左側用戶圖標
             IconButton(
                 onClick = onUserIconClick,
                 modifier = Modifier.size(40.dp)
@@ -145,7 +145,7 @@ fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -
                 )
             }
             
-            // 居中标题
+            // 居中標題
             Text(
                 text = if (isChineseLanguage) "長者照護系統" else "SENIOR CARE PLUS",
                 fontWeight = FontWeight.Bold,
@@ -155,7 +155,7 @@ fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             
-            // 右侧通知图标
+            // 右側通知圖標
             IconButton(
                 onClick = onNotificationClick,
                 modifier = Modifier.size(40.dp)
@@ -177,13 +177,20 @@ fun MainAppContent() {
     val leftDrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     
-    // 管理页面右侧边栏
+    // 管理頁面右側邊欄
     var showRightDrawer by remember { mutableStateOf(false) }
     
-    // 檢查語言設定
+    // 檢查語言設置
     val isChineseLanguage = LanguageManager.isChineseLanguage
     
-    // 定义底部导航栏的项目
+    // 使用MaterialTheme的顏色而不是硬編碼的顏色
+    val navigationBarColor = if (ThemeManager.isDarkTheme) {
+        MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+    
+    // 定義底部導航欄的項目
     val bottomNavItems = listOf(
         BottomNavItem(
             name = if (isChineseLanguage) "主頁" else "Home",
@@ -212,7 +219,7 @@ fun MainAppContent() {
         )
     )
     
-    // 定义左侧边栏项目
+    // 定義左側邊欄項目
     val leftDrawerItems = listOf(
         DrawerItem(
             if (isChineseLanguage) "個人郵箱" else "Personal Email", 
@@ -236,7 +243,7 @@ fun MainAppContent() {
         )
     )
     
-    // 定义右侧边栏项目 - 管理页面
+    // 定義右側邊欄項目 - 管理頁面
     val adminItems = listOf(
         AdminItem(
             if (isChineseLanguage) "院友管理" else "Patient Management", 
@@ -260,7 +267,7 @@ fun MainAppContent() {
         )
     )
     
-    // 构建UI界面
+    // 構建UI界面
     ModalNavigationDrawer(
         drawerState = leftDrawerState,
         drawerContent = {
@@ -309,17 +316,17 @@ fun MainAppContent() {
         }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // 主界面内容
+            // 主界面內容
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.statusBars) // 添加状态栏填充
+                    .windowInsetsPadding(WindowInsets.statusBars) // 添加狀態欄填充
             ) {
-                // 获取当前路由
+                // 獲取當前路由
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
                 
-                // 根据当前路由决定点击用户图标的行为
+                // 根據當前路由決定點擊用戶圖標的行為
                 SeniorCareTopBar(
                     onUserIconClick = {
                         // 在所有頁面都打開側欄，不再做返回操作
@@ -357,7 +364,7 @@ fun MainAppContent() {
                                     selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
                                     onClick = {
                                         if (item.route == "more") {
-                                            // 点击"更多"显示右侧边栏
+                                            // 點擊"更多"顯示右側邊欄
                                             showRightDrawer = true
                                         } else {
                                             // 針對首頁按鈕做特殊處理
@@ -381,13 +388,13 @@ fun MainAppContent() {
                                             }
                                             else {
                                                 navController.navigate(item.route) {
-                                                    // 防止创建多个实例
+                                                    // 防止創建多個實例
                                                     popUpTo(navController.graph.findStartDestination().id) {
                                                         saveState = true
                                                     }
-                                                    // 防止重复点击
+                                                    // 防止重複點擊
                                                     launchSingleTop = true
-                                                    // 恢复状态
+                                                    // 恢復狀態
                                                     restoreState = true
                                                 }
                                             }
@@ -428,7 +435,7 @@ fun MainAppContent() {
                         // 設定頁面
                         composable("settings") { SettingsScreen(navController) }
                         
-                        // 管理页面
+                        // 管理頁面
                         composable("patient_admin") { AdminPageTemplate(title = "院友管理", navController = navController) }
                         composable("staff_admin") { AdminPageTemplate(title = "員工管理", navController = navController) }
                         composable("equipment_admin") { AdminPageTemplate(title = "設備管理", navController = navController) }
@@ -437,19 +444,19 @@ fun MainAppContent() {
                 }
             }
             
-            // 右侧边栏 - 管理功能菜单
+            // 右側邊欄 - 管理功能菜單
             if (showRightDrawer) {
                 AdminDrawer(
                     adminItems = adminItems,
                     onItemClick = { route ->
                         navController.navigate(route) {
-                            // 防止创建多个实例
+                            // 防止創建多個實例
                             popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
                             }
-                            // 防止重复点击
+                            // 防止重複點擊
                             launchSingleTop = true
-                            // 恢复状态
+                            // 恢復狀態
                             restoreState = true
                         }
                         showRightDrawer = false
@@ -467,18 +474,18 @@ fun AdminDrawer(
     onItemClick: (String) -> Unit,
     onClose: () -> Unit
 ) {
-    // 检查是否为深色模式
+    // 檢查是否為深色模式
     val isDarkTheme = ThemeManager.isDarkTheme
     val isChineseLanguage = LanguageManager.isChineseLanguage
     
-    // 半透明背景，点击关闭抽屉
+    // 半透明背景，點擊關閉抽屉
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0x44000000))
             .clickable { onClose() }
     ) {
-        // 右侧菜单内容
+        // 右側菜單內容
         Column(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -487,10 +494,10 @@ fun AdminDrawer(
                 .fillMaxWidth(0.55f)
                 .background(if (isDarkTheme) MaterialTheme.colorScheme.surface else Color(0xFFCDCDCD))
                 .padding(top = 48.dp, start = 12.dp, end = 12.dp)
-                // 阻止点击事件传递到下层
+                // 阻止點擊事件傳遞到下層
                 .clickable(enabled = false, onClick = {})
         ) {
-            // 菜单项目
+            // 菜單項目
             adminItems.forEach { item ->
                 Box(
                     modifier = Modifier
@@ -564,14 +571,14 @@ data class BottomNavItem(
     val icon: androidx.compose.ui.graphics.vector.ImageVector
 )
 
-// 侧边栏项目数据类
+// 側邊欄項目數據類
 data class DrawerItem(
     val title: String,
     val subtitle: String,
     val icon: androidx.compose.ui.graphics.vector.ImageVector
 )
 
-// 管理功能项目数据类
+// 管理功能項目數據類
 data class AdminItem(
     val title: String,
     val route: String,

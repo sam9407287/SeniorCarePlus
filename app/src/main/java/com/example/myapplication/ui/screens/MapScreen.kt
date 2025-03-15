@@ -4,10 +4,12 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -121,9 +123,9 @@ fun MapScreen(navController: NavController = rememberNavController()) {
     )
     
     // 获取适合当前主题的背景和文本颜色
-    val backgroundColor = if (isDarkTheme) Color(0xFF121212) else Color(0xFFF5F5F5)
+    val backgroundColor = MaterialTheme.colorScheme.background
     val cardBackgroundColor = if (isDarkTheme) Color(0xFF2D2D2D) else Color.White
-    val textColor = if (isDarkTheme) Color.White else Color.Black
+    val textColor = MaterialTheme.colorScheme.onBackground
     val borderColor = if (isDarkTheme) Color(0xFF444444) else Color.Gray
     
     // 模拟数据 - 根据当前语言选择名称
@@ -239,53 +241,58 @@ fun MapScreen(navController: NavController = rememberNavController()) {
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor)
+            .padding(16.dp)
     ) {
-        // 标题栏，仿照其他页面的风格
-        Box(
+        // 顶部标题和主题切换按钮 - 匹配其他页面的样式
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(if (isDarkTheme) Color(0xFF1E1E1E) else Color(0xFF1D1D1D))
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(bottom = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = MapTexts.title[isChineseLanguage]!!,
-                style = MaterialTheme.typography.titleLarge,
-                fontSize = 24.sp,
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
-                modifier = Modifier.align(Alignment.CenterStart)
+                modifier = Modifier.weight(1f),
+                color = textColor
             )
             
-            // 深浅模式切换按钮，放在右侧
+            // 主题切换按钮 - 与其他页面一致
             IconButton(
                 onClick = { ThemeManager.toggleTheme() },
-                modifier = Modifier.align(Alignment.CenterEnd)
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
             ) {
                 Icon(
                     imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                    contentDescription = if (isDarkTheme) "切换到浅色模式" else "切换到深色模式",
-                    tint = Color.White,
+                    contentDescription = if (isChineseLanguage) "切換主題" else "Toggle Theme",
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
             }
         }
         
         // 地图内容区域
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .background(backgroundColor)
         ) {
-            // 地图与图例的行
-            Row(modifier = Modifier.fillMaxSize()) {
-                // 地图区域
-                Box(
-                    modifier = Modifier
-                        .weight(3f)
-                        .fillMaxHeight()
-                        .background(backgroundColor)
-                        .border(1.dp, borderColor)
-                ) {
+            // 地图区域
+            Card(
+                modifier = Modifier
+                    .weight(3f)
+                    .fillMaxHeight(),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = cardBackgroundColor
+                )
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
                     // 底层地图图像
                     Image(
                         painter = painterResource(id = R.drawable.floor_map_bg),
@@ -327,7 +334,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                         }
                     }
                     
-                    // 老人位置图标 - 使用Box而不是Canvas绘制，这样可以放置图标
+                    // 老人位置图标
                     locationDataList.filter { it.type == LocationType.ELDERLY }.forEachIndexed { index, data ->
                         val personColor = personColors[index % personColors.size]
                         
@@ -380,135 +387,140 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                         }
                     }
                 }
-                
-                // 图例和位置列表
-                if (showLegend) {
-                    Column(
+            }
+            
+            // 图例和位置列表
+            if (showLegend) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .padding(start = 16.dp)
+                ) {
+                    // 图例
+                    Card(
                         modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .padding(start = 8.dp)
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = cardBackgroundColor
+                        )
                     ) {
-                        // 图例
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 8.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = cardBackgroundColor
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                MapTexts.legend[isChineseLanguage]!!, 
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                color = textColor
                             )
-                        ) {
-                            Column(modifier = Modifier.padding(8.dp)) {
-                                Text(
-                                    MapTexts.legend[isChineseLanguage]!!, 
-                                    fontWeight = FontWeight.Bold,
-                                    color = textColor
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                
-                                // 人物头像图例
-                                locationDataList.filter { it.type == LocationType.ELDERLY }
-                                    .take(5)
-                                    .forEachIndexed { index, data ->
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.padding(vertical = 2.dp)
-                                        ) {
-                                            data.avatarIcon?.let { icon ->
-                                                Icon(
-                                                    imageVector = icon,
-                                                    contentDescription = null,
-                                                    tint = personColors[index % personColors.size],
-                                                    modifier = Modifier.size(16.dp)
-                                                )
-                                            }
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            Text(data.name, fontSize = 12.sp, color = textColor)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            // 人物头像图例
+                            locationDataList.filter { it.type == LocationType.ELDERLY }
+                                .take(5)
+                                .forEachIndexed { index, data ->
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(vertical = 4.dp)
+                                    ) {
+                                        data.avatarIcon?.let { icon ->
+                                            Icon(
+                                                imageVector = icon,
+                                                contentDescription = null,
+                                                tint = personColors[index % personColors.size],
+                                                modifier = Modifier.size(20.dp)
+                                            )
                                         }
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(data.name, fontSize = 14.sp, color = textColor)
                                     }
-                                
-                                Spacer(modifier = Modifier.height(4.dp))
-                                
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Canvas(modifier = Modifier.size(16.dp)) {
-                                        val triangleSize = 6f
-                                        val p1 = Offset(8f, 4f)
-                                        val p2 = Offset(2f, 12f)
-                                        val p3 = Offset(14f, 12f)
-                                        
-                                        drawPath(
-                                            path = androidx.compose.ui.graphics.Path().apply {
-                                                moveTo(p1.x, p1.y)
-                                                lineTo(p2.x, p2.y)
-                                                lineTo(p3.x, p3.y)
-                                                close()
-                                            },
-                                            color = Color(0xFFF44336)
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        MapTexts.uwbAnchor[isChineseLanguage]!!, 
-                                        fontSize = 12.sp,
-                                        color = textColor
+                                }
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Canvas(modifier = Modifier.size(20.dp)) {
+                                    val triangleSize = 6f
+                                    val p1 = Offset(10f, 4f)
+                                    val p2 = Offset(4f, 14f)
+                                    val p3 = Offset(16f, 14f)
+                                    
+                                    drawPath(
+                                        path = androidx.compose.ui.graphics.Path().apply {
+                                            moveTo(p1.x, p1.y)
+                                            lineTo(p2.x, p2.y)
+                                            lineTo(p3.x, p3.y)
+                                            close()
+                                        },
+                                        color = Color(0xFFF44336)
                                     )
                                 }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    MapTexts.uwbAnchor[isChineseLanguage]!!, 
+                                    fontSize = 14.sp,
+                                    color = textColor
+                                )
                             }
                         }
-                        
-                        // 位置列表
-                        Text(
-                            text = MapTexts.locationList[isChineseLanguage]!!,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = textColor,
-                            modifier = Modifier.padding(bottom = 4.dp)
+                    }
+                    
+                    // 位置列表
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = cardBackgroundColor
                         )
-                        
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
-                        ) {
-                            items(locationDataList) { data ->
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = cardBackgroundColor
-                                    )
-                                ) {
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = MapTexts.locationList[isChineseLanguage]!!,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textColor,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(locationDataList.filter { it.type == LocationType.ELDERLY }) { data ->
                                     Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(8.dp),
+                                        modifier = Modifier.fillMaxWidth(),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        if (data.type == LocationType.ELDERLY) {
-                                            // 为老人显示头像图标
-                                            data.avatarIcon?.let { icon ->
-                                                val index = locationDataList.indexOf(data)
+                                        // 为老人显示头像图标
+                                        data.avatarIcon?.let { icon ->
+                                            val index = locationDataList.indexOf(data)
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(32.dp)
+                                                    .background(
+                                                        personColors[index % personColors.size],
+                                                        CircleShape
+                                                    )
+                                                    .padding(4.dp)
+                                            ) {
                                                 Icon(
                                                     imageVector = icon,
                                                     contentDescription = null,
-                                                    tint = personColors[index % personColors.size],
+                                                    tint = Color.White,
                                                     modifier = Modifier.size(24.dp)
                                                 )
                                             }
-                                        } else {
-                                            // UWB锚点图标
-                                            Icon(
-                                                imageVector = Icons.Default.Map,
-                                                contentDescription = null,
-                                                tint = Color(0xFFF44336),
-                                                modifier = Modifier.size(24.dp)
-                                            )
                                         }
                                         
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Column {
                                             Text(
-                                                text = "${data.name} (${data.id})",
+                                                text = data.name,
                                                 fontWeight = FontWeight.Bold,
                                                 color = textColor
                                             )

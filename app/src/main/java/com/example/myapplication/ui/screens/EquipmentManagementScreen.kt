@@ -36,16 +36,29 @@ enum class DeviceType {
     DIAPER // 智能尿布傳感器
 }
 
-// 設備數據類
+// 重新定义设备数据类，添加中英文字段
 data class Device(
     val id: String,
-    val name: String,
+    val nameZh: String,
+    val nameEn: String,
     val type: DeviceType,
     var hardwareId: String,
     val patientId: String,
-    val patientName: String,
+    val patientNameZh: String,
+    val patientNameEn: String,
     val isActive: Boolean
-)
+) {
+    // 获取当前语言下的名称
+    fun getName(isChinese: Boolean): String = if (isChinese) nameZh else nameEn
+    
+    // 获取当前语言下的患者名称
+    fun getPatientName(isChinese: Boolean): String = if (isChinese) patientNameZh else patientNameEn
+    
+    // 获取搜索用的所有文本
+    fun getSearchableText(): String {
+        return "$nameZh $nameEn $id $hardwareId $patientNameZh $patientNameEn"
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,88 +82,98 @@ fun EquipmentManagementScreen(navController: NavController) {
     // 成功替換對話框狀態
     var showSuccessDialog by remember { mutableStateOf(false) }
     
-    // 設備列表數據（在實際應用中應該從後端獲取或使用ViewModel）
+    // 設備列表數據（使用新的数据结构，同时包含中英文）
     val deviceList = remember {
         mutableStateListOf(
             Device(
                 id = "W001",
-                name = if(isChineseLanguage) "健康監測手錶 #1" else "Health Monitor Watch #1",
+                nameZh = "健康監測手錶 #1",
+                nameEn = "Health Monitor Watch #1",
                 type = DeviceType.WATCH,
                 hardwareId = "HWID-W23445",
                 patientId = "P001",
-                patientName = if(isChineseLanguage) "王大明" else "Wang Daming",
+                patientNameZh = "王大明",
+                patientNameEn = "Wang Daming",
                 isActive = true
             ),
             Device(
                 id = "W002",
-                name = if(isChineseLanguage) "健康監測手錶 #2" else "Health Monitor Watch #2",
+                nameZh = "健康監測手錶 #2",
+                nameEn = "Health Monitor Watch #2",
                 type = DeviceType.WATCH,
                 hardwareId = "HWID-W23446",
                 patientId = "P002",
-                patientName = if(isChineseLanguage) "李小華" else "Li Xiaohua",
+                patientNameZh = "李小華",
+                patientNameEn = "Li Xiaohua",
                 isActive = true
             ),
             Device(
                 id = "D001",
-                name = if(isChineseLanguage) "智能尿布傳感器 #1" else "Smart Diaper Sensor #1",
+                nameZh = "智能尿布傳感器 #1",
+                nameEn = "Smart Diaper Sensor #1",
                 type = DeviceType.DIAPER,
                 hardwareId = "HWID-D34589",
                 patientId = "P001",
-                patientName = if(isChineseLanguage) "王大明" else "Wang Daming",
+                patientNameZh = "王大明",
+                patientNameEn = "Wang Daming",
                 isActive = true
             ),
             Device(
                 id = "D002",
-                name = if(isChineseLanguage) "智能尿布傳感器 #2" else "Smart Diaper Sensor #2",
+                nameZh = "智能尿布傳感器 #2",
+                nameEn = "Smart Diaper Sensor #2",
                 type = DeviceType.DIAPER,
                 hardwareId = "HWID-D34590",
                 patientId = "P003",
-                patientName = if(isChineseLanguage) "張小鳳" else "Zhang Xiaofeng",
+                patientNameZh = "張小鳳",
+                patientNameEn = "Zhang Xiaofeng",
                 isActive = false
             ),
             Device(
                 id = "W003",
-                name = if(isChineseLanguage) "健康監測手錶 #3" else "Health Monitor Watch #3",
+                nameZh = "健康監測手錶 #3",
+                nameEn = "Health Monitor Watch #3",
                 type = DeviceType.WATCH,
                 hardwareId = "HWID-W23450",
                 patientId = "P005",
-                patientName = if(isChineseLanguage) "趙一一" else "Zhao Yiyi",
+                patientNameZh = "趙一一",
+                patientNameEn = "Zhao Yiyi",
                 isActive = true
             ),
             Device(
                 id = "D003",
-                name = if(isChineseLanguage) "智能尿布傳感器 #3" else "Smart Diaper Sensor #3",
+                nameZh = "智能尿布傳感器 #3",
+                nameEn = "Smart Diaper Sensor #3",
                 type = DeviceType.DIAPER,
                 hardwareId = "HWID-D34595",
                 patientId = "P004",
-                patientName = if(isChineseLanguage) "孫大龍" else "Sun Dalong",
+                patientNameZh = "孫大龍",
+                patientNameEn = "Sun Dalong",
                 isActive = true
             )
         )
     }
     
-    // 篩選設備列表
-    val filteredDevices = remember(searchQuery, deviceList, isChineseLanguage) {
+    // 更新篩選設備列表逻辑，同时搜索中英文内容
+    val filteredDevices = remember(searchQuery, deviceList) {
         if (searchQuery.isBlank()) {
             deviceList
         } else {
             deviceList.filter { device -> 
-                // 確保支持中文搜索
-                val matchName = device.name.contains(searchQuery, ignoreCase = true)
-                val matchId = device.id.contains(searchQuery, ignoreCase = true)
-                val matchHardwareId = device.hardwareId.contains(searchQuery, ignoreCase = true)
-                val matchPatientName = device.patientName.contains(searchQuery, ignoreCase = true)
+                // 双语搜索：搜索所有文本，包括中英文字段
+                val matchAllText = device.getSearchableText().contains(searchQuery, ignoreCase = true)
                 
-                // 針對不同類型的設備添加額外的關鍵詞匹配
+                // 特殊关键词搜索
+                val watchKeywords = listOf("手錶", "手表", "watch", "智能手錶", "智能手表", "smart watch")
+                val diaperKeywords = listOf("尿布", "傳感器", "传感器", "diaper", "sensor", "smart diaper")
+                
                 val matchWatchKeyword = device.type == DeviceType.WATCH && 
-                    ((isChineseLanguage && (searchQuery.contains("手錶") || searchQuery.contains("手表"))) ||
-                    (!isChineseLanguage && searchQuery.contains("watch")))
-                    
-                val matchDiaperKeyword = device.type == DeviceType.DIAPER && 
-                    ((isChineseLanguage && (searchQuery.contains("尿布") || searchQuery.contains("傳感器") || searchQuery.contains("传感器"))) ||
-                    (!isChineseLanguage && (searchQuery.contains("diaper") || searchQuery.contains("sensor"))))
+                    watchKeywords.any { keyword -> searchQuery.contains(keyword, ignoreCase = true) }
                 
-                matchName || matchId || matchHardwareId || matchPatientName || matchWatchKeyword || matchDiaperKeyword
+                val matchDiaperKeyword = device.type == DeviceType.DIAPER && 
+                    diaperKeywords.any { keyword -> searchQuery.contains(keyword, ignoreCase = true) }
+                
+                matchAllText || matchWatchKeyword || matchDiaperKeyword
             }
         }
     }
@@ -226,7 +249,7 @@ fun EquipmentManagementScreen(navController: NavController) {
                 }
             }
             
-            // 搜索欄
+            // 搜索欄 - 修改以确保支持中文输入
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -403,7 +426,7 @@ fun EquipmentManagementScreen(navController: NavController) {
                     
                     selectedDevice?.let { device ->
                         Text(
-                            text = device.name,
+                            text = device.getName(isChineseLanguage),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(bottom = 4.dp)
@@ -417,7 +440,7 @@ fun EquipmentManagementScreen(navController: NavController) {
                         )
                         
                         Text(
-                            text = if (isChineseLanguage) "使用者: ${device.patientName}" else "Used by: ${device.patientName}",
+                            text = if (isChineseLanguage) "使用者: ${device.getPatientName(isChineseLanguage)}" else "Used by: ${device.getPatientName(isChineseLanguage)}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 16.dp)
@@ -544,12 +567,12 @@ fun DeviceListItem(
             
             Spacer(modifier = Modifier.width(12.dp))
             
-            // 設備信息
+            // 設備信息 - 修改为使用getName()方法
             Column(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = device.name,
+                    text = device.getName(isChineseLanguage),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium
                 )
@@ -595,7 +618,7 @@ fun DeviceListItem(
                 Spacer(modifier = Modifier.height(2.dp))
                 
                 Text(
-                    text = if (isChineseLanguage) "患者: ${device.patientName}" else "Patient: ${device.patientName}",
+                    text = if (isChineseLanguage) "患者: ${device.getPatientName(isChineseLanguage)}" else "Patient: ${device.getPatientName(isChineseLanguage)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

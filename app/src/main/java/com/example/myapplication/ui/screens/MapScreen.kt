@@ -151,42 +151,42 @@ fun MapScreen(navController: NavController = rememberNavController()) {
     // 用于记录当前悬停的设备
     var hoveredDeviceId by remember { mutableStateOf<String?>(null) }
     
-    // 调整老人位置，使他们分布更加分散
+    // 调整老人位置，将他们分布在左上角
     val locationDataList = remember {
         mutableStateListOf(
-            // 老人位置 - 分配不同的头像图标和颜色，位置更加分散
+            // 老人位置 - 分配不同的头像图标和颜色，位置在左上角
             LocationData(
                 "E001", 
                 MapTexts.elderlyNames["E001"]?.get(isChineseLanguage) ?: "张三", 
-                120f, 180f, 
+                80f, 70f, 
                 LocationType.ELDERLY, 
                 avatarIcon = personIcons[0]
             ),
             LocationData(
                 "E002",
                 MapTexts.elderlyNames["E002"]?.get(isChineseLanguage) ?: "李四",
-                280f, 120f,
+                140f, 70f,
                 LocationType.ELDERLY,
                 avatarIcon = personIcons[1]
             ),
             LocationData(
                 "E003",
                 MapTexts.elderlyNames["E003"]?.get(isChineseLanguage) ?: "王五",
-                420f, 350f, // 调整位置避免与其他老人重叠
+                80f, 130f, 
                 LocationType.ELDERLY,
                 avatarIcon = personIcons[2]
             ),
             LocationData(
                 "E004",
                 MapTexts.elderlyNames["E004"]?.get(isChineseLanguage) ?: "赵六",
-                150f, 380f, // 调整位置避免与其他老人重叠
+                140f, 130f,
                 LocationType.ELDERLY,
                 avatarIcon = personIcons[3]
             ),
             LocationData(
                 "E005",
                 MapTexts.elderlyNames["E005"]?.get(isChineseLanguage) ?: "钱七", 
-                350f, 230f, 
+                80f, 190f, 
                 LocationType.ELDERLY, 
                 avatarIcon = personIcons[4]
             ),
@@ -249,14 +249,15 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                     var positionValid: Boolean
                     
                     do {
-                        newX = (data.x + Random.nextFloat() * 30 - 15).coerceIn(70f, 470f)
-                        newY = (data.y + Random.nextFloat() * 30 - 15).coerceIn(70f, 430f)
+                        // 限制在左上角区域
+                        newX = (data.x + Random.nextFloat() * 30 - 15).coerceIn(60f, 200f)
+                        newY = (data.y + Random.nextFloat() * 30 - 15).coerceIn(60f, 230f)
                         positionValid = true
                         
                         // 检查是否与已有位置重叠，增加最小距离要求
                         for (pos in occupiedPositions) {
                             val distance = kotlin.math.sqrt((newX - pos.first) * (newX - pos.first) + (newY - pos.second) * (newY - pos.second))
-                            if (distance < 60) { // 增加最小距离为60像素
+                            if (distance < 50) { // 最小距离为50像素
                                 positionValid = false
                                 break
                             }
@@ -328,7 +329,12 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                     containerColor = cardBackgroundColor
                 )
             ) {
-                Box(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        // 添加点击监听器到整个地图区域，点击非图标区域时隐藏详细信息
+                        .clickable { hoveredDeviceId = null }
+                ) {
                     // 使用上传的地图图片作为背景
                     Image(
                         painter = painterResource(id = R.drawable.map),
@@ -356,10 +362,10 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                 modifier = Modifier
                                     .size(10.dp)
                                     .background(Color.Red, CircleShape)
-                                    .clickable { 
+                                    .clickable(onClick = { 
                                         // 切换悬停状态
                                         hoveredDeviceId = if (hoveredDeviceId == data.id) null else data.id
-                                    }
+                                    })
                             )
                             
                             // 显示详细信息提示框（当悬停时）
@@ -433,10 +439,10 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                         color = personColor.copy(alpha = 0.9f),
                                         shape = CircleShape
                                     )
-                                    .clickable {
+                                    .clickable(onClick = {
                                         // 切换悬停状态
                                         hoveredDeviceId = if (hoveredDeviceId == data.id) null else data.id
-                                    }
+                                    })
                                     .padding(4.dp)
                             ) {
                                 data.avatarIcon?.let { icon ->

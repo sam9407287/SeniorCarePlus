@@ -101,6 +101,9 @@ import androidx.compose.material.ripple.rememberRipple
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 在启动后切换到普通主题
+        setTheme(R.style.Theme_MyApplication)
+        
         super.onCreate(savedInstanceState)
         setContent {
             // 使用我們的自定義主題，isDarkTheme會從ThemeManager中獲取

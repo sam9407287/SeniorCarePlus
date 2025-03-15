@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -29,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import kotlin.math.min
@@ -151,69 +153,69 @@ fun MapScreen(navController: NavController = rememberNavController()) {
     // 用于记录当前悬停的设备
     var hoveredDeviceId by remember { mutableStateOf<String?>(null) }
     
-    // 调整老人位置，将他们分布在左上角
+    // 使用更大的坐标值，确保在大地图上分布更合理
     val locationDataList = remember {
         mutableStateListOf(
-            // 老人位置 - 分配不同的头像图标和颜色，位置在左上角
+            // 老人位置 - 分配不同的头像图标和颜色，使用更大的坐标差距
             LocationData(
                 "E001", 
                 MapTexts.elderlyNames["E001"]?.get(isChineseLanguage) ?: "张三", 
-                80f, 70f, 
+                1000f, 1000f,
                 LocationType.ELDERLY, 
                 avatarIcon = personIcons[0]
             ),
             LocationData(
                 "E002",
                 MapTexts.elderlyNames["E002"]?.get(isChineseLanguage) ?: "李四",
-                140f, 70f,
+                2000f, 1500f,
                 LocationType.ELDERLY,
                 avatarIcon = personIcons[1]
             ),
             LocationData(
                 "E003",
                 MapTexts.elderlyNames["E003"]?.get(isChineseLanguage) ?: "王五",
-                80f, 130f, 
+                1000f, 2000f, 
                 LocationType.ELDERLY,
                 avatarIcon = personIcons[2]
             ),
             LocationData(
                 "E004",
                 MapTexts.elderlyNames["E004"]?.get(isChineseLanguage) ?: "赵六",
-                140f, 130f,
+                2500f, 4000f,
                 LocationType.ELDERLY,
                 avatarIcon = personIcons[3]
             ),
             LocationData(
                 "E005",
                 MapTexts.elderlyNames["E005"]?.get(isChineseLanguage) ?: "钱七", 
-                80f, 190f, 
+                1800f, 3000f,
                 LocationType.ELDERLY, 
                 avatarIcon = personIcons[4]
             ),
             
-            // UWB锚点位置 - 放置在建筑物的四个角落
+            // UWB锚点位置 - 放置在建筑物的四个角落，使用更大的坐标范围
             LocationData(
                 "U001", 
                 MapTexts.anchorNames["U001"]?.get(isChineseLanguage) ?: "锚点1", 
-                70f, 70f, 
+                500f, 500f, 
                 LocationType.UWB_ANCHOR
             ),
             LocationData(
                 "U002", 
                 MapTexts.anchorNames["U002"]?.get(isChineseLanguage) ?: "锚点2", 
-                470f, 70f, 
+                2500f, 500f, 
                 LocationType.UWB_ANCHOR
             ),
             LocationData(
                 "U003", 
                 MapTexts.anchorNames["U003"]?.get(isChineseLanguage) ?: "锚点3", 
-                470f, 430f, 
+                2500f, 2500f, 
                 LocationType.UWB_ANCHOR
             ),
             LocationData(
                 "U004", 
                 MapTexts.anchorNames["U004"]?.get(isChineseLanguage) ?: "锚点4", 
-                70f, 430f, 
+                500f, 2500f, 
                 LocationType.UWB_ANCHOR
             )
         )
@@ -231,49 +233,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
         }
     }
     
-    // 模拟数据更新（每5秒随机移动老人位置，但确保不会重叠）
-    LaunchedEffect(key1 = "locationUpdate") {
-        while(true) {
-            kotlinx.coroutines.delay(5000)
-            
-            // 创建一个已占用位置的列表，用于避免重叠
-            val occupiedPositions = mutableListOf<Pair<Float, Float>>()
-            
-            for (i in locationDataList.indices) {
-                val data = locationDataList[i]
-                if (data.type == LocationType.ELDERLY) {
-                    // 随机移动老人位置，但避免重叠，增加最小距离
-                    var newX: Float
-                    var newY: Float
-                    var attempts = 0
-                    var positionValid: Boolean
-                    
-                    do {
-                        // 限制在左上角区域
-                        newX = (data.x + Random.nextFloat() * 30 - 15).coerceIn(60f, 200f)
-                        newY = (data.y + Random.nextFloat() * 30 - 15).coerceIn(60f, 230f)
-                        positionValid = true
-                        
-                        // 检查是否与已有位置重叠，增加最小距离要求
-                        for (pos in occupiedPositions) {
-                            val distance = kotlin.math.sqrt((newX - pos.first) * (newX - pos.first) + (newY - pos.second) * (newY - pos.second))
-                            if (distance < 50) { // 最小距离为50像素
-                                positionValid = false
-                                break
-                            }
-                        }
-                        
-                        attempts++
-                    } while (!positionValid && attempts < 15) // 增加尝试次数
-                    
-                    if (positionValid) {
-                        occupiedPositions.add(Pair(newX, newY))
-                        locationDataList[i] = data.copy(x = newX, y = newY)
-                    }
-                }
-            }
-        }
-    }
+    // 注意：已移除随机移动功能，将来会直接从后端接收位置数据
     
     Column(
         modifier = Modifier
@@ -343,10 +303,10 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                         modifier = Modifier.fillMaxSize()
                     )
                     
-                    // 绘制UWB锚点位置
+                    // 绘制UWB锚点位置 - 调整坐标系统的比例因子为1000f
                     locationDataList.filter { it.type == LocationType.UWB_ANCHOR }.forEach { data ->
-                        val x = data.x / 500f
-                        val y = data.y / 500f
+                        val x = data.x / 1000f
+                        val y = data.y / 1000f
                         
                         Box(
                             modifier = Modifier
@@ -366,61 +326,17 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                         // 切换悬停状态
                                         hoveredDeviceId = if (hoveredDeviceId == data.id) null else data.id
                                     })
+                                    .zIndex(1f)
                             )
-                            
-                            // 显示详细信息提示框（当悬停时）
-                            if (hoveredDeviceId == data.id) {
-                                Card(
-                                    modifier = Modifier
-                                        .width(200.dp)
-                                        .padding(top = 12.dp)
-                                        .align(Alignment.TopCenter)
-                                        .offset(y = (-5).dp),
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = tooltipBgColor
-                                    ),
-                                    elevation = CardDefaults.cardElevation(
-                                        defaultElevation = 4.dp
-                                    )
-                                ) {
-                                    Column(
-                                        modifier = Modifier.padding(12.dp)
-                                    ) {
-                                        Text(
-                                            text = MapTexts.deviceInfo[isChineseLanguage]!!,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 14.sp,
-                                            color = textColor
-                                        )
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text(
-                                            text = "${data.id} - ${data.name}",
-                                            fontSize = 12.sp,
-                                            color = textColor
-                                        )
-                                        Text(
-                                            text = "${MapTexts.deviceType[isChineseLanguage]!!}: ${MapTexts.uwbAnchor[isChineseLanguage]!!}",
-                                            fontSize = 12.sp,
-                                            color = textColor
-                                        )
-                                        Text(
-                                            text = "${MapTexts.location[isChineseLanguage]!!}: X=${data.x.toInt()}, Y=${data.y.toInt()}",
-                                            fontSize = 12.sp,
-                                            color = textColor
-                                        )
-                                    }
-                                }
-                            }
                         }
                     }
                     
-                    // 老人位置图标 - 在地图上层显示
+                    // 老人位置图标 - 在地图上层显示 - 调整坐标系统的比例因子为1000f
                     locationDataList.filter { it.type == LocationType.ELDERLY }.forEachIndexed { index, data ->
                         val personColor = personColors[index % personColors.size]
                         
-                        val x = data.x / 500f
-                        val y = data.y / 500f
+                        val x = data.x / 1000f
+                        val y = data.y / 1000f
                         
                         Box(
                             modifier = Modifier
@@ -444,6 +360,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                         hoveredDeviceId = if (hoveredDeviceId == data.id) null else data.id
                                     })
                                     .padding(4.dp)
+                                    .zIndex(1f)
                             ) {
                                 data.avatarIcon?.let { icon ->
                                     Icon(
@@ -468,22 +385,48 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                         RoundedCornerShape(4.dp)
                                     )
                                     .padding(horizontal = 4.dp, vertical = 2.dp)
+                                    .zIndex(1f)
                             )
+                        }
+                    }
+                    
+                    // 单独渲染所有设备的信息提示框，确保它们在最上层
+                    locationDataList.forEach { data ->
+                        if (hoveredDeviceId == data.id) {
+                            val x = data.x / 1000f
+                            val y = data.y / 1000f
+                            val personColor = if (data.type == LocationType.ELDERLY) {
+                                val index = locationDataList.filter { it.type == LocationType.ELDERLY }.indexOfFirst { it.id == data.id }
+                                personColors[index % personColors.size]
+                            } else {
+                                Color.Red
+                            }
                             
-                            // 显示详细信息提示框（当悬停时）
-                            if (hoveredDeviceId == data.id) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .wrapContentSize(Alignment.TopStart)
+                                    .offset(
+                                        x = (x * 100).toFloat().dp,
+                                        y = (y * 100).toFloat().dp
+                                    )
+                                    .zIndex(10f) // 确保在最上层
+                            ) {
+                                // 信息提示框显示在图标正下方，不会遮挡图标本身
                                 Card(
                                     modifier = Modifier
                                         .width(200.dp)
-                                        .padding(top = 12.dp)
-                                        .align(Alignment.TopCenter)
-                                        .offset(y = (-5).dp),
+                                        .offset(
+                                            x = if (data.x > 1500f) (-170).dp else 20.dp,
+                                            y = if (data.type == LocationType.ELDERLY) 60.dp else 35.dp
+                                        )
+                                        .shadow(8.dp),
                                     shape = RoundedCornerShape(8.dp),
                                     colors = CardDefaults.cardColors(
                                         containerColor = tooltipBgColor
                                     ),
                                     elevation = CardDefaults.cardElevation(
-                                        defaultElevation = 4.dp
+                                        defaultElevation = 8.dp
                                     )
                                 ) {
                                     Column(
@@ -502,7 +445,12 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                             color = textColor
                                         )
                                         Text(
-                                            text = "${MapTexts.deviceType[isChineseLanguage]!!}: ${MapTexts.elderly[isChineseLanguage]!!}",
+                                            text = "${MapTexts.deviceType[isChineseLanguage]!!}: ${
+                                                when(data.type) {
+                                                    LocationType.ELDERLY -> MapTexts.elderly[isChineseLanguage]!!
+                                                    LocationType.UWB_ANCHOR -> MapTexts.uwbAnchor[isChineseLanguage]!!
+                                                }
+                                            }",
                                             fontSize = 12.sp,
                                             color = textColor
                                         )

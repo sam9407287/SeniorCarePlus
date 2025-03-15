@@ -90,6 +90,7 @@ import com.example.myapplication.ui.screens.DiaperMonitorScreen
 import com.example.myapplication.ui.screens.HeartRateMonitorScreen
 import com.example.myapplication.ui.screens.TemperatureMonitorScreen
 import com.example.myapplication.ui.screens.SettingsScreen
+import com.example.myapplication.ui.screens.EquipmentManagementScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.theme.ThemeManager
 import com.example.myapplication.ui.theme.LanguageManager
@@ -437,7 +438,7 @@ fun MainAppContent() {
                         // 管理頁面
                         composable("patient_admin") { AdminPageTemplate(title = "院友管理", navController = navController) }
                         composable("staff_admin") { AdminPageTemplate(title = "員工管理", navController = navController) }
-                        composable("equipment_admin") { AdminPageTemplate(title = "設備管理", navController = navController) }
+                        composable("equipment_admin") { EquipmentManagementScreen(navController) }
                         composable("settings_admin") { AdminPageTemplate(title = "設定", navController = navController) }
                     }
                 }

@@ -275,13 +275,19 @@ fun MainAppContent() {
     ModalNavigationDrawer(
         drawerState = leftDrawerState,
         drawerContent = {
-            ModalDrawerSheet {
+            ModalDrawerSheet(
+                // 减少宽度从75%到60%，让侧边栏更窄
+                modifier = Modifier.fillMaxWidth(0.60f)
+            ) {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     if (isChineseLanguage) "長者照護系統" else "SENIOR CARE PLUS",
-                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                    style = MaterialTheme.typography.headlineMedium,
-                    textAlign = TextAlign.Center
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .padding(start = 8.dp)  // 添加左边距使文本左对齐
+                        .fillMaxWidth(),
+                    style = MaterialTheme.typography.titleLarge,  // 更改为titleLarge，比headlineMedium小
+                    textAlign = TextAlign.Start  // 修改为左对齐
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 
@@ -493,8 +499,8 @@ fun AdminDrawer(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .fillMaxHeight()
-                // 增加寬度以適應英文文本
-                .fillMaxWidth(0.55f)
+                // 減少寬度，從0.55f降至0.45f
+                .fillMaxWidth(0.45f)
                 .background(if (isDarkTheme) MaterialTheme.colorScheme.surface else Color(0xFFCDCDCD))
                 .padding(top = 48.dp, start = 12.dp, end = 12.dp)
                 // 阻止點擊事件傳遞到下層
@@ -512,16 +518,55 @@ fun AdminDrawer(
                         .padding(vertical = 16.dp, horizontal = 12.dp),  // 添加水平內邊距，減少垂直內邊距
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = item.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Center,  // 確保文本居中對齊
-                        maxLines = 2,  // 允許最多兩行文本
-                        // 字體大小根據語言略微調整，英文字體略小以適應更長的文本
-                        fontSize = if (isChineseLanguage) 16.sp else 15.sp
-                    )
+                    if (isChineseLanguage) {
+                        // 中文不需要换行
+                        Text(
+                            text = item.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center,
+                            maxLines = 2,
+                            fontSize = 16.sp
+                        )
+                    } else {
+                        // 英文需要分行显示
+                        val words = item.title.split(" ")
+                        if (words.size > 1) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                // 第一行显示单词
+                                Text(
+                                    text = words[0],
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 15.sp
+                                )
+                                // 第二行显示剩余的单词
+                                Text(
+                                    text = words.subList(1, words.size).joinToString(" "),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 15.sp
+                                )
+                            }
+                        } else {
+                            // 只有一个单词的情况，如"Settings"
+                            Text(
+                                text = item.title,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.Center,
+                                fontSize = 15.sp
+                            )
+                        }
+                    }
                 }
             }
         }

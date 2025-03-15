@@ -339,14 +339,13 @@ fun MainAppContent() {
                         }
                     },
                     onNotificationClick = {
-                        // 導航到通知頁面，與主頁導航邏輯類似
+                        // 導航到通知頁面，不清空整個導航堆棧
                         navController.navigate("notifications") {
-                            // 清空之前的notifications路由，確保每次都是新進入
-                            popUpTo("notifications") {
-                                inclusive = true
-                            }
+                            // 保留導航堆棧中的現有目的地
                             // 防止創建多個實例
                             launchSingleTop = true
+                            // 保存和恢復狀態
+                            restoreState = true
                         }
                     }
                 )

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="500dp"
+    android:height="500dp"
+    android:viewportWidth="500"
+    android:viewportHeight="500">
+
+    <!-- 背景 -->
+    <path
+        android:fillColor="#F8F8F8"
+        android:pathData="M0,0h500v500h-500z" />
+
+    <!-- 外墙 -->
+    <path
+        android:strokeColor="#424242"
+        android:strokeWidth="3"
+        android:pathData="M20,20h460v460h-460z" />
+
+    <!-- 房间1 (左上) -->
+    <path
+        android:fillColor="#E0F7FA"
+        android:strokeColor="#0097A7"
+        android:strokeWidth="2"
+        android:pathData="M50,50h200v200h-200z" />
+    
+    <!-- 房间2 (右上) -->
+    <path
+        android:fillColor="#F3E5F5"
+        android:strokeColor="#9C27B0"
+        android:strokeWidth="2"
+        android:pathData="M270,50h180v150h-180z" />
+    
+    <!-- 房间3 (左下) -->
+    <path
+        android:fillColor="#E8F5E9"
+        android:strokeColor="#43A047"
+        android:strokeWidth="2"
+        android:pathData="M50,270h150v180h-150z" />
+    
+    <!-- 房间4 (右下) -->
+    <path
+        android:fillColor="#FFF3E0"
+        android:strokeColor="#FB8C00"
+        android:strokeWidth="2"
+        android:pathData="M220,270h230v180h-230z" />
+    
+    <!-- 走廊和通道 -->
+    <path
+        android:fillColor="#EEEEEE"
+        android:strokeColor="#757575"
+        android:strokeWidth="1"
+        android:pathData="M250,50v200M50,250h400" />
+    
+    <!-- 我们需要移除text元素，因为在矢量图中很难显示文本 -->
+    <!-- 改为使用简单的标记 -->
+    <path
+        android:fillColor="#0097A7"
+        android:pathData="M120,140 l10,0 l-5,-10z" />
+        
+    <path
+        android:fillColor="#9C27B0"
+        android:pathData="M340,120 l10,0 l-5,-10z" />
+        
+    <path
+        android:fillColor="#43A047"
+        android:pathData="M100,360 l10,0 l-5,-10z" />
+        
+    <path
+        android:fillColor="#FB8C00"
+        android:pathData="M320,360 l10,0 l-5,-10z" />
+    
+    <!-- 门 -->
+    <path
+        android:strokeColor="#424242"
+        android:strokeWidth="4"
+        android:pathData="M150,50v10M350,50v10M100,270h10M270,350h10" />
+    
+    <!-- 北向标 -->
+    <path
+        android:fillColor="#D32F2F"
+        android:pathData="M450,50l-10,20h20z" />
+    <path
+        android:fillColor="#D32F2F"
+        android:pathData="M447,70 l3,20 l-6,0z" />
+</vector> 

@@ -32,6 +32,8 @@ import androidx.navigation.compose.rememberNavController
 import kotlin.math.min
 import kotlin.random.Random
 import com.example.myapplication.R
+import com.example.myapplication.ui.theme.LanguageManager
+import com.example.myapplication.ui.theme.ThemeManager
 
 // 位置数据类
 data class LocationData(
@@ -50,9 +52,56 @@ enum class LocationType {
     UWB_ANCHOR // UWB三角定位锚点
 }
 
+// 多语言文本映射
+private object MapTexts {
+    val title = mapOf(
+        true to "室内地图与定位",
+        false to "Indoor Map & Positioning"
+    )
+    
+    val mapTitle = mapOf(
+        true to "室内实时位置图",
+        false to "Real-time Indoor Positioning"
+    )
+    
+    val legend = mapOf(
+        true to "图例",
+        false to "Legend"
+    )
+    
+    val uwbAnchor = mapOf(
+        true to "UWB锚点",
+        false to "UWB Anchor"
+    )
+    
+    val locationList = mapOf(
+        true to "位置列表",
+        false to "Location List"
+    )
+    
+    val elderlyNames = mapOf(
+        "E001" to mapOf(true to "张三", false to "Zhang San"),
+        "E002" to mapOf(true to "李四", false to "Li Si"),
+        "E003" to mapOf(true to "王五", false to "Wang Wu"),
+        "E004" to mapOf(true to "赵六", false to "Zhao Liu"),
+        "E005" to mapOf(true to "钱七", false to "Qian Qi")
+    )
+    
+    val anchorNames = mapOf(
+        "U001" to mapOf(true to "锚点1", false to "Anchor 1"),
+        "U002" to mapOf(true to "锚点2", false to "Anchor 2"),
+        "U003" to mapOf(true to "锚点3", false to "Anchor 3"),
+        "U004" to mapOf(true to "锚点4", false to "Anchor 4")
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(navController: NavController = rememberNavController()) {
+    // 获取当前语言和主题状态
+    val isChineseLanguage = LanguageManager.isChineseLanguage
+    val isDarkTheme = ThemeManager.isDarkTheme
+    
     // 定义老人头像图标（使用Material Icons中的不同人物图标）
     val personIcons = listOf(
         Icons.Default.Face,           // 脸部图标
@@ -71,21 +120,77 @@ fun MapScreen(navController: NavController = rememberNavController()) {
         Color(0xFF9C27B0)  // 紫色
     )
     
-    // 模拟数据
+    // 获取适合当前主题的背景和文本颜色
+    val backgroundColor = if (isDarkTheme) Color(0xFF121212) else Color(0xFFF5F5F5)
+    val cardBackgroundColor = if (isDarkTheme) Color(0xFF2D2D2D) else Color.White
+    val textColor = if (isDarkTheme) Color.White else Color.Black
+    val borderColor = if (isDarkTheme) Color(0xFF444444) else Color.Gray
+    
+    // 模拟数据 - 根据当前语言选择名称
     val locationDataList = remember {
         mutableStateListOf(
             // 老人位置 - 分配不同的头像图标和颜色
-            LocationData("E001", "张三", 150f, 200f, LocationType.ELDERLY, avatarIcon = personIcons[0]),
-            LocationData("E002", "李四", 250f, 150f, LocationType.ELDERLY, avatarIcon = personIcons[1]),
-            LocationData("E003", "王五", 300f, 350f, LocationType.ELDERLY, avatarIcon = personIcons[2]),
-            LocationData("E004", "赵六", 180f, 280f, LocationType.ELDERLY, avatarIcon = personIcons[3]),
-            LocationData("E005", "钱七", 380f, 180f, LocationType.ELDERLY, avatarIcon = personIcons[4]),
+            LocationData(
+                "E001", 
+                MapTexts.elderlyNames["E001"]?.get(isChineseLanguage) ?: "张三", 
+                150f, 200f, 
+                LocationType.ELDERLY, 
+                avatarIcon = personIcons[0]
+            ),
+            LocationData(
+                "E002",
+                MapTexts.elderlyNames["E002"]?.get(isChineseLanguage) ?: "李四",
+                250f, 150f,
+                LocationType.ELDERLY,
+                avatarIcon = personIcons[1]
+            ),
+            LocationData(
+                "E003",
+                MapTexts.elderlyNames["E003"]?.get(isChineseLanguage) ?: "王五",
+                300f, 350f,
+                LocationType.ELDERLY,
+                avatarIcon = personIcons[2]
+            ),
+            LocationData(
+                "E004",
+                MapTexts.elderlyNames["E004"]?.get(isChineseLanguage) ?: "赵六",
+                180f, 280f,
+                LocationType.ELDERLY,
+                avatarIcon = personIcons[3]
+            ),
+            LocationData(
+                "E005",
+                MapTexts.elderlyNames["E005"]?.get(isChineseLanguage) ?: "钱七", 
+                380f, 180f, 
+                LocationType.ELDERLY, 
+                avatarIcon = personIcons[4]
+            ),
             
             // UWB锚点位置
-            LocationData("U001", "锚点1", 50f, 50f, LocationType.UWB_ANCHOR),
-            LocationData("U002", "锚点2", 450f, 50f, LocationType.UWB_ANCHOR),
-            LocationData("U003", "锚点3", 450f, 450f, LocationType.UWB_ANCHOR),
-            LocationData("U004", "锚点4", 50f, 450f, LocationType.UWB_ANCHOR)
+            LocationData(
+                "U001", 
+                MapTexts.anchorNames["U001"]?.get(isChineseLanguage) ?: "锚点1", 
+                50f, 50f, 
+                LocationType.UWB_ANCHOR
+            ),
+            LocationData(
+                "U002", 
+                MapTexts.anchorNames["U002"]?.get(isChineseLanguage) ?: "锚点2", 
+                450f, 50f, 
+                LocationType.UWB_ANCHOR
+            ),
+            LocationData(
+                "U003", 
+                MapTexts.anchorNames["U003"]?.get(isChineseLanguage) ?: "锚点3", 
+                450f, 450f, 
+                LocationType.UWB_ANCHOR
+            ),
+            LocationData(
+                "U004", 
+                MapTexts.anchorNames["U004"]?.get(isChineseLanguage) ?: "锚点4", 
+                50f, 450f, 
+                LocationType.UWB_ANCHOR
+            )
         )
     }
     
@@ -97,6 +202,18 @@ fun MapScreen(navController: NavController = rememberNavController()) {
             Pair(Offset(50f, 270f), Offset(200f, 450f)), // 房间3
             Pair(Offset(220f, 270f), Offset(450f, 450f))  // 房间4
         )
+    }
+    
+    // 当语言改变时，更新位置数据的名称
+    LaunchedEffect(isChineseLanguage) {
+        for (i in locationDataList.indices) {
+            val data = locationDataList[i]
+            val newName = when (data.type) {
+                LocationType.ELDERLY -> MapTexts.elderlyNames[data.id]?.get(isChineseLanguage) ?: data.name
+                LocationType.UWB_ANCHOR -> MapTexts.anchorNames[data.id]?.get(isChineseLanguage) ?: data.name
+            }
+            locationDataList[i] = data.copy(name = newName)
+        }
     }
     
     // 模拟数据更新（每5秒随机移动老人位置）
@@ -115,33 +232,50 @@ fun MapScreen(navController: NavController = rememberNavController()) {
         }
     }
     
-    var showLegend by remember { mutableStateOf(true) }
+    // 始终显示图例，不提供关闭选项
+    val showLegend = true
     
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("室内地图与定位") },
-                actions = {
-                    IconButton(onClick = { showLegend = !showLegend }) {
-                        Icon(Icons.Default.Settings, contentDescription = "显示/隐藏图例")
-                    }
-                }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        // 标题栏，仿照其他页面的风格
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(if (isDarkTheme) Color(0xFF1E1E1E) else Color(0xFF1D1D1D))
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            Text(
+                text = MapTexts.title[isChineseLanguage]!!,
+                style = MaterialTheme.typography.titleLarge,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                modifier = Modifier.align(Alignment.CenterStart)
             )
+            
+            // 深浅模式切换按钮，放在右侧
+            IconButton(
+                onClick = { ThemeManager.toggleTheme() },
+                modifier = Modifier.align(Alignment.CenterEnd)
+            ) {
+                Icon(
+                    imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                    contentDescription = if (isDarkTheme) "切换到浅色模式" else "切换到深色模式",
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
-    ) { paddingValues ->
+        
+        // 地图内容区域
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // 地图标题
-            Text(
-                text = "室内实时位置图",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            
             // 地图与图例的行
             Row(modifier = Modifier.fillMaxSize()) {
                 // 地图区域
@@ -149,20 +283,17 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                     modifier = Modifier
                         .weight(3f)
                         .fillMaxHeight()
-                        .background(Color(0xFFF5F5F5))
-                        .border(1.dp, Color.Gray)
+                        .background(backgroundColor)
+                        .border(1.dp, borderColor)
                 ) {
-                    // 底层地图图像 - 使用fallback图片资源
-                    // 注意：使用预先准备的房间平面图PNG资源
+                    // 底层地图图像
                     Image(
                         painter = painterResource(id = R.drawable.floor_map_bg),
-                        contentDescription = "地图背景",
+                        contentDescription = if (isChineseLanguage) "地图背景" else "Map Background",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.FillBounds,
-                        alpha = 0.8f
+                        alpha = if (isDarkTheme) 0.6f else 0.8f
                     )
-                    
-                    // 房间墙壁现在直接在底图上，不需要再绘制
                     
                     // 绘制UWB锚点位置
                     Canvas(
@@ -241,7 +372,9 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                 fontSize = 10.sp,
                                 modifier = Modifier
                                     .offset(y = 42.dp)
-                                    .background(Color.White.copy(alpha = 0.7f))
+                                    .background(
+                                        if (isDarkTheme) Color.Black.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.7f)
+                                    )
                                     .padding(horizontal = 4.dp, vertical = 2.dp)
                             )
                         }
@@ -260,10 +393,17 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 8.dp)
+                                .padding(bottom = 8.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = cardBackgroundColor
+                            )
                         ) {
                             Column(modifier = Modifier.padding(8.dp)) {
-                                Text("图例", fontWeight = FontWeight.Bold)
+                                Text(
+                                    MapTexts.legend[isChineseLanguage]!!, 
+                                    fontWeight = FontWeight.Bold,
+                                    color = textColor
+                                )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 
                                 // 人物头像图例
@@ -283,7 +423,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                                 )
                                             }
                                             Spacer(modifier = Modifier.width(4.dp))
-                                            Text(data.name, fontSize = 12.sp)
+                                            Text(data.name, fontSize = 12.sp, color = textColor)
                                         }
                                     }
                                 
@@ -307,15 +447,20 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                         )
                                     }
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("UWB锚点", fontSize = 12.sp)
+                                    Text(
+                                        MapTexts.uwbAnchor[isChineseLanguage]!!, 
+                                        fontSize = 12.sp,
+                                        color = textColor
+                                    )
                                 }
                             }
                         }
                         
                         // 位置列表
                         Text(
-                            text = "位置列表",
+                            text = MapTexts.locationList[isChineseLanguage]!!,
                             style = MaterialTheme.typography.titleMedium,
+                            color = textColor,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                         
@@ -328,7 +473,10 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(vertical = 4.dp)
+                                        .padding(vertical = 4.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = cardBackgroundColor
+                                    )
                                 ) {
                                     Row(
                                         modifier = Modifier
@@ -361,12 +509,14 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                                         Column {
                                             Text(
                                                 text = "${data.name} (${data.id})",
-                                                fontWeight = FontWeight.Bold
+                                                fontWeight = FontWeight.Bold,
+                                                color = textColor
                                             )
                                             Spacer(modifier = Modifier.height(2.dp))
                                             Text(
                                                 text = "X: ${String.format("%.1f", data.x)}, Y: ${String.format("%.1f", data.y)}",
-                                                style = MaterialTheme.typography.bodySmall
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = textColor.copy(alpha = 0.7f)
                                             )
                                         }
                                     }

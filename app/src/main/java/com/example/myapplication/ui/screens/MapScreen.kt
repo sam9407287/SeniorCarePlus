@@ -95,6 +95,26 @@ private object MapTexts {
         "U003" to mapOf(true to "锚点3", false to "Anchor 3"),
         "U004" to mapOf(true to "锚点4", false to "Anchor 4")
     )
+    
+    val deviceInfo = mapOf(
+        true to "设备信息",
+        false to "Device Info"
+    )
+    
+    val deviceType = mapOf(
+        true to "设备类型",
+        false to "Device Type"
+    )
+    
+    val location = mapOf(
+        true to "位置",
+        false to "Location"
+    )
+    
+    val elderly = mapOf(
+        true to "老人",
+        false to "Elderly"
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -126,12 +146,15 @@ fun MapScreen(navController: NavController = rememberNavController()) {
     val backgroundColor = MaterialTheme.colorScheme.background
     val cardBackgroundColor = if (isDarkTheme) Color(0xFF2D2D2D) else Color.White
     val textColor = MaterialTheme.colorScheme.onBackground
-    val borderColor = if (isDarkTheme) Color(0xFF444444) else Color.Gray
+    val tooltipBgColor = if (isDarkTheme) Color(0xFF333333) else Color(0xFFFFFFFF)
     
-    // 模拟数据 - 根据当前语言选择名称
+    // 用于记录当前悬停的设备
+    var hoveredDeviceId by remember { mutableStateOf<String?>(null) }
+    
+    // 调整老人位置，避免重叠
     val locationDataList = remember {
         mutableStateListOf(
-            // 老人位置 - 分配不同的头像图标和颜色
+            // 老人位置 - 分配不同的头像图标和颜色，位置分散
             LocationData(
                 "E001", 
                 MapTexts.elderlyNames["E001"]?.get(isChineseLanguage) ?: "张三", 
@@ -149,14 +172,14 @@ fun MapScreen(navController: NavController = rememberNavController()) {
             LocationData(
                 "E003",
                 MapTexts.elderlyNames["E003"]?.get(isChineseLanguage) ?: "王五",
-                300f, 350f,
+                390f, 320f, // 调整位置避免与其他老人重叠
                 LocationType.ELDERLY,
                 avatarIcon = personIcons[2]
             ),
             LocationData(
                 "E004",
                 MapTexts.elderlyNames["E004"]?.get(isChineseLanguage) ?: "赵六",
-                180f, 280f,
+                180f, 350f, // 调整位置避免与其他老人重叠
                 LocationType.ELDERLY,
                 avatarIcon = personIcons[3]
             ),
@@ -218,24 +241,48 @@ fun MapScreen(navController: NavController = rememberNavController()) {
         }
     }
     
-    // 模拟数据更新（每5秒随机移动老人位置）
+    // 模拟数据更新（每5秒随机移动老人位置，但确保不会重叠）
     LaunchedEffect(key1 = "locationUpdate") {
         while(true) {
             kotlinx.coroutines.delay(5000)
+            
+            // 创建一个已占用位置的列表，用于避免重叠
+            val occupiedPositions = mutableListOf<Pair<Float, Float>>()
+            
             for (i in locationDataList.indices) {
                 val data = locationDataList[i]
                 if (data.type == LocationType.ELDERLY) {
-                    // 随机移动老人位置
-                    val newX = (data.x + Random.nextFloat() * 20 - 10).coerceIn(60f, 440f)
-                    val newY = (data.y + Random.nextFloat() * 20 - 10).coerceIn(60f, 440f)
-                    locationDataList[i] = data.copy(x = newX, y = newY)
+                    // 随机移动老人位置，但避免重叠
+                    var newX: Float
+                    var newY: Float
+                    var attempts = 0
+                    var positionValid: Boolean
+                    
+                    do {
+                        newX = (data.x + Random.nextFloat() * 20 - 10).coerceIn(60f, 440f)
+                        newY = (data.y + Random.nextFloat() * 20 - 10).coerceIn(60f, 440f)
+                        positionValid = true
+                        
+                        // 检查是否与已有位置重叠
+                        for (pos in occupiedPositions) {
+                            val distance = kotlin.math.sqrt((newX - pos.first) * (newX - pos.first) + (newY - pos.second) * (newY - pos.second))
+                            if (distance < 40) { // 最小距离为40像素
+                                positionValid = false
+                                break
+                            }
+                        }
+                        
+                        attempts++
+                    } while (!positionValid && attempts < 10) // 最多尝试10次
+                    
+                    if (positionValid) {
+                        occupiedPositions.add(Pair(newX, newY))
+                        locationDataList[i] = data.copy(x = newX, y = newY)
+                    }
                 }
             }
         }
     }
-    
-    // 始终显示图例，不提供关闭选项
-    val showLegend = true
     
     Column(
         modifier = Modifier
@@ -243,7 +290,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
             .background(backgroundColor)
             .padding(16.dp)
     ) {
-        // 顶部标题和主题切换按钮 - 匹配其他页面的样式
+        // 顶部标题和主题切换按钮
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -258,7 +305,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                 color = textColor
             )
             
-            // 主题切换按钮 - 与其他页面一致
+            // 主题切换按钮
             IconButton(
                 onClick = { ThemeManager.toggleTheme() },
                 modifier = Modifier
@@ -284,7 +331,7 @@ fun MapScreen(navController: NavController = rememberNavController()) {
             // 地图区域
             Card(
                 modifier = Modifier
-                    .weight(3f)
+                    .weight(1f)
                     .fillMaxHeight(),
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -293,244 +340,372 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                 )
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    // 底层地图图像
-                    Image(
-                        painter = painterResource(id = R.drawable.floor_map_bg),
-                        contentDescription = if (isChineseLanguage) "地图背景" else "Map Background",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.FillBounds,
-                        alpha = if (isDarkTheme) 0.6f else 0.8f
-                    )
-                    
-                    // 绘制UWB锚点位置
-                    Canvas(
-                        modifier = Modifier.fillMaxSize()
+                    // 底层地图图像 - 只显示右侧部分
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(16.dp))
                     ) {
-                        val canvasWidth = size.width
-                        val canvasHeight = size.height
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            val canvasWidth = size.width
+                            val canvasHeight = size.height
+                            
+                            // 绘制房间 - 只显示右侧部分
+                            // 房间1 (右上) - 紫色
+                            drawRect(
+                                color = Color(0xFFF3E5F5).copy(alpha = if (isDarkTheme) 0.3f else 0.5f),
+                                topLeft = Offset(canvasWidth * 0.5f, 0f),
+                                size = androidx.compose.ui.geometry.Size(canvasWidth * 0.5f, canvasHeight * 0.5f)
+                            )
+                            
+                            // 房间2 (右下) - 橙色
+                            drawRect(
+                                color = Color(0xFFFFF3E0).copy(alpha = if (isDarkTheme) 0.3f else 0.5f),
+                                topLeft = Offset(canvasWidth * 0.5f, canvasHeight * 0.5f),
+                                size = androidx.compose.ui.geometry.Size(canvasWidth * 0.5f, canvasHeight * 0.5f)
+                            )
+                            
+                            // 绘制房间边界
+                            val borderColor = if (isDarkTheme) Color.Gray.copy(alpha = 0.5f) else Color.Gray.copy(alpha = 0.7f)
+                            
+                            // 水平中线
+                            drawLine(
+                                color = borderColor,
+                                start = Offset(0f, canvasHeight * 0.5f),
+                                end = Offset(canvasWidth, canvasHeight * 0.5f),
+                                strokeWidth = 1.dp.toPx()
+                            )
+                            
+                            // 垂直中线
+                            drawLine(
+                                color = borderColor,
+                                start = Offset(canvasWidth * 0.5f, 0f),
+                                end = Offset(canvasWidth * 0.5f, canvasHeight),
+                                strokeWidth = 1.dp.toPx()
+                            )
+                            
+                            // 外边框
+                            drawRect(
+                                color = borderColor,
+                                topLeft = Offset(0f, 0f),
+                                size = androidx.compose.ui.geometry.Size(canvasWidth, canvasHeight),
+                                style = Stroke(width = 1.dp.toPx())
+                            )
+                        }
                         
                         // 绘制UWB锚点位置
                         locationDataList.filter { it.type == LocationType.UWB_ANCHOR }.forEach { data ->
-                            // 缩放到画布大小
-                            val x = data.x * canvasWidth / 500f
-                            val y = data.y * canvasHeight / 500f
+                            val x = data.x / 500f
+                            val y = data.y / 500f
                             
-                            // 绘制UWB定位锚点（三角形）
-                            val triangleSize = 12f
-                            // 三角形的三个顶点
-                            val p1 = Offset(x, y - triangleSize)
-                            val p2 = Offset(x - triangleSize, y + triangleSize)
-                            val p3 = Offset(x + triangleSize, y + triangleSize)
-                            
-                            drawPath(
-                                path = androidx.compose.ui.graphics.Path().apply {
-                                    moveTo(p1.x, p1.y)
-                                    lineTo(p2.x, p2.y)
-                                    lineTo(p3.x, p3.y)
-                                    close()
-                                },
-                                color = Color(0xFFF44336)
-                            )
-                        }
-                    }
-                    
-                    // 老人位置图标
-                    locationDataList.filter { it.type == LocationType.ELDERLY }.forEachIndexed { index, data ->
-                        val personColor = personColors[index % personColors.size]
-                        
-                        // 计算位置坐标
-                        val x = data.x / 500f
-                        val y = data.y / 500f
-                        
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .wrapContentSize(Alignment.TopStart)
-                                .offset(
-                                    x = (x * 100).toFloat().dp,
-                                    y = (y * 100).toFloat().dp
-                                )
-                        ) {
-                            // 显示人物头像图标
-                            data.avatarIcon?.let { icon ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .wrapContentSize(Alignment.TopStart)
+                                    .offset(
+                                        x = (x * 100).toFloat().dp,
+                                        y = (y * 100).toFloat().dp
+                                    )
+                            ) {
+                                // UWB锚点图标
                                 Box(
                                     modifier = Modifier
-                                        .size(40.dp)
+                                        .size(10.dp)
+                                        .background(Color.Red, CircleShape)
+                                        .clickable { 
+                                            // 切换悬停状态
+                                            hoveredDeviceId = if (hoveredDeviceId == data.id) null else data.id
+                                        }
+                                )
+                                
+                                // 显示详细信息提示框（当悬停时）
+                                if (hoveredDeviceId == data.id) {
+                                    Card(
+                                        modifier = Modifier
+                                            .width(200.dp)
+                                            .padding(top = 12.dp)
+                                            .align(Alignment.TopCenter)
+                                            .offset(y = (-5).dp),
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = tooltipBgColor
+                                        ),
+                                        elevation = CardDefaults.cardElevation(
+                                            defaultElevation = 4.dp
+                                        )
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.padding(12.dp)
+                                        ) {
+                                            Text(
+                                                text = MapTexts.deviceInfo[isChineseLanguage]!!,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 14.sp,
+                                                color = textColor
+                                            )
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(
+                                                text = "${data.id} - ${data.name}",
+                                                fontSize = 12.sp,
+                                                color = textColor
+                                            )
+                                            Text(
+                                                text = "${MapTexts.deviceType[isChineseLanguage]!!}: ${MapTexts.uwbAnchor[isChineseLanguage]!!}",
+                                                fontSize = 12.sp,
+                                                color = textColor
+                                            )
+                                            Text(
+                                                text = "${MapTexts.location[isChineseLanguage]!!}: X=${data.x.toInt()}, Y=${data.y.toInt()}",
+                                                fontSize = 12.sp,
+                                                color = textColor
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // 老人位置图标
+                        locationDataList.filter { it.type == LocationType.ELDERLY }.forEachIndexed { index, data ->
+                            val personColor = personColors[index % personColors.size]
+                            
+                            val x = data.x / 500f
+                            val y = data.y / 500f
+                            
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .wrapContentSize(Alignment.TopStart)
+                                    .offset(
+                                        x = (x * 100).toFloat().dp,
+                                        y = (y * 100).toFloat().dp
+                                    )
+                            ) {
+                                // 显示人物头像图标
+                                Box(
+                                    modifier = Modifier
+                                        .size(30.dp)
                                         .background(
                                             color = personColor.copy(alpha = 0.8f),
                                             shape = CircleShape
                                         )
+                                        .clickable {
+                                            // 切换悬停状态
+                                            hoveredDeviceId = if (hoveredDeviceId == data.id) null else data.id
+                                        }
                                         .padding(4.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = icon,
-                                        contentDescription = data.name,
-                                        tint = Color.White,
-                                        modifier = Modifier.fillMaxSize()
-                                    )
+                                    data.avatarIcon?.let { icon ->
+                                        Icon(
+                                            imageVector = icon,
+                                            contentDescription = data.name,
+                                            tint = Color.White,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
+                                }
+                                
+                                // 人物名称标签
+                                Text(
+                                    text = data.name,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp,
+                                    modifier = Modifier
+                                        .offset(y = 32.dp)
+                                        .background(
+                                            personColor.copy(alpha = 0.7f),
+                                            RoundedCornerShape(4.dp)
+                                        )
+                                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                                )
+                                
+                                // 显示详细信息提示框（当悬停时）
+                                if (hoveredDeviceId == data.id) {
+                                    Card(
+                                        modifier = Modifier
+                                            .width(200.dp)
+                                            .padding(top = 12.dp)
+                                            .align(Alignment.TopCenter)
+                                            .offset(y = (-5).dp),
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = tooltipBgColor
+                                        ),
+                                        elevation = CardDefaults.cardElevation(
+                                            defaultElevation = 4.dp
+                                        )
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.padding(12.dp)
+                                        ) {
+                                            Text(
+                                                text = MapTexts.deviceInfo[isChineseLanguage]!!,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 14.sp,
+                                                color = textColor
+                                            )
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(
+                                                text = "${data.id} - ${data.name}",
+                                                fontSize = 12.sp,
+                                                color = textColor
+                                            )
+                                            Text(
+                                                text = "${MapTexts.deviceType[isChineseLanguage]!!}: ${MapTexts.elderly[isChineseLanguage]!!}",
+                                                fontSize = 12.sp,
+                                                color = textColor
+                                            )
+                                            Text(
+                                                text = "${MapTexts.location[isChineseLanguage]!!}: X=${data.x.toInt()}, Y=${data.y.toInt()}",
+                                                fontSize = 12.sp,
+                                                color = textColor
+                                            )
+                                        }
+                                    }
                                 }
                             }
-                            
-                            // 人物名称标签
-                            Text(
-                                text = data.name,
-                                color = personColor,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 10.sp,
-                                modifier = Modifier
-                                    .offset(y = 42.dp)
-                                    .background(
-                                        if (isDarkTheme) Color.Black.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.7f)
-                                    )
-                                    .padding(horizontal = 4.dp, vertical = 2.dp)
-                            )
                         }
                     }
                 }
             }
             
             // 图例和位置列表
-            if (showLegend) {
-                Column(
+            Column(
+                modifier = Modifier
+                    .width(180.dp)
+                    .fillMaxHeight()
+                    .padding(start = 16.dp)
+            ) {
+                // 图例
+                Card(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .padding(start = 16.dp)
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = cardBackgroundColor
+                    )
                 ) {
-                    // 图例
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = cardBackgroundColor
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            MapTexts.legend[isChineseLanguage]!!, 
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = textColor
                         )
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                MapTexts.legend[isChineseLanguage]!!, 
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp,
-                                color = textColor
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            
-                            // 人物头像图例
-                            locationDataList.filter { it.type == LocationType.ELDERLY }
-                                .take(5)
-                                .forEachIndexed { index, data ->
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(vertical = 4.dp)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        // 人物头像图例
+                        locationDataList.filter { it.type == LocationType.ELDERLY }
+                            .take(5)
+                            .forEachIndexed { index, data ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(18.dp)
+                                            .background(
+                                                personColors[index % personColors.size],
+                                                CircleShape
+                                            )
                                     ) {
                                         data.avatarIcon?.let { icon ->
                                             Icon(
                                                 imageVector = icon,
                                                 contentDescription = null,
-                                                tint = personColors[index % personColors.size],
-                                                modifier = Modifier.size(20.dp)
+                                                tint = Color.White,
+                                                modifier = Modifier
+                                                    .size(12.dp)
+                                                    .align(Alignment.Center)
                                             )
                                         }
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(data.name, fontSize = 14.sp, color = textColor)
                                     }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(data.name, fontSize = 14.sp, color = textColor)
                                 }
-                            
-                            Spacer(modifier = Modifier.height(8.dp))
-                            
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Canvas(modifier = Modifier.size(20.dp)) {
-                                    val triangleSize = 6f
-                                    val p1 = Offset(10f, 4f)
-                                    val p2 = Offset(4f, 14f)
-                                    val p3 = Offset(16f, 14f)
-                                    
-                                    drawPath(
-                                        path = androidx.compose.ui.graphics.Path().apply {
-                                            moveTo(p1.x, p1.y)
-                                            lineTo(p2.x, p2.y)
-                                            lineTo(p3.x, p3.y)
-                                            close()
-                                        },
-                                        color = Color(0xFFF44336)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    MapTexts.uwbAnchor[isChineseLanguage]!!, 
-                                    fontSize = 14.sp,
-                                    color = textColor
-                                )
                             }
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        // UWB锚点图例
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .background(Color.Red, CircleShape)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                MapTexts.uwbAnchor[isChineseLanguage]!!, 
+                                fontSize = 14.sp,
+                                color = textColor
+                            )
                         }
                     }
-                    
-                    // 位置列表
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = cardBackgroundColor
+                }
+                
+                // 位置列表
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = cardBackgroundColor
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = MapTexts.locationList[isChineseLanguage]!!,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = textColor,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = MapTexts.locationList[isChineseLanguage]!!,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = textColor,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-                            
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                items(locationDataList.filter { it.type == LocationType.ELDERLY }) { data ->
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        // 为老人显示头像图标
-                                        data.avatarIcon?.let { icon ->
-                                            val index = locationDataList.indexOf(data)
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(32.dp)
-                                                    .background(
-                                                        personColors[index % personColors.size],
-                                                        CircleShape
-                                                    )
-                                                    .padding(4.dp)
-                                            ) {
-                                                Icon(
-                                                    imageVector = icon,
-                                                    contentDescription = null,
-                                                    tint = Color.White,
-                                                    modifier = Modifier.size(24.dp)
-                                                )
-                                            }
-                                        }
-                                        
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Column {
-                                            Text(
-                                                text = data.name,
-                                                fontWeight = FontWeight.Bold,
-                                                color = textColor
-                                            )
-                                            Spacer(modifier = Modifier.height(2.dp))
-                                            Text(
-                                                text = "X: ${String.format("%.1f", data.x)}, Y: ${String.format("%.1f", data.y)}",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = textColor.copy(alpha = 0.7f)
-                                            )
-                                        }
+                        
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(locationDataList.filter { it.type == LocationType.ELDERLY }) { data ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    val index = locationDataList.indexOf(data)
+                                    val personColor = personColors[index % personColors.size]
+                                    
+                                    // 人物标识点
+                                    Box(
+                                        modifier = Modifier
+                                            .size(12.dp)
+                                            .background(personColor, CircleShape)
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    
+                                    // 位置信息
+                                    Column {
+                                        Text(
+                                            text = data.name,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp,
+                                            color = textColor
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = "X: ${data.x.toInt()}, Y: ${data.y.toInt()}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = textColor.copy(alpha = 0.7f)
+                                        )
                                     }
                                 }
                             }

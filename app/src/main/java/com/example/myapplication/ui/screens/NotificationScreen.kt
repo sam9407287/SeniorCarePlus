@@ -57,6 +57,7 @@ import com.example.myapplication.ui.theme.LanguageManager
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 // 通知項目數據類
 data class NotificationItem(
@@ -176,13 +177,26 @@ fun NotificationContent(navController: NavController) {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // 標題
+            // 標題欄和返回按鈕
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // 添加返回按钮
+                IconButton(
+                    onClick = { navController.navigateUp() },
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = if (isChineseLanguage) "返回" else "Back",
+                        tint = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                
                 Text(
                     text = if (isChineseLanguage) "通知" else "Notifications",
                     fontSize = 30.sp,

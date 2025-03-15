@@ -79,19 +79,21 @@ fun RegionScreen(navController: NavController) {
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "區域管理",
+                    text = if (isChineseLanguage) "區域管理" else "Region Management",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
-                    text = "查看和管理患者的位置信息",
+                    text = if (isChineseLanguage) "查看和管理患者的位置信息" else "View and manage patient location information",
                     fontSize = 18.sp,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 32.dp)
+                    modifier = Modifier.padding(horizontal = 32.dp),
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -106,14 +108,14 @@ fun RegionScreen(navController: NavController) {
                 ) {
                     Icon(
                         imageVector = Icons.Default.Map,
-                        contentDescription = "查看地图",
+                        contentDescription = if (isChineseLanguage) "查看地圖" else "View Map",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(8.dp)
                     )
                 }
                 
                 Text(
-                    text = "點擊查看室內地圖",
+                    text = if (isChineseLanguage) "點擊查看室內地圖" else "Click to view indoor map",
                     color = MaterialTheme.colorScheme.primary,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
@@ -175,6 +177,10 @@ fun FeatureScreenTemplate(
     content: String,
     navController: NavController
 ) {
+    // 获取当前语言和主题状态
+    val isChineseLanguage = LanguageManager.isChineseLanguage
+    val isDarkTheme = ThemeManager.isDarkTheme
+    
     Box(
         modifier = Modifier
             .fillMaxSize(),
@@ -187,7 +193,8 @@ fun FeatureScreenTemplate(
                 text = title,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground
             )
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -196,13 +203,14 @@ fun FeatureScreenTemplate(
                 text = content,
                 fontSize = 18.sp,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 32.dp)
+                modifier = Modifier.padding(horizontal = 32.dp),
+                color = MaterialTheme.colorScheme.onBackground
             )
             
             Spacer(modifier = Modifier.height(24.dp))
             
             Text(
-                text = "1 patient calling!",
+                text = if (isChineseLanguage) "1 位患者正在呼叫！" else "1 patient calling!",
                 color = MaterialTheme.colorScheme.error,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,

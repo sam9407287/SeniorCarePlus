@@ -71,19 +71,6 @@ fun RegionScreen(navController: NavController) {
                     .padding(bottom = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // 返回按钮
-                IconButton(
-                    onClick = { navController.navigateUp() },
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = if (isChineseLanguage) "返回" else "Back",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                
                 Text(
                     text = if (isChineseLanguage) "區域管理" else "Region Management",
                     fontSize = 30.sp,

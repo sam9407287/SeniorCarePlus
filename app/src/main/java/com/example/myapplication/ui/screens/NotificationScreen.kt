@@ -184,18 +184,7 @@ fun NotificationContent(navController: NavController) {
                     .padding(bottom = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // 添加返回按钮
-                IconButton(
-                    onClick = { navController.navigateUp() },
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = if (isChineseLanguage) "返回" else "Back",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+                // 移除返回按钮
                 
                 Text(
                     text = if (isChineseLanguage) "通知" else "Notifications",

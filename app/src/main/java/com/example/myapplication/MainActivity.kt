@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -64,6 +65,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -277,7 +279,12 @@ fun MainAppContent() {
         drawerContent = {
             ModalDrawerSheet(
                 // 减小左侧侧边栏宽度
-                modifier = Modifier.fillMaxWidth(0.65f)
+                modifier = Modifier.fillMaxWidth(0.65f),
+                // 增加圆角
+                drawerShape = RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp),
+                // 添加阴影效果
+                drawerContainerColor = MaterialTheme.colorScheme.surface,
+                drawerContentColor = MaterialTheme.colorScheme.onSurface
             ) {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
@@ -499,9 +506,20 @@ fun AdminDrawer(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .fillMaxHeight()
-                // 右侧边栏恢复之前的宽度
+                // 右侧边栏宽度
                 .fillMaxWidth(0.45f)
+                .shadow(
+                    elevation = 8.dp,
+                    shape = RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp),
+                    clip = true
+                )
+                .clip(RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp))
                 .background(if (isDarkTheme) MaterialTheme.colorScheme.surface else Color(0xFFCDCDCD))
+                .border(
+                    width = 0.5.dp,
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp)
+                )
                 .padding(top = 48.dp, start = 12.dp, end = 12.dp)
                 // 阻止點擊事件傳遞到下層
                 .clickable(enabled = false, onClick = {})

@@ -215,7 +215,7 @@ fun EquipmentManagementScreen(navController: NavController) {
                 
                 Text(
                     text = if (isChineseLanguage) "設備管理" else "Equipment Management",
-                    fontSize = 30.sp,
+                    fontSize = if (isChineseLanguage) 30.sp else 24.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.onBackground

@@ -245,7 +245,13 @@ fun EquipmentManagementScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
-                placeholder = { Text(if (isChineseLanguage) "搜索設備名稱、編號或患者名稱..." else "Search by device name, ID or patient name...") },
+                placeholder = { 
+                    Text(
+                        text = if (isChineseLanguage) "搜索設備名稱、編號或患者名稱..." else "Search by device name, ID or patient name...", 
+                        fontSize = if (isChineseLanguage) MaterialTheme.typography.bodyMedium.fontSize else 13.sp,
+                        maxLines = 1
+                    ) 
+                },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {

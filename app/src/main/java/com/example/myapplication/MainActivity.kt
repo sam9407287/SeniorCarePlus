@@ -276,8 +276,8 @@ fun MainAppContent() {
         drawerState = leftDrawerState,
         drawerContent = {
             ModalDrawerSheet(
-                // 减少宽度从75%到60%，让侧边栏更窄
-                modifier = Modifier.fillMaxWidth(0.60f)
+                // 增加左侧侧边栏宽度
+                modifier = Modifier.fillMaxWidth(0.75f)
             ) {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
@@ -499,7 +499,7 @@ fun AdminDrawer(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .fillMaxHeight()
-                // 減少寬度，從0.55f降至0.45f
+                // 右侧边栏恢复之前的宽度
                 .fillMaxWidth(0.45f)
                 .background(if (isDarkTheme) MaterialTheme.colorScheme.surface else Color(0xFFCDCDCD))
                 .padding(top = 48.dp, start = 12.dp, end = 12.dp)

@@ -62,6 +62,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.R
 import com.example.myapplication.ui.theme.ThemeManager
+import com.example.myapplication.ui.theme.LanguageManager
 
 // 病患資料類
 data class Patient(
@@ -82,16 +83,19 @@ data class Patient(
 )
 
 // 警報類型枚舉
-enum class AlertType(val displayName: String) {
-    TEMPERATURE("體溫"),
-    HEART_RATE("心率"),
-    DIAPER("尿濕"),
-    CALL("呼叫"),
-    TIMER("定時"),
-    BED_EXIT("離床"),
-    AREA_EXIT("離區"),
-    LOW_POSITION("低地"),
-    STILL("靜止")
+enum class AlertType(val chineseName: String, val englishName: String) {
+    TEMPERATURE("體溫", "Temperature"),
+    HEART_RATE("心率", "Heart Rate"),
+    DIAPER("尿濕", "Diaper"),
+    CALL("呼叫", "Call"),
+    TIMER("定時", "Timer"),
+    BED_EXIT("離床", "Bed Exit"),
+    AREA_EXIT("離區", "Area Exit"),
+    LOW_POSITION("低地", "Low Position"),
+    STILL("靜止", "Still");
+    
+    val displayName: String
+        get() = if (LanguageManager.isChineseLanguage) chineseName else englishName
 }
 
 // 過濾選項
@@ -106,9 +110,11 @@ fun MonitorScreen(navController: NavController = rememberNavController()) {
     
     // 示例病患資料
     val patients = remember {
+        val isChineseLanguage = LanguageManager.isChineseLanguage
+        
         listOf(
             Patient(
-                name = "張三", 
+                name = if (isChineseLanguage) "張三" else "Zhang San", 
                 age = 80, 
                 gcs = 8,
                 alerts = mapOf(
@@ -124,7 +130,7 @@ fun MonitorScreen(navController: NavController = rememberNavController()) {
                 )
             ),
             Patient(
-                name = "李四", 
+                name = if (isChineseLanguage) "李四" else "Li Si", 
                 age = 70, 
                 gcs = 13,
                 alerts = mapOf(
@@ -140,7 +146,7 @@ fun MonitorScreen(navController: NavController = rememberNavController()) {
                 )
             ),
             Patient(
-                name = "王五", 
+                name = if (isChineseLanguage) "王五" else "Wang Wu", 
                 age = 88, 
                 gcs = 12,
                 alerts = mapOf(
@@ -156,7 +162,7 @@ fun MonitorScreen(navController: NavController = rememberNavController()) {
                 )
             ),
             Patient(
-                name = "趙六", 
+                name = if (isChineseLanguage) "趙六" else "Zhao Liu", 
                 age = 72, 
                 gcs = 14,
                 alerts = mapOf(
@@ -172,7 +178,7 @@ fun MonitorScreen(navController: NavController = rememberNavController()) {
                 )
             ),
             Patient(
-                name = "孫七", 
+                name = if (isChineseLanguage) "孫七" else "Sun Qi", 
                 age = 81, 
                 gcs = 8,
                 alerts = mapOf(
@@ -218,8 +224,11 @@ fun MonitorScreen(navController: NavController = rememberNavController()) {
                 .padding(bottom = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // 根据语言显示标题
+            val isChineseLanguage = LanguageManager.isChineseLanguage
+            
             Text(
-                text = "監控",
+                text = if (isChineseLanguage) "監控" else "Monitoring",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
@@ -236,7 +245,7 @@ fun MonitorScreen(navController: NavController = rememberNavController()) {
             ) {
                 Icon(
                     imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                    contentDescription = "切換主題",
+                    contentDescription = if (isChineseLanguage) "切換主題" else "Toggle Theme",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
@@ -249,8 +258,10 @@ fun MonitorScreen(navController: NavController = rememberNavController()) {
                 .fillMaxWidth()
                 .padding(bottom = 16.dp)
         ) {
+            val isChineseLanguage = LanguageManager.isChineseLanguage
+            
             MonitorFilterButton(
-                text = "All",
+                text = if (isChineseLanguage) "全部" else "All",
                 isSelected = currentFilter == FilterOption.ALL,
                 onClick = { currentFilter = FilterOption.ALL }
             )
@@ -258,7 +269,7 @@ fun MonitorScreen(navController: NavController = rememberNavController()) {
             Spacer(modifier = Modifier.width(8.dp))
             
             MonitorFilterButton(
-                text = "Abnormal",
+                text = if (isChineseLanguage) "異常" else "Abnormal",
                 isSelected = currentFilter == FilterOption.ABNORMAL,
                 onClick = { currentFilter = FilterOption.ABNORMAL }
             )
@@ -266,7 +277,7 @@ fun MonitorScreen(navController: NavController = rememberNavController()) {
             Spacer(modifier = Modifier.width(8.dp))
             
             MonitorFilterButton(
-                text = "Normal",
+                text = if (isChineseLanguage) "正常" else "Normal",
                 isSelected = currentFilter == FilterOption.NORMAL,
                 onClick = { currentFilter = FilterOption.NORMAL }
             )
@@ -347,6 +358,7 @@ fun PatientCard(
     onAlertClick: (String, AlertType) -> Unit
 ) {
     val isDarkTheme = ThemeManager.isDarkTheme
+    val isChineseLanguage = LanguageManager.isChineseLanguage
     
     Card(
         modifier = Modifier
@@ -399,7 +411,10 @@ fun PatientCard(
                 )
                 
                 Text(
-                    text = "Age: ${patient.age}, GCS: ${patient.gcs}",
+                    text = if (isChineseLanguage) 
+                        "年齡: ${patient.age}, GCS: ${patient.gcs}" 
+                    else 
+                        "Age: ${patient.age}, GCS: ${patient.gcs}",
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                     fontSize = 14.sp
                 )

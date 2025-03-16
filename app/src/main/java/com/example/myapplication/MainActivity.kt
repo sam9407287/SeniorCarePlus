@@ -279,7 +279,11 @@ fun MainAppContent() {
         drawerContent = {
             ModalDrawerSheet(
                 // 减小左侧侧边栏宽度
-                modifier = Modifier.fillMaxWidth(0.65f),
+                modifier = Modifier
+                    .fillMaxWidth(0.65f)
+                    // 添加安全区域的内边距，避免与系统UI重叠
+                    .windowInsetsPadding(WindowInsets.statusBars)
+                    .padding(bottom = 24.dp),
                 // 增加圆角
                 drawerShape = RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp),
                 // 添加阴影效果
@@ -506,6 +510,9 @@ fun AdminDrawer(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .fillMaxHeight()
+                // 添加安全区域的内边距，避免与系统UI重叠
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(bottom = 24.dp)
                 // 右侧边栏宽度
                 .fillMaxWidth(0.45f)
                 .shadow(
@@ -520,7 +527,7 @@ fun AdminDrawer(
                     color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                     shape = RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp)
                 )
-                .padding(top = 48.dp, start = 12.dp, end = 12.dp)
+                .padding(top = 24.dp, start = 12.dp, end = 12.dp, bottom = 12.dp)
                 // 阻止點擊事件傳遞到下層
                 .clickable(enabled = false, onClick = {})
         ) {

@@ -59,8 +59,8 @@ enum class LocationType {
 // 多語言文本映射
 private object MapTexts {
     val title = mapOf(
-        true to "室內地圖與定位",
-        false to "Indoor Map & Positioning"
+        true to "室內定位",
+        false to "Indoor Positioning"
     )
     
     val mapTitle = mapOf(

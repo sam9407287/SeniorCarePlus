@@ -276,8 +276,8 @@ fun MainAppContent() {
         drawerState = leftDrawerState,
         drawerContent = {
             ModalDrawerSheet(
-                // 增加左侧侧边栏宽度
-                modifier = Modifier.fillMaxWidth(0.75f)
+                // 减小左侧侧边栏宽度
+                modifier = Modifier.fillMaxWidth(0.65f)
             ) {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(

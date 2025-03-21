@@ -69,6 +69,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -123,46 +124,9 @@ fun TimerScreen(navController: NavController) {
     // 檢查語言設置
     val isChineseLanguage = LanguageManager.isChineseLanguage
     
-    // 提醒列表
-    val reminders = remember {
-        mutableStateListOf(
-            ReminderItem(
-                id = 1,
-                title = "早晨服藥",
-                time = "08:00",
-                days = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日"),
-                type = ReminderType.MEDICATION
-            ),
-            ReminderItem(
-                id = 2,
-                title = "喝水提醒",
-                time = "10:30",
-                days = listOf("週一", "週二", "週三", "週四", "週五"),
-                type = ReminderType.WATER
-            ),
-            ReminderItem(
-                id = 3,
-                title = "測量心率",
-                time = "14:00",
-                days = listOf("週一", "週三", "週五"),
-                type = ReminderType.HEART_RATE
-            ),
-            ReminderItem(
-                id = 4,
-                title = "晚餐時間",
-                time = "18:30",
-                days = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日"),
-                type = ReminderType.MEAL
-            ),
-            ReminderItem(
-                id = 5,
-                title = "晚上服藥",
-                time = "21:00",
-                days = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日"),
-                type = ReminderType.MEDICATION
-            )
-        )
-    }
+    // 使用ViewModel來管理提醒列表（帶有緩存功能）
+    val viewModel = androidx.lifecycle.viewmodel.compose.viewModel<ReminderViewModel>()
+    val reminders = viewModel.reminders
     
     // 狀態
     var showAddReminderDialog by remember { mutableStateOf(false) }
@@ -241,7 +205,7 @@ fun TimerScreen(navController: NavController) {
                                 showAddReminderDialog = true
                             },
                             onDelete = {
-                                reminders.remove(reminder)
+                                viewModel.deleteReminder(reminder.id)
                             },
                             onToggle = { isActive ->
                                 // TODO: 實現啟用/禁用提醒的功能
@@ -281,27 +245,24 @@ fun TimerScreen(navController: NavController) {
             onConfirm = { title, time, days, type ->
                 if (currentEditingReminder != null) {
                     // 编辑现有提醒
-                    val index = reminders.indexOfFirst { it.id == currentEditingReminder!!.id }
-                    if (index != -1) {
-                        reminders[index] = currentEditingReminder!!.copy(
-                            title = title,
-                            time = time,
-                            days = days,
-                            type = type
-                        )
-                    }
+                    val updatedReminder = currentEditingReminder!!.copy(
+                        title = title,
+                        time = time,
+                        days = days,
+                        type = type
+                    )
+                    viewModel.updateReminder(updatedReminder)
                 } else {
                     // 添加新提醒
-                    val newId = reminders.maxOfOrNull { it.id }?.plus(1) ?: 1
-                    reminders.add(
-                        ReminderItem(
-                            id = newId,
-                            title = title,
-                            time = time,
-                            days = days,
-                            type = type
-                        )
+                    val newId = viewModel.getNextId()
+                    val newReminder = ReminderItem(
+                        id = newId,
+                        title = title,
+                        time = time,
+                        days = days,
+                        type = type
                     )
+                    viewModel.addReminder(newReminder)
                 }
                 showAddReminderDialog = false
             }

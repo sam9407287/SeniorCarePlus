@@ -114,7 +114,8 @@ data class ReminderItem(
     val title: String,
     val time: String,
     val days: List<String>,
-    val type: ReminderType
+    val type: ReminderType,
+    val isEnabled: Boolean = true // 添加啟用/禁用狀態，默認為啟用
 )
 
 @Composable
@@ -209,7 +210,10 @@ fun TimerScreen(navController: NavController) {
                                 viewModel.deleteReminder(reminder.id)
                             },
                             onToggle = { isActive ->
-                                // 測試提醒對話框
+                                // 切換提醒的啟用/禁用狀態
+                                viewModel.toggleReminder(reminder.id, isActive)
+                                
+                                // 如果啟用並且需要測試，可以顯示提醒對話框
                                 if (isActive) {
                                     viewModel.showReminderAlert(reminder.id)
                                 }
@@ -290,7 +294,8 @@ fun ReminderItemCard(
     onDelete: () -> Unit,
     onToggle: (Boolean) -> Unit
 ) {
-    var isEnabled by remember { mutableStateOf(true) }
+    // 使用 reminder 的 isEnabled 屬性作為初始值
+    var isEnabled by remember { mutableStateOf(reminder.isEnabled) }
     
     Card(
         modifier = Modifier.fillMaxWidth(),

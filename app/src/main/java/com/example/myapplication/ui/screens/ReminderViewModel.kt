@@ -77,12 +77,20 @@ class ReminderViewModel : ViewModel() {
                 val typeString = reminderJson.getString("type")
                 val type = ReminderType.valueOf(typeString)
                 
+                // 加載啟用/禁用狀態，如果沒有則默認為啟用
+                val isEnabled = if (reminderJson.has("isEnabled")) {
+                    reminderJson.getBoolean("isEnabled")
+                } else {
+                    true
+                }
+                
                 val reminder = ReminderItem(
                     id = reminderJson.getInt("id"),
                     title = reminderJson.getString("title"),
                     time = reminderJson.getString("time"),
                     days = days,
-                    type = type
+                    type = type,
+                    isEnabled = isEnabled
                 )
                 
                 _reminders.add(reminder)
@@ -118,6 +126,9 @@ class ReminderViewModel : ViewModel() {
                     
                     // Store enum as string
                     put("type", reminder.type.name)
+                    
+                    // 保存啟用/禁用狀態
+                    put("isEnabled", reminder.isEnabled)
                 }
                 
                 jsonArray.put(reminderJson)
@@ -181,35 +192,40 @@ class ReminderViewModel : ViewModel() {
                 title = "早晨服藥",
                 time = "08:00",
                 days = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日"),
-                type = ReminderType.MEDICATION
+                type = ReminderType.MEDICATION,
+                isEnabled = true
             ),
             ReminderItem(
                 id = 2,
                 title = "喝水提醒",
                 time = "10:30",
                 days = listOf("週一", "週二", "週三", "週四", "週五"),
-                type = ReminderType.WATER
+                type = ReminderType.WATER,
+                isEnabled = true
             ),
             ReminderItem(
                 id = 3,
                 title = "測量心率",
                 time = "14:00",
                 days = listOf("週一", "週三", "週五"),
-                type = ReminderType.HEART_RATE
+                type = ReminderType.HEART_RATE,
+                isEnabled = true
             ),
             ReminderItem(
                 id = 4,
                 title = "晚餐時間",
                 time = "18:30",
                 days = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日"),
-                type = ReminderType.MEAL
+                type = ReminderType.MEAL,
+                isEnabled = true
             ),
             ReminderItem(
                 id = 5,
                 title = "晚上服藥",
                 time = "21:00",
                 days = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日"),
-                type = ReminderType.MEDICATION
+                type = ReminderType.MEDICATION,
+                isEnabled = true
             )
         )
         
@@ -227,10 +243,35 @@ class ReminderViewModel : ViewModel() {
      */
     fun showReminderAlert(reminderId: Int) {
         val reminder = _reminders.find { it.id == reminderId }
-        if (reminder != null) {
+        if (reminder != null && reminder.isEnabled) { // 只有啟用的提醒才會顯示提醒對話框
             _currentReminder.value = reminder
             _showFullScreenAlert.value = true  // 使用全屏提醒對話框
             Log.d("ReminderViewModel", "顯示全屏提醒對話框: ${reminder.title}")
+        }
+    }
+    
+    /**
+     * 切換提醒的啟用/禁用狀態
+     */
+    fun toggleReminder(reminderId: Int, isEnabled: Boolean) {
+        val index = _reminders.indexOfFirst { it.id == reminderId }
+        if (index != -1) {
+            val reminder = _reminders[index]
+            // 創建一個新的提醒項目，更新啟用狀態
+            val updatedReminder = reminder.copy(isEnabled = isEnabled)
+            _reminders[index] = updatedReminder
+            
+            // 保存更新後的提醒列表
+            saveReminders()
+            
+            // 根據啟用狀態設置或取消鬧鐘
+            if (isEnabled) {
+                // 啟用提醒，設置鬧鐘
+                reminderManager.scheduleReminder(updatedReminder)
+            } else {
+                // 禁用提醒，取消鬧鐘
+                reminderManager.cancelReminder(updatedReminder)
+            }
         }
     }
     

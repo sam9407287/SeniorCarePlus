@@ -42,12 +42,20 @@ class ReminderViewModel : ViewModel() {
     }
     
     // 確保 ViewModel 被創建時立即加載數據
-    // 主題切換時的監聽器，清除所有提醒狀態
+    // 主題切換時的監聽器，只清除當前顯示的提醒對話框
     private val themeChangeListener: () -> Unit = {
-        Log.d("ReminderViewModel", "主題即將切換，清除提醒狀態")
-        _showReminderAlert.value = false
-        _showFullScreenAlert.value = false
-        _currentReminder.value = null
+        // 只清除對話框狀態，不影響後續提醒處理
+        if (_showReminderAlert.value || _showFullScreenAlert.value) {
+            Log.d("ReminderViewModel", "主題即將切換，關閉當前提醒對話框")
+            _showReminderAlert.value = false
+            _showFullScreenAlert.value = false
+            
+            // 留下當前提醒的引用，如果需要稍後再次顯示
+            val currentId = _currentReminder.value?.id
+            if (currentId != null) {
+                Log.d("ReminderViewModel", "保存當前提醒ID: $currentId 以便於切換後可能需要再次顯示")
+            }
+        }
     }
     
     init {

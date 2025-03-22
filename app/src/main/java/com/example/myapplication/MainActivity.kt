@@ -229,18 +229,50 @@ fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -
 }
 
 /**
- * 保存已在應用生命週期内處理過的提醒ID
+ * 保存已在應用生命週期內處理過的提醒ID和觸發時間
  */
 object ProcessedReminders {
-    private val processedReminderIds = mutableSetOf<Int>()
+    // 將提醒ID和觸發時間一起存儲，以便區分不同時間的相同提醒
+    private val processedReminderMap = mutableMapOf<Int, Long>()
+    
+    // 非常短的過期時間，只在幾秒內防止重複觸發，帶來更好的用戶體驗
+    private const val REMINDER_EXPIRE_DURATION = 5 * 1000L // 5秒鋪蹟數
+    
+    // 在主題切換後是否重置處理狀態
+    private var themeChangeResetEnabled = true
+    
+    // 註冊主題切換監聽器
+    init {
+        ThemeManager.addThemeChangeListener {
+            if (themeChangeResetEnabled) {
+                // 主題切換時重置處理狀態，允許提醒繼續觸發
+                Log.d("ProcessedReminders", "主題切換，重置提醒處理狀態")
+                resetAll()
+            }
+        }
+    }
     
     /**
-     * 檢查提醒是否已被處理
+     * 檢查提醒是否已被處理且未過期
      * @param reminderId 提醒ID
-     * @return 如果已處理過返回 true
+     * @return 如果已處理且未過期返回 true
      */
     fun isProcessed(reminderId: Int): Boolean {
-        return reminderId in processedReminderIds
+        val lastProcessedTime = processedReminderMap[reminderId] ?: return false
+        val currentTime = System.currentTimeMillis()
+        
+        // 檢查會跑了多少時間，如果超過了自動過期時間，代表提醒可以再次觸發
+        val timePassed = currentTime - lastProcessedTime
+        val expired = timePassed > REMINDER_EXPIRE_DURATION
+        
+        if (expired) {
+            // 如果已過期，則移除記錄
+            processedReminderMap.remove(reminderId)
+            return false
+        }
+        
+        // 如果未過期，則返回已處理
+        return true
     }
     
     /**
@@ -248,14 +280,42 @@ object ProcessedReminders {
      * @param reminderId 要標記的提醒ID
      */
     fun markAsProcessed(reminderId: Int) {
-        processedReminderIds.add(reminderId)
+        processedReminderMap[reminderId] = System.currentTimeMillis()
     }
     
     /**
      * 重置所有處理狀態
      */
+    /**
+     * 重置所有處理狀態
+     */
     fun resetAll() {
-        processedReminderIds.clear()
+        processedReminderMap.clear()
+        Log.d("ProcessedReminders", "已重置所有提醒處理狀態")
+    }
+    
+    /**
+     * 設置主題切換重置功能的啟用狀態
+     * @param enabled 是否啟用主題切換重置
+     */
+    fun setThemeChangeResetEnabled(enabled: Boolean) {
+        themeChangeResetEnabled = enabled
+        Log.d("ProcessedReminders", "設置主題切換重置功能: $enabled")
+    }
+    
+    /**
+     * 清除過期的提醒記錄
+     */
+    fun clearExpired() {
+        val currentTime = System.currentTimeMillis()
+        val iterator = processedReminderMap.iterator()
+        
+        while (iterator.hasNext()) {
+            val entry = iterator.next()
+            if (currentTime - entry.value > REMINDER_EXPIRE_DURATION) {
+                iterator.remove()
+            }
+        }
     }
 }
 

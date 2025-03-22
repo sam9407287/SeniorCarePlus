@@ -193,7 +193,8 @@ fun TimerScreen(navController: NavController) {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
+                        .weight(1f),
+                    contentPadding = PaddingValues(bottom = 80.dp) // 添加底部間距，避免被FAB遮擋
                 ) {
                     items(reminders) { reminder ->
                         ReminderItemCard(
@@ -208,7 +209,10 @@ fun TimerScreen(navController: NavController) {
                                 viewModel.deleteReminder(reminder.id)
                             },
                             onToggle = { isActive ->
-                                // TODO: 實現啟用/禁用提醒的功能
+                                // 測試提醒對話框
+                                if (isActive) {
+                                    viewModel.showReminderAlert(reminder.id)
+                                }
                             }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -233,6 +237,13 @@ fun TimerScreen(navController: NavController) {
                 contentDescription = if (isChineseLanguage) "添加提醒" else "Add Reminder",
                 tint = Color.White
             )
+        }
+    }
+    
+    // 顯示提醒對話框（當從通知打開時）
+    if (viewModel.showReminderAlert) {
+        viewModel.currentReminder?.let { reminder ->
+            // 這裡不需要添加對話框，因為已經在 MainActivity 中添加了
         }
     }
     
@@ -816,11 +827,33 @@ fun AddEditReminderDialog(
     
     // 時間選擇
     var showTimePicker by remember { mutableStateOf(false) }
-    var hour by remember { mutableStateOf(reminder?.time?.split(":")?.get(0)?.toIntOrNull() ?: 8) }
-    var minute by remember { mutableStateOf(reminder?.time?.split(":")?.get(1)?.toIntOrNull() ?: 0) }
-    var timeFormatted by remember { mutableStateOf(
-        reminder?.time ?: "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
-    ) }
+    
+    // 安全地解析時間
+    var hour by remember { 
+        mutableStateOf(
+            try {
+                reminder?.time?.split(":")?.getOrNull(0)?.toIntOrNull() ?: 8
+            } catch (e: Exception) {
+                8 // 預設值
+            }
+        )
+    }
+    
+    var minute by remember { 
+        mutableStateOf(
+            try {
+                reminder?.time?.split(":")?.getOrNull(1)?.toIntOrNull() ?: 0
+            } catch (e: Exception) {
+                0 // 預設值
+            }
+        )
+    }
+    
+    var timeFormatted by remember { 
+        mutableStateOf(
+            reminder?.time ?: "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
+        )
+    }
     
     // 日期选择 - 根據當前語言設置
     var showDayPicker by remember { mutableStateOf(false) }
@@ -1170,7 +1203,14 @@ fun AddEditReminderDialog(
                     // 確認按鈕
                     Button(
                         onClick = {
-                            onConfirm(title, timeFormatted, selectedDays, selectedType)
+                            try {
+                                // 確保標題不為空
+                                val safeTitle = title.takeIf { it.isNotBlank() } ?: "提醒"
+                                onConfirm(safeTitle, timeFormatted, selectedDays, selectedType)
+                            } catch (e: Exception) {
+                                // 如果發生錯誤，仍然關閉對話框
+                                onDismiss()
+                            }
                         },
                         enabled = title.isNotBlank() && selectedDays.isNotEmpty(),
                         colors = ButtonDefaults.buttonColors(

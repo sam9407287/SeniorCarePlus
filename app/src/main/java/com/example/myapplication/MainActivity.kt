@@ -3,7 +3,9 @@
 
 package com.example.myapplication
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -57,6 +59,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -100,8 +103,17 @@ import kotlinx.coroutines.launch
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.material.ripple.rememberRipple
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.reminder.ReminderAlertDialog
+import com.example.myapplication.reminder.ReminderFullScreenDialog
+import com.example.myapplication.ui.screens.ReminderViewModel
 
 class MainActivity : ComponentActivity() {
+    companion object {
+        // 使用可空類型，避免初始化問題
+        var sharedReminderViewModel: ReminderViewModel? = null
+    }
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         // 在启动后切换到普通主题
         setTheme(R.style.Theme_MyApplication)
@@ -115,9 +127,34 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainAppContent()
+                    // 檢查是否有從通知打開的提醒
+                    val openReminderDialog = intent.getBooleanExtra("OPEN_REMINDER_DIALOG", false)
+                    val reminderId = intent.getIntExtra("REMINDER_ID", -1)
+                    
+                    Log.d("MainActivity", "onCreate: openReminderDialog=$openReminderDialog, reminderId=$reminderId")
+                    
+                    MainAppContent(openReminderDialog, reminderId)
                 }
             }
+        }
+    }
+    
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        
+        // 設置新的Intent
+        setIntent(intent)
+        
+        // 檢查是否有從通知打開的提醒
+        val openReminderDialog = intent.getBooleanExtra("OPEN_REMINDER_DIALOG", false)
+        val reminderId = intent.getIntExtra("REMINDER_ID", -1)
+        
+        Log.d("MainActivity", "onNewIntent: openReminderDialog=$openReminderDialog, reminderId=$reminderId")
+        
+        if (openReminderDialog && reminderId != -1 && sharedReminderViewModel != null) {
+            // 直接更新 ViewModel 狀態，而不是重新設置整個內容
+            Log.d("MainActivity", "直接更新 ViewModel 狀態，顯示提醒 ID: $reminderId")
+            sharedReminderViewModel?.showReminderAlert(reminderId)
         }
     }
 }
@@ -178,7 +215,7 @@ fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -
 }
 
 @Composable
-fun MainAppContent() {
+fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
     val navController = rememberNavController()
     val leftDrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -194,6 +231,50 @@ fun MainAppContent() {
         MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
     } else {
         MaterialTheme.colorScheme.surface
+    }
+    
+    // 獲取提醒 ViewModel
+    val localReminderViewModel: ReminderViewModel = viewModel()
+    
+    // 將局部 ViewModel 存儲在非 Composable 的地方，使其可以在 onNewIntent 中訪問
+    MainActivity.sharedReminderViewModel = localReminderViewModel
+    
+    // 如果從通知打開，顯示提醒對話框
+    if (openReminderDialog && reminderId != -1) {
+        localReminderViewModel.showReminderAlert(reminderId)
+    }
+    
+    // 顯示提醒對話框
+    if (localReminderViewModel.showReminderAlert) {
+        localReminderViewModel.currentReminder?.let { reminder ->
+            ReminderAlertDialog(
+                reminder = reminder,
+                onDismiss = { localReminderViewModel.hideReminderAlert() },
+                onSnooze = { localReminderViewModel.snoozeReminder() }
+            )
+        }
+    }
+    
+    // 顯示全屏提醒對話框
+    val showFullScreenDialog = remember { mutableStateOf(localReminderViewModel.showFullScreenAlert) }
+    
+    // 監聽 ViewModel 中的狀態變化
+    LaunchedEffect(localReminderViewModel.showFullScreenAlert) {
+        showFullScreenDialog.value = localReminderViewModel.showFullScreenAlert
+    }
+    
+    if (showFullScreenDialog.value) {
+        localReminderViewModel.currentReminder?.let { reminder ->
+            ReminderFullScreenDialog(
+                reminder = reminder,
+                onDismiss = { 
+                    // 先更新本地狀態
+                    showFullScreenDialog.value = false
+                    // 然後通知 ViewModel
+                    localReminderViewModel.hideReminderAlert() 
+                }
+            )
+        }
     }
     
     // 定義底部導航欄的項目

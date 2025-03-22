@@ -4,9 +4,11 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.MyApplication
+import com.example.myapplication.reminder.ReminderManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,8 +20,24 @@ class ReminderViewModel : ViewModel() {
     private val _reminders = mutableStateListOf<ReminderItem>()
     val reminders: List<ReminderItem> get() = _reminders
     
+    // 當前選中的提醒項目（用於顯示提醒對話框）
+    private val _currentReminder = mutableStateOf<ReminderItem?>(null)
+    val currentReminder get() = _currentReminder.value
+    
+    // 是否顯示提醒對話框
+    private val _showReminderAlert = mutableStateOf(false)
+    val showReminderAlert get() = _showReminderAlert.value
+    
+    // 是否顯示全屏提醒對話框
+    private val _showFullScreenAlert = mutableStateOf(false)
+    val showFullScreenAlert get() = _showFullScreenAlert.value
+    
     private val sharedPreferences: SharedPreferences by lazy {
         MyApplication.instance.getSharedPreferences("reminders_prefs", Context.MODE_PRIVATE)
+    }
+    
+    private val reminderManager: ReminderManager by lazy {
+        ReminderManager(MyApplication.instance)
     }
     
     // 確保 ViewModel 被創建時立即加載數據
@@ -124,21 +142,31 @@ class ReminderViewModel : ViewModel() {
     fun addReminder(reminder: ReminderItem) {
         _reminders.add(reminder)
         saveReminders()
+        // 設置提醒鬧鐘
+        reminderManager.scheduleReminder(reminder)
     }
     
     fun updateReminder(updatedReminder: ReminderItem) {
         val index = _reminders.indexOfFirst { it.id == updatedReminder.id }
         if (index != -1) {
+            val oldReminder = _reminders[index]
             _reminders[index] = updatedReminder
             saveReminders()
+            
+            // 更新提醒鬧鐘
+            reminderManager.updateReminder(oldReminder, updatedReminder)
         }
     }
     
     fun deleteReminder(id: Int) {
         val index = _reminders.indexOfFirst { it.id == id }
         if (index != -1) {
+            val reminder = _reminders[index]
             _reminders.removeAt(index)
             saveReminders()
+            
+            // 取消提醒鬧鐘
+            reminderManager.cancelReminder(reminder)
         }
     }
     
@@ -147,45 +175,88 @@ class ReminderViewModel : ViewModel() {
     }
     
     private fun addDefaultReminders() {
-        _reminders.addAll(
-            listOf(
-                ReminderItem(
-                    id = 1,
-                    title = "早晨服藥",
-                    time = "08:00",
-                    days = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日"),
-                    type = ReminderType.MEDICATION
-                ),
-                ReminderItem(
-                    id = 2,
-                    title = "喝水提醒",
-                    time = "10:30",
-                    days = listOf("週一", "週二", "週三", "週四", "週五"),
-                    type = ReminderType.WATER
-                ),
-                ReminderItem(
-                    id = 3,
-                    title = "測量心率",
-                    time = "14:00",
-                    days = listOf("週一", "週三", "週五"),
-                    type = ReminderType.HEART_RATE
-                ),
-                ReminderItem(
-                    id = 4,
-                    title = "晚餐時間",
-                    time = "18:30",
-                    days = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日"),
-                    type = ReminderType.MEAL
-                ),
-                ReminderItem(
-                    id = 5,
-                    title = "晚上服藥",
-                    time = "21:00",
-                    days = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日"),
-                    type = ReminderType.MEDICATION
-                )
+        val defaultReminders = listOf(
+            ReminderItem(
+                id = 1,
+                title = "早晨服藥",
+                time = "08:00",
+                days = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日"),
+                type = ReminderType.MEDICATION
+            ),
+            ReminderItem(
+                id = 2,
+                title = "喝水提醒",
+                time = "10:30",
+                days = listOf("週一", "週二", "週三", "週四", "週五"),
+                type = ReminderType.WATER
+            ),
+            ReminderItem(
+                id = 3,
+                title = "測量心率",
+                time = "14:00",
+                days = listOf("週一", "週三", "週五"),
+                type = ReminderType.HEART_RATE
+            ),
+            ReminderItem(
+                id = 4,
+                title = "晚餐時間",
+                time = "18:30",
+                days = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日"),
+                type = ReminderType.MEAL
+            ),
+            ReminderItem(
+                id = 5,
+                title = "晚上服藥",
+                time = "21:00",
+                days = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日"),
+                type = ReminderType.MEDICATION
             )
         )
+        
+        _reminders.addAll(defaultReminders)
         saveReminders()
+        
+        // 為默認提醒設置鬧鐘
+        defaultReminders.forEach { reminder ->
+            reminderManager.scheduleReminder(reminder)
+        }
+    }
+    
+    /**
+     * 設置當前提醒並顯示提醒對話框
+     */
+    fun showReminderAlert(reminderId: Int) {
+        val reminder = _reminders.find { it.id == reminderId }
+        if (reminder != null) {
+            _currentReminder.value = reminder
+            _showFullScreenAlert.value = true  // 使用全屏提醒對話框
+            Log.d("ReminderViewModel", "顯示全屏提醒對話框: ${reminder.title}")
+        }
+    }
+    
+    /**
+     * 隱藏提醒對話框
+     */
+    fun hideReminderAlert() {
+        Log.d("ReminderViewModel", "隱藏提醒對話框")
+        // 確保先設置為 false，然後才清除當前提醒
+        _showReminderAlert.value = false
+        _showFullScreenAlert.value = false
+        
+        // 立即清除當前提醒，確保狀態完全重置
+        _currentReminder.value = null
+        Log.d("ReminderViewModel", "已清除當前提醒")
+    }
+    
+    /**
+     * 稍後提醒（5分鐘後再次提醒）
+     */
+    fun snoozeReminder() {
+        currentReminder?.let { reminder ->
+            // 這裡可以實現稍後提醒的邏輯
+            // 例如5分鐘後再次顯示提醒
+            Log.d("ReminderViewModel", "Snoozing reminder: ${reminder.id}")
+        }
+        hideReminderAlert()
     }
 }

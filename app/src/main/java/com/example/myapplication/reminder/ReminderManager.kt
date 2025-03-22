@@ -18,7 +18,12 @@ class ReminderManager(private val context: Context) {
      * 設置提醒鬧鐘
      */
     fun scheduleReminder(reminder: ReminderItem) {
-        Log.d("ReminderManager", "Scheduling reminder: ${reminder.id} - ${reminder.title}")
+        if (!reminder.isEnabled) {
+            Log.d("ReminderManager", "Skipping disabled reminder: ${reminder.id} - ${reminder.title}")
+            return
+        }
+        
+        Log.d("ReminderManager", "Scheduling reminder: ${reminder.id} - ${reminder.title}, 類型: ${reminder.type.name}")
         
         // 解析時間
         val (hour, minute) = parseTime(reminder.time)
@@ -50,7 +55,11 @@ class ReminderManager(private val context: Context) {
                 putExtra(ReminderReceiver.EXTRA_TITLE, reminder.title)
                 putExtra(ReminderReceiver.EXTRA_TYPE, reminder.type.name)
                 putExtra(ReminderReceiver.EXTRA_ID, reminder.id)
+                // 添加一個獨特的時間戳，確保每次都是不同的 Intent
+                putExtra("timestamp", System.currentTimeMillis())
             }
+            
+            Log.d("ReminderManager", "Intent extras: 標題=${reminder.title}, 類型=${reminder.type.name}, ID=${reminder.id}")
             
             val requestCode = generateRequestCode(reminder.id, dayIndex)
             val pendingIntent = PendingIntent.getBroadcast(
@@ -85,14 +94,17 @@ class ReminderManager(private val context: Context) {
      * 取消提醒鬧鐘
      */
     fun cancelReminder(reminder: ReminderItem) {
-        Log.d("ReminderManager", "Cancelling reminder: ${reminder.id} - ${reminder.title}")
+        Log.d("ReminderManager", "Cancelling reminder: ${reminder.id} - ${reminder.title}, 類型: ${reminder.type.name}")
         
         // 為每個日期取消鬧鐘
         for (dayOfWeek in reminder.days) {
             val dayIndex = getDayOfWeekIndex(dayOfWeek)
             val requestCode = generateRequestCode(reminder.id, dayIndex)
             
+            // 創建 Intent 但不設置 extras，因為我們只需要 requestCode 來取消鬧鐘
             val intent = Intent(context, ReminderReceiver::class.java)
+            
+            // 創建 PendingIntent
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
                 requestCode,
@@ -112,7 +124,31 @@ class ReminderManager(private val context: Context) {
      * 更新提醒鬧鐘
      */
     fun updateReminder(oldReminder: ReminderItem, newReminder: ReminderItem) {
-        cancelReminder(oldReminder)
+        Log.d("ReminderManager", "更新提醒: 從 ${oldReminder.type.name} 到 ${newReminder.type.name}")
+        
+        // 先取消舊的提醒
+        for (dayOfWeek in oldReminder.days) {
+            val dayIndex = getDayOfWeekIndex(dayOfWeek)
+            val requestCode = generateRequestCode(oldReminder.id, dayIndex)
+            
+            // 創建與舊提醒相同的 Intent
+            val oldIntent = Intent(context, ReminderReceiver::class.java)
+            val oldPendingIntent = PendingIntent.getBroadcast(
+                context,
+                requestCode,
+                oldIntent,
+                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+            )
+            
+            // 如果舊的 PendingIntent 存在，則取消它
+            if (oldPendingIntent != null) {
+                alarmManager.cancel(oldPendingIntent)
+                oldPendingIntent.cancel()
+                Log.d("ReminderManager", "成功取消舊的提醒鬧鐘: $requestCode")
+            }
+        }
+        
+        // 設置新的提醒
         scheduleReminder(newReminder)
     }
     

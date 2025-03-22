@@ -29,6 +29,8 @@ class ReminderReceiver : BroadcastReceiver() {
         val type = intent.getStringExtra(EXTRA_TYPE) ?: ""
         val id = intent.getIntExtra(EXTRA_ID, 0)
         
+        Log.d("ReminderReceiver", "接收到提醒，標題: $title, 類型: $type, ID: $id")
+        
         // 在鎖屏狀態下也能顯示全屏提醒對話框
         val notificationIntent = Intent(context, MainActivity::class.java).apply {
             // 使用適當的標記來確保應用程序能在鎖屏狀態下顯示
@@ -74,7 +76,7 @@ class ReminderReceiver : BroadcastReceiver() {
         // 構建通知
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle(title)
-            .setContentText("您設置的提醒時間到了")
+            .setContentText("您設置的${type}提醒時間到了")
             .setSmallIcon(R.drawable.ic_launcher_foreground) // 使用應用圖標作為通知圖標
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM) // 設置為鬧鈴類別

@@ -264,7 +264,8 @@ fun TimerScreen(navController: NavController) {
                         title = title,
                         time = time,
                         days = days,
-                        type = type
+                        type = type,
+                        isEnabled = currentEditingReminder!!.isEnabled // 保留原始的啟用狀態
                     )
                     viewModel.updateReminder(updatedReminder)
                 } else {
@@ -275,7 +276,8 @@ fun TimerScreen(navController: NavController) {
                         title = title,
                         time = time,
                         days = days,
-                        type = type
+                        type = type,
+                        isEnabled = true // 默認啟用新提醒
                     )
                     viewModel.addReminder(newReminder)
                 }

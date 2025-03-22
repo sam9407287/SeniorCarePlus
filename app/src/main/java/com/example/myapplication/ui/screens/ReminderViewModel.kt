@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.MyApplication
 import com.example.myapplication.reminder.ReminderManager
+import com.example.myapplication.ui.theme.ThemeManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,9 +42,28 @@ class ReminderViewModel : ViewModel() {
     }
     
     // 確保 ViewModel 被創建時立即加載數據
+    // 主題切換時的監聽器，清除所有提醒狀態
+    private val themeChangeListener: () -> Unit = {
+        Log.d("ReminderViewModel", "主題即將切換，清除提醒狀態")
+        _showReminderAlert.value = false
+        _showFullScreenAlert.value = false
+        _currentReminder.value = null
+    }
+    
     init {
         Log.d("ReminderViewModel", "初始化 ViewModel")
+        // 註冊主題切換監聽器
+        ThemeManager.addThemeChangeListener(themeChangeListener)
         loadReminders()
+    }
+    
+    /**
+     * 繼承 ViewModel 的 onCleared 方法，在 ViewModel 銷毀時註銷監聽器
+     */
+    override fun onCleared() {
+        super.onCleared()
+        ThemeManager.removeThemeChangeListener(themeChangeListener)
+        Log.d("ReminderViewModel", "ViewModel 已銷毀，移除主題切換監聽器")
     }
     
 
@@ -97,6 +117,9 @@ class ReminderViewModel : ViewModel() {
             }
             
             Log.d("ReminderViewModel", "Loaded ${_reminders.size} reminders from cache")
+            
+            // 應用啟動時重新設置所有啟用的提醒鬧鈴
+            rescheduleAllEnabledReminders()
         } catch (e: Exception) {
             Log.e("ReminderViewModel", "Error loading reminders: ${e.message}")
             // If there's an error loading, we'll start with default reminders
@@ -150,10 +173,38 @@ class ReminderViewModel : ViewModel() {
         }
     }
     
+    /**
+     * 重新設置所有啟用的提醒鬧鐘
+     * 當應用啟動時調用，確保重啟後提醒依然有效
+     */
+    private fun rescheduleAllEnabledReminders() {
+        try {
+            Log.d("ReminderViewModel", "開始重新設置所有啟用的提醒鬧鐘")
+            
+            // 先取消所有提醒以避免重複
+            _reminders.forEach { reminder ->
+                reminderManager.cancelReminder(reminder)
+                Log.d("ReminderViewModel", "取消提醒: ID=${reminder.id}, 標題=${reminder.title}")
+            }
+            
+            // 然後重新設置所有啟用的提醒
+            val enabledReminders = _reminders.filter { it.isEnabled }
+            Log.d("ReminderViewModel", "重新設置 ${enabledReminders.size} 個啟用的提醒")
+            
+            enabledReminders.forEach { reminder ->
+                reminderManager.scheduleReminder(reminder)
+                Log.d("ReminderViewModel", "已重新設置提醒: ID=${reminder.id}, 標題=${reminder.title}")
+            }
+        } catch (e: Exception) {
+            Log.e("ReminderViewModel", "重新設置提醒失敗: ${e.message}")
+        }
+    }
+    
     fun addReminder(reminder: ReminderItem) {
         _reminders.add(reminder)
         saveReminders()
         // 設置提醒鬧鐘
+        Log.d("ReminderViewModel", "添加新提醒: ID=${reminder.id}, 標題=${reminder.title}, 時間=${reminder.time}, 類型=${reminder.type.name}")
         reminderManager.scheduleReminder(reminder)
     }
     

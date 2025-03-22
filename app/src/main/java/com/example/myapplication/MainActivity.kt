@@ -133,6 +133,12 @@ class MainActivity : ComponentActivity() {
                     
                     Log.d("MainActivity", "onCreate: openReminderDialog=$openReminderDialog, reminderId=$reminderId")
                     
+                    // 處理完 intent 後清除這些標記，防止在切換主題時重複觸發
+                    if (openReminderDialog && reminderId != -1) {
+                        intent.removeExtra("OPEN_REMINDER_DIALOG")
+                        intent.removeExtra("REMINDER_ID")
+                    }
+                    
                     MainAppContent(openReminderDialog, reminderId)
                 }
             }
@@ -151,10 +157,18 @@ class MainActivity : ComponentActivity() {
         
         Log.d("MainActivity", "onNewIntent: openReminderDialog=$openReminderDialog, reminderId=$reminderId")
         
-        if (openReminderDialog && reminderId != -1 && sharedReminderViewModel != null) {
-            // 直接更新 ViewModel 狀態，而不是重新設置整個內容
-            Log.d("MainActivity", "直接更新 ViewModel 狀態，顯示提醒 ID: $reminderId")
+        // 如果提醒有效且在應用生命週期內尚未處理過
+        if (openReminderDialog && reminderId != -1 && sharedReminderViewModel != null && !ProcessedReminders.isProcessed(reminderId)) {
+            // 標記提醒為已處理
+            ProcessedReminders.markAsProcessed(reminderId)
+            
+            // 直接更新 ViewModel 狀態
+            Log.d("MainActivity", "onNewIntent 處理提醒: ID=$reminderId")
             sharedReminderViewModel?.showReminderAlert(reminderId)
+            
+            // 清除 intent 標記，防止重複觸發
+            intent.removeExtra("OPEN_REMINDER_DIALOG")
+            intent.removeExtra("REMINDER_ID")
         }
     }
 }
@@ -214,6 +228,37 @@ fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -
     }
 }
 
+/**
+ * 保存已在應用生命週期内處理過的提醒ID
+ */
+object ProcessedReminders {
+    private val processedReminderIds = mutableSetOf<Int>()
+    
+    /**
+     * 檢查提醒是否已被處理
+     * @param reminderId 提醒ID
+     * @return 如果已處理過返回 true
+     */
+    fun isProcessed(reminderId: Int): Boolean {
+        return reminderId in processedReminderIds
+    }
+    
+    /**
+     * 標記提醒為已處理
+     * @param reminderId 要標記的提醒ID
+     */
+    fun markAsProcessed(reminderId: Int) {
+        processedReminderIds.add(reminderId)
+    }
+    
+    /**
+     * 重置所有處理狀態
+     */
+    fun resetAll() {
+        processedReminderIds.clear()
+    }
+}
+
 @Composable
 fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
     val navController = rememberNavController()
@@ -239,8 +284,15 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
     // 將局部 ViewModel 存儲在非 Composable 的地方，使其可以在 onNewIntent 中訪問
     MainActivity.sharedReminderViewModel = localReminderViewModel
     
-    // 如果從通知打開，顯示提醒對話框
-    if (openReminderDialog && reminderId != -1) {
+    // 使用 remember 記錄已處理的提醒ID，防止在重組時重複觸發
+    val processedReminderRef = remember { mutableStateOf(-1) }
+    
+    // 如果從通知打開，且該提醒在應用生命週期內沒有被處理過，才顯示提醒對話框
+    if (openReminderDialog && reminderId != -1 && !ProcessedReminders.isProcessed(reminderId)) {
+        // 標記為已處理（應用級別標記，不受重新組合影響）
+        ProcessedReminders.markAsProcessed(reminderId)
+        // 顯示提醒對話框
+        Log.d("MainAppContent", "顯示提醒對話框，ID: $reminderId")
         localReminderViewModel.showReminderAlert(reminderId)
     }
     

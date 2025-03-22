@@ -52,8 +52,34 @@ private val CustomLightColorScheme = lightColorScheme(
 object ThemeManager {
     var isDarkTheme by mutableStateOf(false)
     
+    // 添加主題切換監聽器
+    private val themeChangeListeners = mutableListOf<() -> Unit>()
+    
+    /**
+     * 切換深淺模式
+     */
     fun toggleTheme() {
+        // 先執行所有監聽器，確保清理工作在主題切換前完成
+        themeChangeListeners.forEach { it() }
+        
+        // 然後切換主題
         isDarkTheme = !isDarkTheme
+    }
+    
+    /**
+     * 新增主題切換監聽器
+     * @param listener 當主題將要切換時執行的回調
+     */
+    fun addThemeChangeListener(listener: () -> Unit) {
+        themeChangeListeners.add(listener)
+    }
+    
+    /**
+     * 移除主題切換監聽器
+     * @param listener 要移除的監聽器
+     */
+    fun removeThemeChangeListener(listener: () -> Unit) {
+        themeChangeListeners.remove(listener)
     }
 }
 

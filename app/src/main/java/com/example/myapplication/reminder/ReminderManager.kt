@@ -23,31 +23,49 @@ class ReminderManager(private val context: Context) {
             return
         }
         
-        Log.d("ReminderManager", "Scheduling reminder: ${reminder.id} - ${reminder.title}, 類型: ${reminder.type.name}")
+        // 先取消現有的提醒，確保不會產生衝突
+        cancelReminder(reminder)
+        
+        Log.d("ReminderManager", "Scheduling reminder: ${reminder.id} - ${reminder.title}, 類型: ${reminder.type.name}, 時間: ${reminder.time}, 日期: ${reminder.days}")
         
         // 解析時間
         val (hour, minute) = parseTime(reminder.time)
+        val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         
         // 為每個選定的日期設置鬧鐘
         for (dayOfWeek in reminder.days) {
+            // 先得到一個新的日曆實例，確保每次計算都是從當前時間開始
             val calendar = Calendar.getInstance()
+            val currentTimeMillis = System.currentTimeMillis()
             val dayIndex = getDayOfWeekIndex(dayOfWeek)
             
-            // 設置時間
+            // 記錄取得日計算前的狀態
+            val beforeTime = dateFormat.format(calendar.time)
+            Log.d("ReminderManager", "計算前的時間: $beforeTime, 目標星期: $dayOfWeek (索引: $dayIndex)")
+            
+            // 1. 先設置星期幾
+            val currentDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+            var daysToAdd = (dayIndex - currentDayOfWeek + 7) % 7
+            
+            // 如果是今天，則先加難0天
+            if (daysToAdd == 0) {
+                daysToAdd = 0
+            }
+            
+            // 設置日期
+            calendar.add(Calendar.DAY_OF_YEAR, daysToAdd)
+            
+            // 2. 再設置時間
             calendar.set(Calendar.HOUR_OF_DAY, hour)
             calendar.set(Calendar.MINUTE, minute)
             calendar.set(Calendar.SECOND, 0)
             calendar.set(Calendar.MILLISECOND, 0)
             
-            // 設置星期幾
-            val currentDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
-            val daysToAdd = (dayIndex - currentDayOfWeek + 7) % 7
-            
-            // 如果是今天且時間已過，則設置為下週同一天
-            if (daysToAdd == 0 && calendar.timeInMillis <= System.currentTimeMillis()) {
+            // 3. 檢查設置的時間是否已過
+            if (calendar.timeInMillis <= currentTimeMillis) {
+                // 如果是今天且時間已過，則設置為下週
                 calendar.add(Calendar.DAY_OF_YEAR, 7)
-            } else {
-                calendar.add(Calendar.DAY_OF_YEAR, daysToAdd)
+                Log.d("ReminderManager", "時間已過，設置為下週的同一天")
             }
             
             // 創建 PendingIntent
@@ -61,7 +79,11 @@ class ReminderManager(private val context: Context) {
             
             Log.d("ReminderManager", "Intent extras: 標題=${reminder.title}, 類型=${reminder.type.name}, ID=${reminder.id}")
             
-            val requestCode = generateRequestCode(reminder.id, dayIndex)
+            // 設置更唯一的請求碼，確保不會有衝突
+            val timestamp = System.currentTimeMillis() % 10000 // 使用時間戳的最後4位作為唯一性保證
+            val requestCode = generateRequestCode(reminder.id, dayIndex, timestamp.toInt())
+            
+            // 創建可靠的 PendingIntent
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
                 requestCode,
@@ -84,9 +106,10 @@ class ReminderManager(private val context: Context) {
                 )
             }
             
-            val formattedTime = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                .format(calendar.time)
-            Log.d("ReminderManager", "Alarm set for $formattedTime, ID: $requestCode")
+            // 詳細記錄鬧鐘設置信息，方便調試
+            val formattedTime = dateFormat.format(calendar.time)
+            val timeDiff = (calendar.timeInMillis - System.currentTimeMillis()) / 1000 / 60 // 分鐘
+            Log.d("ReminderManager", "鬧鐘已設置 - 時間: $formattedTime, ID: $requestCode, 距離現在: $timeDiff 分鐘, 標題: ${reminder.title}, 編號: ${reminder.id}")
         }
     }
     
@@ -183,7 +206,15 @@ class ReminderManager(private val context: Context) {
     /**
      * 生成唯一的請求碼
      */
-    private fun generateRequestCode(reminderId: Int, dayOfWeek: Int): Int {
-        return reminderId * 10 + dayOfWeek
+    /**
+     * 生成唯一的請求碼，確保每個提醒都有獨特的識別碼
+     * @param reminderId 提醒ID
+     * @param dayOfWeek 星期幾索引
+     * @param uniquifier 用於確保唯一性的額外數字
+     * @return 唯一的請求碼
+     */
+    private fun generateRequestCode(reminderId: Int, dayOfWeek: Int, uniquifier: Int = 0): Int {
+        // 確保請求碼的範圍不會超過 Int 的最大值
+        return (reminderId * 1000) + (dayOfWeek * 10) + (uniquifier % 10)
     }
 }

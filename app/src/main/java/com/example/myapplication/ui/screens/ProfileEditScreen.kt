@@ -25,6 +25,8 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -38,6 +40,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.unit.sp
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -103,12 +107,35 @@ fun ProfileEditScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isChineseLanguage) "編輯個人資料" else "Edit Profile") },
+                title = { 
+                    Text(
+                        text = if (isChineseLanguage) "編輯個人資料" else "Edit Profile",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack, 
                             contentDescription = if (isChineseLanguage) "返回" else "Back"
+                        )
+                    }
+                },
+                actions = {
+                    // 主題切換按鈕
+                    IconButton(
+                        onClick = { ThemeManager.toggleTheme() },
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                    ) {
+                        Icon(
+                            imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                            contentDescription = if (isChineseLanguage) "切換主題" else "Toggle Theme",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
@@ -126,21 +153,21 @@ fun ProfileEditScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    .padding(bottom = 24.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
                     modifier = Modifier
-                        .size(100.dp)
+                        .size(120.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                         .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.Person,
-                        contentDescription = "用戶頭像",
-                        modifier = Modifier.size(50.dp),
+                        contentDescription = if (isChineseLanguage) "用戶頭像" else "User Avatar",
+                        modifier = Modifier.size(60.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -151,19 +178,24 @@ fun ProfileEditScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+                ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = if (isChineseLanguage) "用戶名" else "Username",
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
                         text = username,
-                        modifier = Modifier.padding(top = 4.dp),
-                        style = MaterialTheme.typography.bodyLarge
+                        modifier = Modifier.padding(top = 8.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontSize = 18.sp
                     )
                 }
             }
@@ -172,7 +204,19 @@ fun ProfileEditScreen(navController: NavController) {
             OutlinedTextField(
                 value = chineseName,
                 onValueChange = { chineseName = it },
-                label = { Text(if (isChineseLanguage) "中文姓名" else "Chinese Name") },
+                label = { 
+                    Text(
+                        text = if (isChineseLanguage) "中文姓名" else "Chinese Name",
+                        fontSize = 16.sp
+                    ) 
+                },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
@@ -182,7 +226,19 @@ fun ProfileEditScreen(navController: NavController) {
             OutlinedTextField(
                 value = englishName,
                 onValueChange = { englishName = it },
-                label = { Text(if (isChineseLanguage) "英文姓名" else "English Name") },
+                label = { 
+                    Text(
+                        text = if (isChineseLanguage) "英文姓名" else "English Name",
+                        fontSize = 16.sp
+                    ) 
+                },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
@@ -194,7 +250,10 @@ fun ProfileEditScreen(navController: NavController) {
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
                     .clickable { showAccountTypeInfo = true },
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+                ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -203,7 +262,8 @@ fun ProfileEditScreen(navController: NavController) {
                     ) {
                         Text(
                             text = if (isChineseLanguage) "帳號類型" else "Account Type",
-                            style = MaterialTheme.typography.labelMedium,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.weight(1f)
                         )
@@ -211,13 +271,14 @@ fun ProfileEditScreen(navController: NavController) {
                             Icons.Default.Edit,
                             contentDescription = if (isChineseLanguage) "帳號類型說明" else "Account Type Info",
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                     Text(
                         text = UserManager.getAccountTypeName(accountType, isChineseLanguage),
-                        modifier = Modifier.padding(top = 4.dp),
-                        style = MaterialTheme.typography.bodyLarge
+                        modifier = Modifier.padding(top = 8.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontSize = 18.sp
                     )
                 }
             }
@@ -226,7 +287,19 @@ fun ProfileEditScreen(navController: NavController) {
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text(if (isChineseLanguage) "電子郵件" else "Email") },
+                label = { 
+                    Text(
+                        text = if (isChineseLanguage) "電子郵件" else "Email",
+                        fontSize = 16.sp
+                    ) 
+                },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
@@ -236,7 +309,20 @@ fun ProfileEditScreen(navController: NavController) {
             OutlinedTextField(
                 value = birthday,
                 onValueChange = { /* 透過日期選擇器變更 */ },
-                label = { Text(if (isChineseLanguage) "生日" else "Birthday") },
+                label = { 
+                    Text(
+                        text = if (isChineseLanguage) "生日" else "Birthday",
+                        fontSize = 16.sp
+                    ) 
+                },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    disabledBorderColor = MaterialTheme.colorScheme.outline,
+                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
@@ -246,7 +332,10 @@ fun ProfileEditScreen(navController: NavController) {
                     Icon(
                         Icons.Default.CalendarMonth,
                         contentDescription = if (isChineseLanguage) "選擇日期" else "Select Date",
-                        modifier = Modifier.clickable { showDatePicker = true }
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { showDatePicker = true }
                     )
                 }
             )
@@ -260,14 +349,30 @@ fun ProfileEditScreen(navController: NavController) {
                 OutlinedTextField(
                     value = UserManager.getGenderName(gender, isChineseLanguage),
                     onValueChange = { /* 透過下拉選單變更 */ },
-                    label = { Text(if (isChineseLanguage) "性別" else "Gender") },
+                    label = { 
+                        Text(
+                            text = if (isChineseLanguage) "性別" else "Gender",
+                            fontSize = 16.sp
+                        ) 
+                    },
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface
+                    ),
                     modifier = Modifier.fillMaxWidth(),
                     enabled = false,
                     trailingIcon = {
                         Icon(
                             Icons.Default.ArrowDropDown,
                             contentDescription = if (isChineseLanguage) "選擇性別" else "Select Gender",
-                            modifier = Modifier.clickable { showGenderDropdown = true }
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable { showGenderDropdown = true }
                         )
                     }
                 )
@@ -313,7 +418,19 @@ fun ProfileEditScreen(navController: NavController) {
             OutlinedTextField(
                 value = phoneNumber,
                 onValueChange = { phoneNumber = it },
-                label = { Text(if (isChineseLanguage) "聯絡電話" else "Phone Number") },
+                label = { 
+                    Text(
+                        text = if (isChineseLanguage) "聯絡電話" else "Phone Number",
+                        fontSize = 16.sp
+                    ) 
+                },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
@@ -323,7 +440,19 @@ fun ProfileEditScreen(navController: NavController) {
             OutlinedTextField(
                 value = address,
                 onValueChange = { address = it },
-                label = { Text(if (isChineseLanguage) "地址" else "Address") },
+                label = { 
+                    Text(
+                        text = if (isChineseLanguage) "地址" else "Address",
+                        fontSize = 16.sp
+                    ) 
+                },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)

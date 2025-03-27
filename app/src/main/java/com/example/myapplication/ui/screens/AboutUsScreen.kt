@@ -99,7 +99,7 @@ fun AboutUsScreen(navController: NavController) {
             
             // 公司名稱
             Text(
-                text = if (isChineseLanguage) "長者照護有限公司" else "Senior Care Ltd.",
+                text = if (isChineseLanguage) "範例科技股份有限公司" else "Example Technology Co., Ltd.",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -135,9 +135,9 @@ fun AboutUsScreen(navController: NavController) {
             AboutSection(
                 title = if (isChineseLanguage) "公司歷史" else "Our History",
                 content = if (isChineseLanguage)
-                    "成立於2010年，我們從一家小型護理之家發展成為台灣頂尖的長者照護機構。過去十多年來，我們已經服務超過5,000位長者，並在全台設有12個服務中心。"
+                    "成立於2020年，我們從一家小型護理之家發展成為台灣頂尖的長者照護機構。過去三年來，我們已經服務超過5,000位長者，並在全台設有12個服務中心。"
                 else
-                    "Founded in 2010, we have grown from a small nursing home to become one of Taiwan's leading senior care institutions. Over the past decade, we have served more than 5,000 seniors and established 12 service centers across Taiwan."
+                    "Founded in 2020, we have grown from a small nursing home to become one of Taiwan's leading senior care institutions. Over the past three years, we have served more than 5,000 seniors and established 12 service centers across Taiwan."
             )
             
             Spacer(modifier = Modifier.height(24.dp))
@@ -179,9 +179,9 @@ fun AboutUsScreen(navController: NavController) {
                     ContactItem(
                         icon = Icons.Default.LocationOn,
                         text = if (isChineseLanguage) 
-                            "台北市信義區松高路123號9樓" 
+                            "台北市信義區市府路45號101大樓" 
                         else 
-                            "9F, No. 123, Songgao Road, Xinyi District, Taipei City, Taiwan"
+                            "Taipei 101 Tower, No. 45, Shifu Road, Xinyi District, Taipei City, Taiwan"
                     )
                     
                     Spacer(modifier = Modifier.height(12.dp))
@@ -234,9 +234,9 @@ fun AboutUsScreen(navController: NavController) {
             // 版權聲明
             Text(
                 text = if (isChineseLanguage) 
-                    "© 2023 長者照護有限公司. 版權所有." 
+                    "© 2023 範例科技股份有限公司. 版權所有." 
                 else 
-                    "© 2023 Senior Care Ltd. All Rights Reserved.",
+                    "© 2023 Example Technology Co., Ltd. All Rights Reserved.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center

@@ -113,6 +113,7 @@ import com.example.myapplication.ui.screens.StaffManagementScreen
 import com.example.myapplication.ui.screens.AboutUsScreen
 import com.example.myapplication.ui.screens.IssueReportScreen
 import com.example.myapplication.ui.screens.LoginScreen
+import com.example.myapplication.ui.screens.MailboxScreen
 import com.example.myapplication.ui.screens.ProfileScreen
 import com.example.myapplication.ui.screens.RegisterScreen
 import com.example.myapplication.auth.UserManager
@@ -632,7 +633,13 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                                 leftDrawerState.close()
                             }
                             // 處理側邊欄項目點擊
-                            if (index == 1) { // 個人資料項目的索引
+                            if (index == 0) { // 個人郵箱項目的索引
+                                // 導航到個人郵箱頁面
+                                navController.navigate("mailbox") {
+                                    // 防止創建多個實例
+                                    launchSingleTop = true
+                                }
+                            } else if (index == 1) { // 個人資料項目的索引
                                 // 導航到個人資料頁面
                                 navController.navigate("profile") {
                                     // 防止創建多個實例
@@ -810,6 +817,9 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                         
                         // 關於我們頁面
                         composable("about_us") { AboutUsScreen(navController) }
+                        
+                        // 個人郵箱頁面
+                        composable("mailbox") { MailboxScreen(navController) }
                         
                         // 個人資料頁面
                         composable("profile") { ProfileScreen(navController) }

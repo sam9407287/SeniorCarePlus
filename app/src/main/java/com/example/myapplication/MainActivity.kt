@@ -114,6 +114,7 @@ import com.example.myapplication.ui.screens.AboutUsScreen
 import com.example.myapplication.ui.screens.IssueReportScreen
 import com.example.myapplication.ui.screens.LoginScreen
 import com.example.myapplication.ui.screens.ProfileScreen
+import com.example.myapplication.ui.screens.RegisterScreen
 import com.example.myapplication.auth.UserManager
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -123,6 +124,9 @@ class MainActivity : ComponentActivity() {
     companion object {
         // 使用可空類型，避免初始化問題
         var sharedReminderViewModel: ReminderViewModel? = null
+        
+        // 添加可以更新登錄狀態的函數
+        var updateLoginState: (() -> Unit)? = null
     }
     
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -185,11 +189,14 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -> Unit = {}) {
+fun SeniorCareTopBar(
+    onUserIconClick: () -> Unit = {}, 
+    onNotificationClick: () -> Unit = {},
+    isLoggedIn: Boolean = UserManager.isLoggedIn()  // 添加參數，預設值是當前UserManager的狀態
+) {
     // 使用MaterialTheme的顏色而不是硬編碼的顏色
     val isDarkTheme = ThemeManager.isDarkTheme
     val isChineseLanguage = LanguageManager.isChineseLanguage
-    val isLoggedIn = UserManager.isLoggedIn()
     
     Box(
         modifier = Modifier
@@ -365,6 +372,23 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
     // 跟踪是否顯示帳戶選項對話框
     var showAccountOptionsDialog by remember { mutableStateOf(false) }
     
+    // 創建登錄狀態的響應式變量
+    val isLoggedIn = remember { mutableStateOf(UserManager.isLoggedIn()) }
+    val currentUsername = remember { mutableStateOf(UserManager.getCurrentUsername() ?: "") }
+    
+    // 在組合效果中監聽登錄狀態的變化
+    LaunchedEffect(Unit) {
+        // 初始檢查登錄狀態
+        isLoggedIn.value = UserManager.isLoggedIn()
+        currentUsername.value = UserManager.getCurrentUsername() ?: ""
+        
+        // 設置更新登錄狀態的函數
+        MainActivity.updateLoginState = {
+            isLoggedIn.value = UserManager.isLoggedIn()
+            currentUsername.value = UserManager.getCurrentUsername() ?: ""
+        }
+    }
+    
     // 如果從通知打開，且該提醒在應用生命週期內沒有被處理過，才顯示提醒對話框
     if (openReminderDialog && reminderId != -1 && !ProcessedReminders.isProcessed(reminderId)) {
         // 標記為已處理（應用級別標記，不受重新組合影響）
@@ -425,9 +449,12 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
             confirmButton = {
                 Button(
                     onClick = {
-                        // 登出當前帳戶
+                        // 登出並清除數據
                         UserManager.logout()
-                        showAccountOptionsDialog = false
+                        
+                        // 更新登錄狀態
+                        isLoggedIn.value = false
+                        currentUsername.value = ""
                         
                         // 通知ReminderViewModel更新提醒數據
                         MainActivity.sharedReminderViewModel?.onLoginStateChanged()
@@ -510,20 +537,20 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
         ),
         DrawerItem(
             if (isChineseLanguage) {
-                if (UserManager.isLoggedIn()) "登出帳戶" else "帳戶登入"
+                if (isLoggedIn.value) "登出帳戶" else "帳戶登入"
             } else {
-                if (UserManager.isLoggedIn()) "Logout" else "Login"
+                if (isLoggedIn.value) "Logout" else "Login"
             }, 
             if (isChineseLanguage) {
-                if (UserManager.isLoggedIn()) {
-                    "目前登入: ${UserManager.getCurrentUsername() ?: ""}"
+                if (isLoggedIn.value) {
+                    "目前登入: ${currentUsername.value}"
                 } else "帳號登入與登出"
             } else {
-                if (UserManager.isLoggedIn()) {
-                    "Current user: ${UserManager.getCurrentUsername() ?: ""}"
+                if (isLoggedIn.value) {
+                    "Current user: ${currentUsername.value}"
                 } else "Account login and logout"
             }, 
-            if (UserManager.isLoggedIn()) Icons.Default.ExitToApp else Icons.Default.AccountCircle
+            if (isLoggedIn.value) Icons.Default.ExitToApp else Icons.Default.AccountCircle
         ),
         DrawerItem(
             if (isChineseLanguage) "設置" else "Settings", 
@@ -612,7 +639,7 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                                     launchSingleTop = true
                                 }
                             } else if (index == 2) { // 登入/登出項目的索引
-                                if (UserManager.isLoggedIn()) {
+                                if (isLoggedIn.value) {
                                     // 已登入狀態，顯示登出和切換帳戶選項
                                     // 這裡使用AlertDialog來顯示選項
                                     showAccountOptionsDialog = true
@@ -684,7 +711,8 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                             // 保存和恢復狀態
                             restoreState = true
                         }
-                    }
+                    },
+                    isLoggedIn = isLoggedIn.value
                 )
                 
                 Scaffold(
@@ -756,6 +784,9 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                         
                         // 登入頁面
                         composable("login") { LoginScreen(navController) }
+                        
+                        // 註冊頁面
+                        composable("register") { RegisterScreen(navController) }
                         
                         // 添加新功能頁面的導航路由
                         composable("region") { RegionScreen(navController) }

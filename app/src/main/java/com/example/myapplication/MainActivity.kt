@@ -111,6 +111,7 @@ import com.example.myapplication.ui.screens.ResidentManagementScreen
 import com.example.myapplication.ui.screens.StaffManagementScreen
 import com.example.myapplication.ui.screens.AboutUsScreen
 import com.example.myapplication.ui.screens.IssueReportScreen
+import com.example.myapplication.ui.screens.LoginScreen
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -644,6 +645,9 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                             // 直接使用完整的TimerScreen實現
                             TimerScreen(navController) 
                         }
+                        
+                        // 登入頁面
+                        composable("login") { LoginScreen(navController) }
                         
                         // 添加新功能頁面的導航路由
                         composable("region") { RegionScreen(navController) }

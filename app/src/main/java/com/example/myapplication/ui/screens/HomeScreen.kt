@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material3.Card
@@ -157,6 +158,27 @@ fun HomeScreen(navController: NavController) {
                         contentDescription = if (isChineseLanguage) "切換主題" else "Toggle Theme",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
+                    )
+                }
+                
+                // 登入按鈕
+                IconButton(
+                    onClick = { 
+                        navController.navigate("login") {
+                            launchSingleTop = true
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = if (isChineseLanguage) "登入" else "Login",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }

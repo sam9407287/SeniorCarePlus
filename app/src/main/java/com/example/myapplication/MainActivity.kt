@@ -116,6 +116,7 @@ import com.example.myapplication.ui.screens.IssueReportScreen
 import com.example.myapplication.ui.screens.LoginScreen
 import com.example.myapplication.ui.screens.MailboxScreen
 import com.example.myapplication.ui.screens.ProfileScreen
+import com.example.myapplication.ui.screens.ProfileEditScreen
 import com.example.myapplication.ui.screens.RegisterScreen
 import com.example.myapplication.auth.UserManager
 import androidx.compose.material3.AlertDialog
@@ -844,6 +845,8 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                         
                         // 個人資料頁面
                         composable("profile") { ProfileScreen(navController) }
+                        // 個人資料編輯頁面
+                        composable("profile_edit") { ProfileEditScreen(navController) }
                         
                         // 管理頁面
                         composable("patient_admin") { ResidentManagementScreen(navController) }

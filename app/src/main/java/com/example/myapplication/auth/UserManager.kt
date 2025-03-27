@@ -5,11 +5,24 @@ import android.content.SharedPreferences
 import android.util.Log
 import com.example.myapplication.MyApplication
 import com.example.myapplication.database.AppDatabase
+import com.example.myapplication.models.UserProfile
 
 /**
  * 用戶管理類，處理用戶認證相關功能
  */
 object UserManager {
+    // 帳號類型常數
+    const val ACCOUNT_TYPE_PATIENT = 1    // 院友
+    const val ACCOUNT_TYPE_FAMILY = 2     // 家屬
+    const val ACCOUNT_TYPE_STAFF = 3      // 員工
+    const val ACCOUNT_TYPE_ADMIN = 4      // 管理人員
+    const val ACCOUNT_TYPE_DEVELOPER = 5  // 開發人員
+    
+    // 性別常數
+    const val GENDER_UNSPECIFIED = 0
+    const val GENDER_MALE = 1
+    const val GENDER_FEMALE = 2
+    const val GENDER_OTHER = 3
     // 預設管理員帳號
     private const val DEFAULT_ADMIN_USERNAME = "admin"
     private const val DEFAULT_ADMIN_PASSWORD = "00000000"
@@ -20,6 +33,14 @@ object UserManager {
     private const val KEY_IS_LOGGED_IN = "is_logged_in"
     private const val KEY_CURRENT_USERNAME = "current_username"
     private const val KEY_CURRENT_EMAIL = "current_email"
+    private const val KEY_CURRENT_CHINESE_NAME = "current_chinese_name"
+    private const val KEY_CURRENT_ENGLISH_NAME = "current_english_name"
+    private const val KEY_CURRENT_ACCOUNT_TYPE = "current_account_type"
+    private const val KEY_CURRENT_BIRTHDAY = "current_birthday"
+    private const val KEY_CURRENT_GENDER = "current_gender"
+    private const val KEY_CURRENT_PHONE = "current_phone"
+    private const val KEY_CURRENT_ADDRESS = "current_address"
+    private const val KEY_CURRENT_PROFILE_PHOTO = "current_profile_photo"
     
     // 獲取SQLite數據庫實例
     private val database: AppDatabase by lazy {
@@ -97,10 +118,19 @@ object UserManager {
      * 保存登錄狀態到SharedPreferences
      */
     private fun saveLoginState(username: String, email: String?) {
+        // 先從資料庫中取得該用戶的個人資訊
+        val userProfile = getUserProfile(username)
+        
         getPrefs().edit()
             .putBoolean(KEY_IS_LOGGED_IN, true)
             .putString(KEY_CURRENT_USERNAME, username)
             .putString(KEY_CURRENT_EMAIL, email)
+            .putInt(KEY_CURRENT_ACCOUNT_TYPE, userProfile?.accountType ?: 1)
+            .putString(KEY_CURRENT_BIRTHDAY, userProfile?.birthday)
+            .putInt(KEY_CURRENT_GENDER, userProfile?.gender ?: 0)
+            .putString(KEY_CURRENT_PHONE, userProfile?.phoneNumber)
+            .putString(KEY_CURRENT_ADDRESS, userProfile?.address)
+            .putString(KEY_CURRENT_PROFILE_PHOTO, userProfile?.profilePhotoUri)
             .apply()
     }
     
@@ -144,8 +174,145 @@ object UserManager {
             .putBoolean(KEY_IS_LOGGED_IN, false)
             .remove(KEY_CURRENT_USERNAME)
             .remove(KEY_CURRENT_EMAIL)
+            .remove(KEY_CURRENT_CHINESE_NAME)
+            .remove(KEY_CURRENT_ENGLISH_NAME)
+            .remove(KEY_CURRENT_ACCOUNT_TYPE)
+            .remove(KEY_CURRENT_BIRTHDAY)
+            .remove(KEY_CURRENT_GENDER)
+            .remove(KEY_CURRENT_PHONE)
+            .remove(KEY_CURRENT_ADDRESS)
+            .remove(KEY_CURRENT_PROFILE_PHOTO)
             .apply()
         
         Log.d("UserManager", "用戶已登出")
+    }
+    
+    /**
+     * 獨取當前登入用戶的個人資料
+     * @return 用戶個人資料對象，如果未登入則返回null
+     */
+    fun getCurrentUserProfile(): UserProfile? {
+        if (!isLoggedIn()) {
+            return null
+        }
+        
+        val prefs = getPrefs()
+        val username = prefs.getString(KEY_CURRENT_USERNAME, null) ?: return null
+        val email = prefs.getString(KEY_CURRENT_EMAIL, null)
+        val chineseName = prefs.getString(KEY_CURRENT_CHINESE_NAME, null)
+        val englishName = prefs.getString(KEY_CURRENT_ENGLISH_NAME, null)
+        val accountType = prefs.getInt(KEY_CURRENT_ACCOUNT_TYPE, ACCOUNT_TYPE_PATIENT)
+        val birthday = prefs.getString(KEY_CURRENT_BIRTHDAY, null)
+        val gender = prefs.getInt(KEY_CURRENT_GENDER, GENDER_UNSPECIFIED)
+        val phone = prefs.getString(KEY_CURRENT_PHONE, null)
+        val address = prefs.getString(KEY_CURRENT_ADDRESS, null)
+        val profilePhoto = prefs.getString(KEY_CURRENT_PROFILE_PHOTO, null)
+        
+        return UserProfile(
+            username = username,
+            chineseName = chineseName,
+            englishName = englishName,
+            email = email,
+            birthday = birthday,
+            gender = gender,
+            phoneNumber = phone,
+            address = address,
+            accountType = accountType,
+            profilePhotoUri = profilePhoto
+        )
+    }
+    
+    /**
+     * 獨取指定用戶的個人資料
+     * @param username 用戶名
+     * @return 用戶個人資料對象，如果用戶不存在則返回null
+     */
+    fun getUserProfile(username: String): UserProfile? {
+        return database.getUserProfile(username)
+    }
+    
+    /**
+     * 更新用戶個人資料
+     * @param profile 用戶個人資料對象
+     * @return 更新是否成功
+     */
+    fun updateUserProfile(profile: UserProfile): Boolean {
+        val result = database.updateUserProfile(profile)
+        
+        // 如果是当前登入用戶，同時更新SharedPreferences
+        if (result && getCurrentUsername() == profile.username) {
+            getPrefs().edit()
+                .putString(KEY_CURRENT_EMAIL, profile.email)
+                .putInt(KEY_CURRENT_ACCOUNT_TYPE, profile.accountType)
+                .putString(KEY_CURRENT_BIRTHDAY, profile.birthday)
+                .putInt(KEY_CURRENT_GENDER, profile.gender)
+                .putString(KEY_CURRENT_PHONE, profile.phoneNumber)
+                .putString(KEY_CURRENT_ADDRESS, profile.address)
+                .putString(KEY_CURRENT_PROFILE_PHOTO, profile.profilePhotoUri)
+                .apply()
+        }
+        
+        return result
+    }
+    
+    /**
+     * 獲取帳號類型的方法
+     * @param accountType 帳號類型
+     * @param isChinese 是否返回中文名稱
+     * @return 帳號類型名稱字串
+     */
+    fun getAccountTypeName(accountType: Int, isChinese: Boolean = true): String {
+        return when (accountType) {
+            ACCOUNT_TYPE_PATIENT -> if (isChinese) "院友" else "Patient"
+            ACCOUNT_TYPE_FAMILY -> if (isChinese) "家屬" else "Family"
+            ACCOUNT_TYPE_STAFF -> if (isChinese) "員工" else "Staff"
+            ACCOUNT_TYPE_ADMIN -> if (isChinese) "管理人員" else "Admin"
+            ACCOUNT_TYPE_DEVELOPER -> if (isChinese) "開發人員" else "Developer"
+            else -> if (isChinese) "未知" else "Unknown"
+        }
+    }
+    
+    /**
+     * 獲取性別名稱的方法
+     * @param gender 性別代碼
+     * @param isChinese 是否返回中文名稱
+     * @return 性別名稱字串
+     */
+    fun getGenderName(gender: Int, isChinese: Boolean = true): String {
+        return when (gender) {
+            GENDER_MALE -> if (isChinese) "男" else "Male"
+            GENDER_FEMALE -> if (isChinese) "女" else "Female"
+            GENDER_OTHER -> if (isChinese) "其他" else "Other"
+            else -> if (isChinese) "未設定" else "Unspecified"
+        }
+    }
+    
+    /**
+     * 檢查使用者是否有權限變更指定用戶的帳號類型
+     * 只有管理員和開發者可以更改帳號類型，且一般沒有人能提升成開發者
+     */
+    fun canChangeAccountType(targetUsername: String, newAccountType: Int): Boolean {
+        val currentProfile = getCurrentUserProfile() ?: return false
+        
+        // 如果不是管理員或開發者，無權限修改
+        if (currentProfile.accountType < ACCOUNT_TYPE_ADMIN) {
+            return false
+        }
+        
+        // 檢查目標用戶的當前帳號類型
+        val targetProfile = getUserProfile(targetUsername)
+        
+        // 開發者帳號無法被修改，且通常只有開發者可以創建開發者帳號
+        if (targetProfile?.accountType == ACCOUNT_TYPE_DEVELOPER || 
+            (newAccountType == ACCOUNT_TYPE_DEVELOPER && currentProfile.accountType < ACCOUNT_TYPE_DEVELOPER)) {
+            return false
+        }
+        
+        // 管理員只能修改到不高於自身的等級
+        if (currentProfile.accountType == ACCOUNT_TYPE_ADMIN && newAccountType > ACCOUNT_TYPE_ADMIN) {
+            return false
+        }
+        
+        return true
     }
 } 

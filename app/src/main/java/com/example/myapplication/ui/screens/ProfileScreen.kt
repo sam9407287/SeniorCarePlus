@@ -22,6 +22,7 @@ import com.example.myapplication.ui.theme.LanguageManager
 import com.example.myapplication.ui.theme.ThemeManager
 import com.example.myapplication.auth.UserManager
 import com.example.myapplication.MainActivity
+import com.example.myapplication.models.UserProfile
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,8 +33,9 @@ fun ProfileScreen(navController: NavController) {
     
     // 檢查用戶是否已登錄
     val isLoggedIn = UserManager.isLoggedIn()
-    val currentUsername = UserManager.getCurrentUsername() ?: ""
-    val currentEmail = UserManager.getCurrentEmail() ?: ""
+    val currentUserProfile = UserManager.getCurrentUserProfile()
+    val currentUsername = currentUserProfile?.username ?: ""
+    val currentEmail = currentUserProfile?.email ?: ""
     
     // 用於滾動內容
     val scrollState = rememberScrollState()
@@ -126,7 +128,41 @@ fun ProfileScreen(navController: NavController) {
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // 用戶資訊卡片與編輯按鈕
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Text(
+                        text = if (isChineseLanguage) "個人資料" else "Personal Info",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    
+                    // 編輯按鈕
+                    IconButton(
+                        onClick = { navController.navigate("profile_edit") },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = if (isChineseLanguage) "編輯個人資料" else "Edit Profile",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
                 
                 // 用戶資訊卡片
                 Card(
@@ -140,6 +176,7 @@ fun ProfileScreen(navController: NavController) {
                     Column(
                         modifier = Modifier.padding(16.dp)
                     ) {
+                        // 基本資訊
                         ProfileInfoItem(
                             icon = Icons.Default.Person,
                             label = if (isChineseLanguage) "用戶名" else "Username",
@@ -147,7 +184,7 @@ fun ProfileScreen(navController: NavController) {
                         )
                         
                         Divider(
-                            modifier = Modifier.padding(vertical = 12.dp),
+                            modifier = Modifier.padding(vertical = 8.dp),
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                         )
                         
@@ -156,57 +193,80 @@ fun ProfileScreen(navController: NavController) {
                             label = if (isChineseLanguage) "郵箱地址" else "Email Address",
                             value = currentEmail
                         )
+                        
+                        // 只有當用戶有性別信息時才顯示
+                        if (currentUserProfile != null) {
+                            Divider(
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                            )
+                            
+                            ProfileInfoItem(
+                                icon = Icons.Default.Face,
+                                label = if (isChineseLanguage) "性別" else "Gender",
+                                value = UserManager.getGenderName(currentUserProfile.gender)
+                            )
+                            
+                            // 只有當用戶有生日信息時才顯示
+                            if (!currentUserProfile.birthday.isNullOrEmpty()) {
+                                Divider(
+                                    modifier = Modifier.padding(vertical = 8.dp),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                                )
+                                
+                                ProfileInfoItem(
+                                    icon = Icons.Default.CalendarMonth,
+                                    label = if (isChineseLanguage) "生日" else "Birthday",
+                                    value = currentUserProfile.birthday!!
+                                )
+                            }
+                            
+                            // 顯示電話號碼（如果有）
+                            if (!currentUserProfile.phoneNumber.isNullOrEmpty()) {
+                                Divider(
+                                    modifier = Modifier.padding(vertical = 8.dp),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                                )
+                                
+                                ProfileInfoItem(
+                                    icon = Icons.Default.Phone,
+                                    label = if (isChineseLanguage) "聯絡電話" else "Phone",
+                                    value = currentUserProfile.phoneNumber!!
+                                )
+                            }
+                            
+                            // 顯示地址（如果有）
+                            if (!currentUserProfile.address.isNullOrEmpty()) {
+                                Divider(
+                                    modifier = Modifier.padding(vertical = 8.dp),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                                )
+                                
+                                ProfileInfoItem(
+                                    icon = Icons.Default.LocationOn,
+                                    label = if (isChineseLanguage) "地址" else "Address",
+                                    value = currentUserProfile.address!!
+                                )
+                            }
+                            
+                            // 顯示帳號類型
+                            Divider(
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                            )
+                            
+                            ProfileInfoItem(
+                                icon = Icons.Default.AdminPanelSettings,
+                                label = if (isChineseLanguage) "帳號類型" else "Account Type",
+                                value = UserManager.getAccountTypeName(currentUserProfile.accountType)
+                            )
+                        }
                     }
                 }
                 
                 Spacer(modifier = Modifier.height(32.dp))
                 
-                // 個人數據卡片 - 空的，表示用戶首次登錄
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = if (isChineseLanguage) "個人數據" else "Personal Data",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        // 空數據提示
-                        Text(
-                            text = if (isChineseLanguage) 
-                                "尚無個人數據記錄，請開始使用系統功能。" 
-                            else 
-                                "No personal data available yet. Please start using system features.",
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            modifier = Modifier.padding(horizontal = 8.dp)
-                        )
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        // 空數據圖標
-                        Icon(
-                            imageVector = Icons.Default.DataExploration,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                            modifier = Modifier.size(48.dp)
-                        )
-                    }
-                }
+                // 此處保留系統數據卡片部分（如有需要）
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 

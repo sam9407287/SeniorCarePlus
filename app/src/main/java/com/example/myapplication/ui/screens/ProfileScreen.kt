@@ -212,11 +212,16 @@ fun ProfileScreen(navController: NavController) {
                 
                 Button(
                     onClick = { 
+                        // 當前登出操作
                         UserManager.logout()
                         
                         // 通知ReminderViewModel更新提醒數據
                         MainActivity.sharedReminderViewModel?.onLoginStateChanged()
                         
+                        // 使用狀態更新機制更新登錄狀態
+                        MainActivity.updateLoginState?.invoke()
+                        
+                        // 導航回首頁
                         navController.navigate("home") {
                             popUpTo("home") {
                                 inclusive = true

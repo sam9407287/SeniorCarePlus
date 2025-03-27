@@ -61,6 +61,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -373,20 +374,34 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
     // 跟踪是否顯示帳戶選項對話框
     var showAccountOptionsDialog by remember { mutableStateOf(false) }
     
-    // 創建登錄狀態的響應式變量
-    val isLoggedIn = remember { mutableStateOf(UserManager.isLoggedIn()) }
-    val currentUsername = remember { mutableStateOf(UserManager.getCurrentUsername() ?: "") }
+    // 創建登錄狀態的響應式變量，並添加更新觸發器
+    val loginStateKey = remember { mutableStateOf(0) } // 觸發重組的計數器
+    val isLoggedIn = remember(loginStateKey.value) { mutableStateOf(UserManager.isLoggedIn()) }
+    val currentUsername = remember(loginStateKey.value) { mutableStateOf(UserManager.getCurrentUsername() ?: "") }
     
     // 在組合效果中監聽登錄狀態的變化
-    LaunchedEffect(Unit) {
-        // 初始檢查登錄狀態
-        isLoggedIn.value = UserManager.isLoggedIn()
+    LaunchedEffect(loginStateKey.value) {
+        // 每次觸發時重新檢查登錄狀態
+        val loggedIn = UserManager.isLoggedIn()
+        isLoggedIn.value = loggedIn
         currentUsername.value = UserManager.getCurrentUsername() ?: ""
         
-        // 設置更新登錄狀態的函數
+        // 如果未登入，確保帳戶選項對話框被關閉
+        if (!loggedIn) {
+            showAccountOptionsDialog = false
+        }
+    }
+    
+    // 設置更新登錄狀態的函數
+    DisposableEffect(Unit) {
         MainActivity.updateLoginState = {
-            isLoggedIn.value = UserManager.isLoggedIn()
-            currentUsername.value = UserManager.getCurrentUsername() ?: ""
+            // 增加計數器觸發狀態重新計算
+            loginStateKey.value += 1
+        }
+        
+        // 使用正確的方式返回清理函數
+        onDispose {
+            MainActivity.updateLoginState = null
         }
     }
     
@@ -450,15 +465,17 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
             confirmButton = {
                 Button(
                     onClick = {
+                        // 關閉帳戶選項對話框
+                        showAccountOptionsDialog = false
+                        
                         // 登出並清除數據
                         UserManager.logout()
                         
-                        // 更新登錄狀態
-                        isLoggedIn.value = false
-                        currentUsername.value = ""
-                        
                         // 通知ReminderViewModel更新提醒數據
                         MainActivity.sharedReminderViewModel?.onLoginStateChanged()
+                        
+                        // 使用狀態更新機制更新登錄狀態
+                        MainActivity.updateLoginState?.invoke()
                         
                         // 重定向到主頁
                         navController.navigate("home") {
@@ -646,14 +663,18 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                                     launchSingleTop = true
                                 }
                             } else if (index == 2) { // 登入/登出項目的索引
-                                if (isLoggedIn.value) {
-                                    // 已登入狀態，顯示登出和切換帳戶選項
-                                    // 這裡使用AlertDialog來顯示選項
+                                // 確保每次點擊時都取得最新的登錄狀態
+                                val currentlyLoggedIn = UserManager.isLoggedIn()
+                                
+                                if (currentlyLoggedIn) {
+                                    // 如果確實已登入，才顯示帳戶選項
                                     showAccountOptionsDialog = true
                                 } else {
-                                    // 未登入狀態，導航到登入頁面
+                                    // 強制更新狀態，確保 UI 同步
+                                    MainActivity.updateLoginState?.invoke()
+                                    
+                                    // 導航到登入頁面
                                     navController.navigate("login") {
-                                        // 防止創建多個實例
                                         launchSingleTop = true
                                     }
                                 }

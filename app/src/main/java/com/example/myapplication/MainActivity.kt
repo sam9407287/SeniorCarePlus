@@ -436,6 +436,11 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
             Icons.Default.Person
         ),
         DrawerItem(
+            if (isChineseLanguage) "登入/登出" else "Login/Logout", 
+            if (isChineseLanguage) "帳號登入與登出" else "Account login and logout", 
+            Icons.Default.AccountCircle
+        ),
+        DrawerItem(
             if (isChineseLanguage) "設置" else "Settings", 
             if (isChineseLanguage) "應用程序設置" else "Application settings", 
             Icons.Default.Settings
@@ -515,7 +520,13 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                                 leftDrawerState.close()
                             }
                             // 處理側邊欄項目點擊
-                            if (index == 2) { // 設置項目的索引
+                            if (index == 2) { // 登入/登出項目的索引
+                                // 導航到登入頁面
+                                navController.navigate("login") {
+                                    // 防止創建多個實例
+                                    launchSingleTop = true
+                                }
+                            } else if (index == 3) { // 設置項目的索引
                                 // 導航到設定頁面
                                 navController.navigate("settings") {
                                     // 清空之前的settings路由，確保每次都是新進入
@@ -525,7 +536,7 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                                     // 防止創建多個實例
                                     launchSingleTop = true
                                 }
-                            } else if (index == 3) { // 關於我們項目的索引
+                            } else if (index == 4) { // 關於我們項目的索引
                                 // 導航到關於我們頁面
                                 navController.navigate("about_us") {
                                     // 清空之前的about_us路由，確保每次都是新進入

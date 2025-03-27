@@ -160,27 +160,6 @@ fun HomeScreen(navController: NavController) {
                         modifier = Modifier.size(24.dp)
                     )
                 }
-                
-                // 登入按鈕
-                IconButton(
-                    onClick = { 
-                        navController.navigate("login") {
-                            launchSingleTop = true
-                        }
-                    },
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = if (isChineseLanguage) "登入" else "Login",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
             }
             
             Spacer(modifier = Modifier.height(24.dp))

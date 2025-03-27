@@ -113,7 +113,11 @@ import com.example.myapplication.ui.screens.StaffManagementScreen
 import com.example.myapplication.ui.screens.AboutUsScreen
 import com.example.myapplication.ui.screens.IssueReportScreen
 import com.example.myapplication.ui.screens.LoginScreen
+import com.example.myapplication.ui.screens.ProfileScreen
 import com.example.myapplication.auth.UserManager
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -358,6 +362,9 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
     // 使用 remember 記錄已處理的提醒ID，防止在重組時重複觸發
     val processedReminderRef = remember { mutableStateOf(-1) }
     
+    // 跟踪是否顯示帳戶選項對話框
+    var showAccountOptionsDialog by remember { mutableStateOf(false) }
+    
     // 如果從通知打開，且該提醒在應用生命週期內沒有被處理過，才顯示提醒對話框
     if (openReminderDialog && reminderId != -1 && !ProcessedReminders.isProcessed(reminderId)) {
         // 標記為已處理（應用級別標記，不受重新組合影響）
@@ -398,6 +405,62 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                 }
             )
         }
+    }
+    
+    // 如果對話框應該顯示，則顯示帳戶選項對話框
+    if (showAccountOptionsDialog) {
+        AlertDialog(
+            onDismissRequest = { showAccountOptionsDialog = false },
+            title = { Text(if (isChineseLanguage) "帳戶選項" else "Account Options") },
+            text = {
+                Column {
+                    Text(
+                        if (isChineseLanguage) 
+                            "當前帳戶: ${UserManager.getCurrentUsername() ?: ""}" 
+                        else 
+                            "Current Account: ${UserManager.getCurrentUsername() ?: ""}"
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        // 登出當前帳戶
+                        UserManager.logout()
+                        showAccountOptionsDialog = false
+                        // 重定向到主頁
+                        navController.navigate("home") {
+                            popUpTo("home") {
+                                inclusive = true
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Text(
+                        if (isChineseLanguage) "登出" else "Logout",
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        // 關閉對話框並導航到登入頁面以切換帳戶
+                        showAccountOptionsDialog = false
+                        navController.navigate("login") {
+                            launchSingleTop = true
+                        }
+                    }
+                ) {
+                    Text(if (isChineseLanguage) "切換帳戶" else "Switch Account")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            textContentColor = MaterialTheme.colorScheme.onSurface
+        )
     }
     
     // 定義底部導航欄的項目
@@ -538,17 +601,17 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                                 leftDrawerState.close()
                             }
                             // 處理側邊欄項目點擊
-                            if (index == 2) { // 登入/登出項目的索引
+                            if (index == 1) { // 個人資料項目的索引
+                                // 導航到個人資料頁面
+                                navController.navigate("profile") {
+                                    // 防止創建多個實例
+                                    launchSingleTop = true
+                                }
+                            } else if (index == 2) { // 登入/登出項目的索引
                                 if (UserManager.isLoggedIn()) {
-                                    // 已登入狀態，執行登出
-                                    UserManager.logout()
-                                    // 顯示登出成功訊息
-                                    // 導航到主頁
-                                    navController.navigate("home") {
-                                        popUpTo("home") {
-                                            inclusive = true
-                                        }
-                                    }
+                                    // 已登入狀態，顯示登出和切換帳戶選項
+                                    // 這裡使用AlertDialog來顯示選項
+                                    showAccountOptionsDialog = true
                                 } else {
                                     // 未登入狀態，導航到登入頁面
                                     navController.navigate("login") {
@@ -712,6 +775,9 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                         
                         // 關於我們頁面
                         composable("about_us") { AboutUsScreen(navController) }
+                        
+                        // 個人資料頁面
+                        composable("profile") { ProfileScreen(navController) }
                         
                         // 管理頁面
                         composable("patient_admin") { ResidentManagementScreen(navController) }

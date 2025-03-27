@@ -110,6 +110,7 @@ import com.example.myapplication.ui.screens.ReminderViewModel
 import com.example.myapplication.ui.screens.ResidentManagementScreen
 import com.example.myapplication.ui.screens.StaffManagementScreen
 import com.example.myapplication.ui.screens.AboutUsScreen
+import com.example.myapplication.ui.screens.IssueReportScreen
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -463,7 +464,7 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
             Icons.Default.Build
         ),
         AdminItem(
-            if (isChineseLanguage) "設定" else "Settings", 
+            if (isChineseLanguage) "問題回報" else "Issue Report", 
             "settings_admin", 
             Icons.Default.Settings
         )
@@ -661,6 +662,9 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                         // 設定頁面
                         composable("settings") { SettingsScreen(navController) }
                         
+                        // 問題回報頁面
+                        composable("issue_report") { IssueReportScreen(navController) }
+                        
                         // 關於我們頁面
                         composable("about_us") { AboutUsScreen(navController) }
                         
@@ -668,7 +672,7 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                         composable("patient_admin") { ResidentManagementScreen(navController) }
                         composable("staff_admin") { StaffManagementScreen(navController) }
                         composable("equipment_admin") { EquipmentManagementScreen(navController) }
-                        composable("settings_admin") { AdminPageTemplate(title = "設定", navController = navController) }
+                        composable("settings_admin") { IssueReportScreen(navController) }
                     }
                 }
             }

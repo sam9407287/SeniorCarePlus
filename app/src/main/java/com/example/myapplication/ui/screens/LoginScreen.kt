@@ -34,6 +34,9 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.myapplication.ui.theme.LanguageManager
 import com.example.myapplication.ui.theme.ThemeManager
+import com.example.myapplication.auth.UserManager
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -51,10 +54,25 @@ fun LoginScreen(navController: NavController) {
     var showPassword by remember { mutableStateOf(false) }
     var rememberMe by remember { mutableStateOf(false) }
     var isLoggingIn by remember { mutableStateOf(false) }
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var showSuccessDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    
+    // 協程作用域
+    val scope = rememberCoroutineScope()
     
     // 鍵盤控制
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+    
+    // 檢查用戶是否已登錄
+    LaunchedEffect(Unit) {
+        if (UserManager.isLoggedIn()) {
+            // 如果已登錄，自動填充用戶名並顯示登錄狀態信息
+            username = UserManager.getCurrentUsername() ?: ""
+            // 這裡可以添加其他登錄狀態處理邏輯
+        }
+    }
     
     // UI文字翻譯
     val loginTitle = if (isChineseLanguage) "歡迎回來" else "Welcome Back"
@@ -67,6 +85,61 @@ fun LoginScreen(navController: NavController) {
     val orText = if (isChineseLanguage) "或者" else "OR"
     val googleSignInText = if (isChineseLanguage) "使用Google帳號登入" else "Sign in with Google"
     val registerText = if (isChineseLanguage) "沒有帳號? 註冊" else "Don't have an account? Register"
+    val loginErrorTitle = if (isChineseLanguage) "登入失敗" else "Login Failed"
+    val loginSuccessTitle = if (isChineseLanguage) "登入成功" else "Login Successful"
+    val loginSuccessMessage = if (isChineseLanguage) "歡迎回來，" else "Welcome back, "
+    
+    // 登入錯誤對話框
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            title = { Text(loginErrorTitle) },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                Button(onClick = { showErrorDialog = false }) {
+                    Text(if (isChineseLanguage) "確定" else "OK")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.error,
+            textContentColor = MaterialTheme.colorScheme.onSurface
+        )
+    }
+    
+    // 登入成功對話框
+    if (showSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = { 
+                showSuccessDialog = false
+                // 導航到主頁
+                navController.navigate("home") {
+                    popUpTo("home") {
+                        inclusive = true
+                    }
+                }
+            },
+            title = { Text(loginSuccessTitle) },
+            text = { Text(loginSuccessMessage + username) },
+            confirmButton = {
+                Button(
+                    onClick = { 
+                        showSuccessDialog = false
+                        // 導航到主頁
+                        navController.navigate("home") {
+                            popUpTo("home") {
+                                inclusive = true
+                            }
+                        }
+                    }
+                ) {
+                    Text(if (isChineseLanguage) "確定" else "OK")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.primary,
+            textContentColor = MaterialTheme.colorScheme.onSurface
+        )
+    }
     
     Box(
         modifier = Modifier
@@ -265,18 +338,29 @@ fun LoginScreen(navController: NavController) {
             // 登入按鈕
             Button(
                 onClick = { 
-                    // 模擬登入過程
-                    isLoggingIn = true
+                    // 隱藏鍵盤並開始登入
                     keyboardController?.hide()
+                    isLoggingIn = true
                     
-                    // 這裡可以添加實際的登入邏輯
-                    // 模擬成功後導航到主頁
-                    // 在實際應用中，這裡應該調用您的登入API
-                    
-                    // 模擬延遲後導航到主頁
-                    navController.navigate("home") {
-                        popUpTo("home") {
-                            inclusive = true
+                    scope.launch {
+                        // 嘗試登入
+                        val loginSuccess = UserManager.login(username, password)
+                        
+                        // 模擬網絡延遲
+                        delay(1000)
+                        
+                        isLoggingIn = false
+                        
+                        if (loginSuccess) {
+                            // 登入成功
+                            showSuccessDialog = true
+                        } else {
+                            // 登入失敗
+                            errorMessage = if (isChineseLanguage) 
+                                "用戶名或密碼錯誤，請再試一次。" 
+                            else 
+                                "Username or password is incorrect. Please try again."
+                            showErrorDialog = true
                         }
                     }
                 },
@@ -335,7 +419,10 @@ fun LoginScreen(navController: NavController) {
             
             // Google登入按鈕
             OutlinedButton(
-                onClick = { /* Google登入處理 */ },
+                onClick = { 
+                    /* Google登入處理 */ 
+                    // 在實際應用中，這裡會調用Google登入API
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -384,6 +471,46 @@ fun LoginScreen(navController: NavController) {
                 modifier = Modifier.clickable { /* 註冊頁面導航 */ },
                 color = MaterialTheme.colorScheme.primary
             )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // 預設帳號提示
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = if (isChineseLanguage) "預設管理員帳號" else "Default Admin Account",
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        text = if (isChineseLanguage) "用戶名: admin" else "Username: admin",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    Text(
+                        text = if (isChineseLanguage) "密碼: 00000000" else "Password: 00000000",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    Text(
+                        text = if (isChineseLanguage) "郵箱: admin@example.com" else "Email: admin@example.com",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
             
             Spacer(modifier = Modifier.height(32.dp))
         }

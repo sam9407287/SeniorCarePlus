@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Map
@@ -112,6 +113,7 @@ import com.example.myapplication.ui.screens.StaffManagementScreen
 import com.example.myapplication.ui.screens.AboutUsScreen
 import com.example.myapplication.ui.screens.IssueReportScreen
 import com.example.myapplication.ui.screens.LoginScreen
+import com.example.myapplication.auth.UserManager
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -183,6 +185,7 @@ fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -
     // 使用MaterialTheme的顏色而不是硬編碼的顏色
     val isDarkTheme = ThemeManager.isDarkTheme
     val isChineseLanguage = LanguageManager.isChineseLanguage
+    val isLoggedIn = UserManager.isLoggedIn()
     
     Box(
         modifier = Modifier
@@ -202,7 +205,10 @@ fun SeniorCareTopBar(onUserIconClick: () -> Unit = {}, onNotificationClick: () -
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
                     contentDescription = if (isChineseLanguage) "用戶菜單" else "User Menu",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = if (isLoggedIn) 
+                        MaterialTheme.colorScheme.primary 
+                    else 
+                        MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(36.dp)
                 )
             }
@@ -436,9 +442,21 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
             Icons.Default.Person
         ),
         DrawerItem(
-            if (isChineseLanguage) "登入/登出" else "Login/Logout", 
-            if (isChineseLanguage) "帳號登入與登出" else "Account login and logout", 
-            Icons.Default.AccountCircle
+            if (isChineseLanguage) {
+                if (UserManager.isLoggedIn()) "登出帳戶" else "帳戶登入"
+            } else {
+                if (UserManager.isLoggedIn()) "Logout" else "Login"
+            }, 
+            if (isChineseLanguage) {
+                if (UserManager.isLoggedIn()) {
+                    "目前登入: ${UserManager.getCurrentUsername() ?: ""}"
+                } else "帳號登入與登出"
+            } else {
+                if (UserManager.isLoggedIn()) {
+                    "Current user: ${UserManager.getCurrentUsername() ?: ""}"
+                } else "Account login and logout"
+            }, 
+            if (UserManager.isLoggedIn()) Icons.Default.ExitToApp else Icons.Default.AccountCircle
         ),
         DrawerItem(
             if (isChineseLanguage) "設置" else "Settings", 
@@ -521,10 +539,22 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                             }
                             // 處理側邊欄項目點擊
                             if (index == 2) { // 登入/登出項目的索引
-                                // 導航到登入頁面
-                                navController.navigate("login") {
-                                    // 防止創建多個實例
-                                    launchSingleTop = true
+                                if (UserManager.isLoggedIn()) {
+                                    // 已登入狀態，執行登出
+                                    UserManager.logout()
+                                    // 顯示登出成功訊息
+                                    // 導航到主頁
+                                    navController.navigate("home") {
+                                        popUpTo("home") {
+                                            inclusive = true
+                                        }
+                                    }
+                                } else {
+                                    // 未登入狀態，導航到登入頁面
+                                    navController.navigate("login") {
+                                        // 防止創建多個實例
+                                        launchSingleTop = true
+                                    }
                                 }
                             } else if (index == 3) { // 設置項目的索引
                                 // 導航到設定頁面

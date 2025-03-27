@@ -38,6 +38,7 @@ import com.example.myapplication.auth.UserManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.example.myapplication.MainActivity
+import androidx.compose.foundation.BorderStroke
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -352,6 +353,9 @@ fun LoginScreen(navController: NavController) {
                             // 通知ReminderViewModel更新提醒數據
                             MainActivity.sharedReminderViewModel?.onLoginStateChanged()
                             
+                            // 更新登錄狀態
+                            MainActivity.updateLoginState?.invoke()
+                            
                             // 延遲一下再導航，讓成功訊息顯示
                             kotlinx.coroutines.delay(1000)
                             navController.navigate("home") {
@@ -470,10 +474,10 @@ fun LoginScreen(navController: NavController) {
             
             // 註冊選項
             Text(
-                text = registerText,
+                text = if (isChineseLanguage) "沒有帳戶？註冊" else "Don't have an account? Register",
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.clickable { /* 註冊頁面導航 */ },
+                modifier = Modifier.clickable { navController.navigate("register") },
                 color = MaterialTheme.colorScheme.primary
             )
             

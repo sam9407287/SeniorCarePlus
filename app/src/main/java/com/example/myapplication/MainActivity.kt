@@ -107,6 +107,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.reminder.ReminderAlertDialog
 import com.example.myapplication.reminder.ReminderFullScreenDialog
 import com.example.myapplication.ui.screens.ReminderViewModel
+import com.example.myapplication.ui.screens.ResidentManagementScreen
+import com.example.myapplication.ui.screens.StaffManagementScreen
+import com.example.myapplication.ui.screens.AboutUsScreen
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -520,6 +523,16 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                                     // 防止創建多個實例
                                     launchSingleTop = true
                                 }
+                            } else if (index == 3) { // 關於我們項目的索引
+                                // 導航到關於我們頁面
+                                navController.navigate("about_us") {
+                                    // 清空之前的about_us路由，確保每次都是新進入
+                                    popUpTo("about_us") {
+                                        inclusive = true
+                                    }
+                                    // 防止創建多個實例
+                                    launchSingleTop = true
+                                }
                             }
                         },
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
@@ -648,9 +661,12 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                         // 設定頁面
                         composable("settings") { SettingsScreen(navController) }
                         
+                        // 關於我們頁面
+                        composable("about_us") { AboutUsScreen(navController) }
+                        
                         // 管理頁面
-                        composable("patient_admin") { AdminPageTemplate(title = "院友管理", navController = navController) }
-                        composable("staff_admin") { AdminPageTemplate(title = "員工管理", navController = navController) }
+                        composable("patient_admin") { ResidentManagementScreen(navController) }
+                        composable("staff_admin") { StaffManagementScreen(navController) }
                         composable("equipment_admin") { EquipmentManagementScreen(navController) }
                         composable("settings_admin") { AdminPageTemplate(title = "設定", navController = navController) }
                     }

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -56,6 +58,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.auth.UserManager
 import com.example.myapplication.models.UserProfile
+import com.example.myapplication.ui.theme.LanguageManager
+import com.example.myapplication.ui.theme.ThemeManager
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -64,6 +68,10 @@ import java.util.Locale
 @Composable
 fun ProfileEditScreen(navController: NavController) {
     val context = LocalContext.current
+    
+    // 獲取當前語言和主題狀態
+    val isChineseLanguage = LanguageManager.isChineseLanguage
+    val isDarkTheme = ThemeManager.isDarkTheme
     
     // 從 UserManager 獲取當前登入用戶的資料
     val currentUserProfile = UserManager.getCurrentUserProfile()
@@ -76,6 +84,8 @@ fun ProfileEditScreen(navController: NavController) {
     
     // 記錄編輯中的個人資料
     var username by remember { mutableStateOf(currentUserProfile.username) }
+    var chineseName by remember { mutableStateOf(currentUserProfile.chineseName ?: "") }
+    var englishName by remember { mutableStateOf(currentUserProfile.englishName ?: "") }
     var email by remember { mutableStateOf(currentUserProfile.email ?: "") }
     var birthday by remember { mutableStateOf(currentUserProfile.birthday ?: "") }
     var gender by remember { mutableStateOf(currentUserProfile.gender) }
@@ -93,10 +103,13 @@ fun ProfileEditScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("編輯個人資料") },
+                title = { Text(if (isChineseLanguage) "編輯個人資料" else "Edit Profile") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "返回")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack, 
+                            contentDescription = if (isChineseLanguage) "返回" else "Back"
+                        )
                     }
                 }
             )
@@ -143,7 +156,7 @@ fun ProfileEditScreen(navController: NavController) {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "用戶名",
+                        text = if (isChineseLanguage) "用戶名" else "Username",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -154,6 +167,26 @@ fun ProfileEditScreen(navController: NavController) {
                     )
                 }
             }
+            
+            // 中文姓名
+            OutlinedTextField(
+                value = chineseName,
+                onValueChange = { chineseName = it },
+                label = { Text(if (isChineseLanguage) "中文姓名" else "Chinese Name") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            )
+            
+            // 英文姓名
+            OutlinedTextField(
+                value = englishName,
+                onValueChange = { englishName = it },
+                label = { Text(if (isChineseLanguage) "英文姓名" else "English Name") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            )
             
             // 帳號類型 (只顯示，一般不可變更)
             Card(
@@ -169,20 +202,20 @@ fun ProfileEditScreen(navController: NavController) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "帳號類型",
+                            text = if (isChineseLanguage) "帳號類型" else "Account Type",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.weight(1f)
                         )
                         Icon(
                             Icons.Default.Edit,
-                            contentDescription = "帳號類型說明",
+                            contentDescription = if (isChineseLanguage) "帳號類型說明" else "Account Type Info",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)
                         )
                     }
                     Text(
-                        text = UserManager.getAccountTypeName(accountType),
+                        text = UserManager.getAccountTypeName(accountType, isChineseLanguage),
                         modifier = Modifier.padding(top = 4.dp),
                         style = MaterialTheme.typography.bodyLarge
                     )
@@ -193,7 +226,7 @@ fun ProfileEditScreen(navController: NavController) {
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("電子郵件") },
+                label = { Text(if (isChineseLanguage) "電子郵件" else "Email") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
@@ -203,7 +236,7 @@ fun ProfileEditScreen(navController: NavController) {
             OutlinedTextField(
                 value = birthday,
                 onValueChange = { /* 透過日期選擇器變更 */ },
-                label = { Text("生日") },
+                label = { Text(if (isChineseLanguage) "生日" else "Birthday") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
@@ -212,7 +245,7 @@ fun ProfileEditScreen(navController: NavController) {
                 trailingIcon = {
                     Icon(
                         Icons.Default.CalendarMonth,
-                        contentDescription = "選擇日期",
+                        contentDescription = if (isChineseLanguage) "選擇日期" else "Select Date",
                         modifier = Modifier.clickable { showDatePicker = true }
                     )
                 }
@@ -225,15 +258,15 @@ fun ProfileEditScreen(navController: NavController) {
                     .padding(vertical = 8.dp)
             ) {
                 OutlinedTextField(
-                    value = UserManager.getGenderName(gender),
+                    value = UserManager.getGenderName(gender, isChineseLanguage),
                     onValueChange = { /* 透過下拉選單變更 */ },
-                    label = { Text("性別") },
+                    label = { Text(if (isChineseLanguage) "性別" else "Gender") },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = false,
                     trailingIcon = {
                         Icon(
                             Icons.Default.ArrowDropDown,
-                            contentDescription = "選擇性別",
+                            contentDescription = if (isChineseLanguage) "選擇性別" else "Select Gender",
                             modifier = Modifier.clickable { showGenderDropdown = true }
                         )
                     }
@@ -246,28 +279,28 @@ fun ProfileEditScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(0.9f)
                 ) {
                     DropdownMenuItem(
-                        text = { Text("未設定") },
+                        text = { Text(if (isChineseLanguage) "未設定" else "Unspecified") },
                         onClick = {
                             gender = UserManager.GENDER_UNSPECIFIED
                             showGenderDropdown = false
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("男") },
+                        text = { Text(if (isChineseLanguage) "男" else "Male") },
                         onClick = {
                             gender = UserManager.GENDER_MALE
                             showGenderDropdown = false
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("女") },
+                        text = { Text(if (isChineseLanguage) "女" else "Female") },
                         onClick = {
                             gender = UserManager.GENDER_FEMALE
                             showGenderDropdown = false
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("其他") },
+                        text = { Text(if (isChineseLanguage) "其他" else "Other") },
                         onClick = {
                             gender = UserManager.GENDER_OTHER
                             showGenderDropdown = false
@@ -280,7 +313,7 @@ fun ProfileEditScreen(navController: NavController) {
             OutlinedTextField(
                 value = phoneNumber,
                 onValueChange = { phoneNumber = it },
-                label = { Text("聯絡電話") },
+                label = { Text(if (isChineseLanguage) "聯絡電話" else "Phone Number") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
@@ -290,7 +323,7 @@ fun ProfileEditScreen(navController: NavController) {
             OutlinedTextField(
                 value = address,
                 onValueChange = { address = it },
-                label = { Text("地址") },
+                label = { Text(if (isChineseLanguage) "地址" else "Address") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
@@ -302,6 +335,8 @@ fun ProfileEditScreen(navController: NavController) {
                     // 建立更新後的個人資料
                     val updatedProfile = UserProfile(
                         username = username,
+                        chineseName = chineseName.ifEmpty { null },
+                        englishName = englishName.ifEmpty { null },
                         email = email.ifEmpty { null },
                         birthday = birthday.ifEmpty { null },
                         gender = gender,
@@ -314,18 +349,26 @@ fun ProfileEditScreen(navController: NavController) {
                     val result = UserManager.updateUserProfile(updatedProfile)
                     
                     if (result) {
-                        Toast.makeText(context, "個人資料更新成功", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context, 
+                            if (isChineseLanguage) "個人資料更新成功" else "Profile updated successfully", 
+                            Toast.LENGTH_SHORT
+                        ).show()
                         // 返回個人資料頁面
                         navController.popBackStack()
                     } else {
-                        Toast.makeText(context, "個人資料更新失敗", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context, 
+                            if (isChineseLanguage) "個人資料更新失敗" else "Failed to update profile", 
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp)
             ) {
-                Text("儲存變更")
+                Text(if (isChineseLanguage) "儲存變更" else "Save Changes")
             }
         }
         
@@ -350,20 +393,27 @@ fun ProfileEditScreen(navController: NavController) {
             val month = calendar.get(Calendar.MONTH)
             val day = calendar.get(Calendar.DAY_OF_MONTH)
             
-            val datePickerDialog = DatePickerDialog(
-                context,
-                { _, selectedYear, selectedMonth, selectedDay ->
-                    // 格式化選擇的日期為 yyyy-MM-dd
-                    birthday = String.format(
-                        "%04d-%02d-%02d",
-                        selectedYear,
-                        selectedMonth + 1,
-                        selectedDay
-                    )
-                    showDatePicker = false
-                },
-                year, month, day
-            )
+            // 根據當前語言建立不同的日期選擇器
+            val dateSetListener = DatePickerDialog.OnDateSetListener { _, selectedYear, selectedMonth, selectedDay ->
+                // 格式化選擇的日期為 yyyy-MM-dd
+                birthday = String.format(
+                    "%04d-%02d-%02d",
+                    selectedYear,
+                    selectedMonth + 1,
+                    selectedDay
+                )
+                showDatePicker = false
+            }
+            
+            val datePickerDialog = if (isChineseLanguage) {
+                DatePickerDialog(context,
+                    dateSetListener, year, month, day)
+            } else {
+                // 英文版的日期選擇器
+                val dialog = DatePickerDialog(context, dateSetListener, year, month, day)
+                dialog.setTitle("Select Birthday")
+                dialog
+            }
             
             // 設定最大日期為今天（不能選擇未來的日期）
             datePickerDialog.datePicker.maxDate = System.currentTimeMillis()
@@ -375,24 +425,43 @@ fun ProfileEditScreen(navController: NavController) {
         if (showAccountTypeInfo) {
             AlertDialog(
                 onDismissRequest = { showAccountTypeInfo = false },
-                title = { Text("帳號類型") },
+                title = { Text(if (isChineseLanguage) "帳號類型" else "Account Type") },
                 text = {
                     Column {
-                        Text("目前帳號類型為：${UserManager.getAccountTypeName(accountType)}")
+                        Text(
+                            if (isChineseLanguage)
+                                "目前帳號類型為：${UserManager.getAccountTypeName(accountType, isChineseLanguage)}"
+                            else
+                                "Current account type: ${UserManager.getAccountTypeName(accountType, isChineseLanguage)}"
+                        )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("帳號類型說明：")
-                        Text("• 院友：機構內住民")
-                        Text("• 家屬：住民的家人或親友")
-                        Text("• 員工：機構工作人員")
-                        Text("• 管理人員：系統管理者")
-                        Text("• 開發人員：系統開發者")
+                        Text(if (isChineseLanguage) "帳號類型說明：" else "Account Type Description:")
+                        if (isChineseLanguage) {
+                            Text("• 院友：機構內住民")
+                            Text("• 家屬：住民的家人或親友")
+                            Text("• 員工：機構工作人員")
+                            Text("• 管理人員：系統管理者")
+                            Text("• 開發人員：系統開發者")
+                        } else {
+                            Text("• Resident: Person living in the facility")
+                            Text("• Family: Family member or relative of a resident")
+                            Text("• Staff: Facility staff member")
+                            Text("• Administrator: System administrator")
+                            Text("• Developer: System developer")
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("注意：帳號類型變更需要特殊權限，無法在此變更。如需變更帳號類型，請聯絡系統管理員。", color = MaterialTheme.colorScheme.error)
+                        Text(
+                            if (isChineseLanguage)
+                                "注意：帳號類型變更需要特殊權限，無法在此變更。如需變更帳號類型，請聯絡系統管理員。"
+                            else
+                                "Note: Changing account type requires special privileges and cannot be changed here. Please contact a system administrator if you need to change your account type.",
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
                 },
                 confirmButton = {
                     Button(onClick = { showAccountTypeInfo = false }) {
-                        Text("了解")
+                        Text(if (isChineseLanguage) "了解" else "OK")
                     }
                 }
             )

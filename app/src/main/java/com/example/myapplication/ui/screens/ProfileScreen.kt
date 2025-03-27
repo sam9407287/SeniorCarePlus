@@ -188,6 +188,34 @@ fun ProfileScreen(navController: NavController) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                         )
                         
+                        // 顯示中文姓名（如果有）
+                        if (currentUserProfile != null && !currentUserProfile.chineseName.isNullOrEmpty()) {
+                            ProfileInfoItem(
+                                icon = Icons.Default.Person,
+                                label = if (isChineseLanguage) "中文姓名" else "Chinese Name",
+                                value = currentUserProfile.chineseName!!
+                            )
+                            
+                            Divider(
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                            )
+                        }
+                        
+                        // 顯示英文姓名（如果有）
+                        if (currentUserProfile != null && !currentUserProfile.englishName.isNullOrEmpty()) {
+                            ProfileInfoItem(
+                                icon = Icons.Default.Person,
+                                label = if (isChineseLanguage) "英文姓名" else "English Name",
+                                value = currentUserProfile.englishName!!
+                            )
+                            
+                            Divider(
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                            )
+                        }
+                        
                         ProfileInfoItem(
                             icon = Icons.Default.Email,
                             label = if (isChineseLanguage) "郵箱地址" else "Email Address",
@@ -204,7 +232,7 @@ fun ProfileScreen(navController: NavController) {
                             ProfileInfoItem(
                                 icon = Icons.Default.Face,
                                 label = if (isChineseLanguage) "性別" else "Gender",
-                                value = UserManager.getGenderName(currentUserProfile.gender)
+                                value = UserManager.getGenderName(currentUserProfile.gender, isChineseLanguage)
                             )
                             
                             // 只有當用戶有生日信息時才顯示
@@ -258,7 +286,7 @@ fun ProfileScreen(navController: NavController) {
                             ProfileInfoItem(
                                 icon = Icons.Default.AdminPanelSettings,
                                 label = if (isChineseLanguage) "帳號類型" else "Account Type",
-                                value = UserManager.getAccountTypeName(currentUserProfile.accountType)
+                                value = UserManager.getAccountTypeName(currentUserProfile.accountType, isChineseLanguage)
                             )
                         }
                     }

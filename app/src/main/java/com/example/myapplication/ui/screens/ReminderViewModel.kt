@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.myapplication.MyApplication
 import com.example.myapplication.reminder.ReminderManager
 import com.example.myapplication.ui.theme.ThemeManager
+import com.example.myapplication.auth.UserManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -58,10 +59,18 @@ class ReminderViewModel : ViewModel() {
         }
     }
     
+    // 登入狀態變更監聽器
+    private val loginStateObserver: () -> Unit = {
+        Log.d("ReminderViewModel", "登入狀態已變更，重新加載提醒列表")
+        loadReminders()
+    }
+    
     init {
         Log.d("ReminderViewModel", "初始化 ViewModel")
         // 註冊主題切換監聽器
         ThemeManager.addThemeChangeListener(themeChangeListener)
+        // 這裡應該註冊登入狀態變更監聽器，但UserManager暫時沒有提供這個功能
+        // 因此我們只能在init時加載數據
         loadReminders()
     }
     
@@ -74,12 +83,40 @@ class ReminderViewModel : ViewModel() {
         Log.d("ReminderViewModel", "ViewModel 已銷毀，移除主題切換監聽器")
     }
     
-
+    /**
+     * 獲取當前用戶的提醒數據存儲鍵
+     * 已登入時使用用戶名作為標識，未登入時返回null
+     */
+    private fun getCurrentUserKey(): String? {
+        val currentUsername = UserManager.getCurrentUsername()
+        return if (currentUsername != null) {
+            "reminders_$currentUsername"
+        } else {
+            null
+        }
+    }
     
     private fun loadReminders() {
         Log.d("ReminderViewModel", "開始加載提醒數據")
+        
+        // 清空當前提醒列表
+        _reminders.clear()
+        
+        // 檢查是否已登入
+        if (!UserManager.isLoggedIn()) {
+            Log.d("ReminderViewModel", "用戶未登入，不加載提醒數據")
+            return
+        }
+        
+        // 獲取當前用戶的存儲鍵
+        val userKey = getCurrentUserKey()
+        if (userKey == null) {
+            Log.d("ReminderViewModel", "無法獲取當前用戶的存儲鍵")
+            return
+        }
+        
         try {
-            val remindersJson = sharedPreferences.getString("reminders", null)
+            val remindersJson = sharedPreferences.getString(userKey, null)
             
             if (remindersJson == null) {
                 Log.d("ReminderViewModel", "沒有找到已保存的提醒數據，加載默認提醒")
@@ -90,7 +127,6 @@ class ReminderViewModel : ViewModel() {
             Log.d("ReminderViewModel", "加載的JSON數據: $remindersJson")
             val jsonArray = JSONArray(remindersJson)
             
-            _reminders.clear()
             for (i in 0 until jsonArray.length()) {
                 val reminderJson = jsonArray.getJSONObject(i)
                 
@@ -124,13 +160,13 @@ class ReminderViewModel : ViewModel() {
                 _reminders.add(reminder)
             }
             
-            Log.d("ReminderViewModel", "Loaded ${_reminders.size} reminders from cache")
+            Log.d("ReminderViewModel", "已加載 ${_reminders.size} 個提醒項目")
             
             // 應用啟動時重新設置所有啟用的提醒鬧鈴
             rescheduleAllEnabledReminders()
         } catch (e: Exception) {
-            Log.e("ReminderViewModel", "Error loading reminders: ${e.message}")
-            // If there's an error loading, we'll start with default reminders
+            Log.e("ReminderViewModel", "加載提醒數據時出錯: ${e.message}")
+            // 如果加載出錯且提醒列表為空，則添加默認提醒
             if (_reminders.isEmpty()) {
                 addDefaultReminders()
             }
@@ -139,6 +175,20 @@ class ReminderViewModel : ViewModel() {
     
     private fun saveReminders() {
         Log.d("ReminderViewModel", "開始保存提醒數據")
+        
+        // 檢查是否已登入
+        if (!UserManager.isLoggedIn()) {
+            Log.d("ReminderViewModel", "用戶未登入，不保存提醒數據")
+            return
+        }
+        
+        // 獲取當前用戶的存儲鍵
+        val userKey = getCurrentUserKey()
+        if (userKey == null) {
+            Log.d("ReminderViewModel", "無法獲取當前用戶的存儲鍵")
+            return
+        }
+        
         try {
             val jsonArray = JSONArray()
             
@@ -170,14 +220,14 @@ class ReminderViewModel : ViewModel() {
             
             // 使用 commit() 而不是 apply() 確保立即寫入
             val result = sharedPreferences.edit()
-                .putString("reminders", jsonString)
+                .putString(userKey, jsonString)
                 .commit()
                 
             Log.d("ReminderViewModel", "保存結果: $result")
             
-            Log.d("ReminderViewModel", "Saved ${_reminders.size} reminders to cache")
+            Log.d("ReminderViewModel", "已保存 ${_reminders.size} 個提醒項目")
         } catch (e: Exception) {
-            Log.e("ReminderViewModel", "Error saving reminders: ${e.message}")
+            Log.e("ReminderViewModel", "保存提醒數據時出錯: ${e.message}")
         }
     }
     
@@ -186,6 +236,12 @@ class ReminderViewModel : ViewModel() {
      * 當應用啟動時調用，確保重啟後提醒依然有效
      */
     private fun rescheduleAllEnabledReminders() {
+        // 檢查是否已登入
+        if (!UserManager.isLoggedIn()) {
+            Log.d("ReminderViewModel", "用戶未登入，不設置提醒鬧鐘")
+            return
+        }
+        
         try {
             Log.d("ReminderViewModel", "開始重新設置所有啟用的提醒鬧鐘")
             
@@ -209,6 +265,12 @@ class ReminderViewModel : ViewModel() {
     }
     
     fun addReminder(reminder: ReminderItem) {
+        // 檢查是否已登入
+        if (!UserManager.isLoggedIn()) {
+            Log.d("ReminderViewModel", "用戶未登入，不添加提醒")
+            return
+        }
+        
         _reminders.add(reminder)
         saveReminders()
         // 設置提醒鬧鐘
@@ -217,6 +279,12 @@ class ReminderViewModel : ViewModel() {
     }
     
     fun updateReminder(updatedReminder: ReminderItem) {
+        // 檢查是否已登入
+        if (!UserManager.isLoggedIn()) {
+            Log.d("ReminderViewModel", "用戶未登入，不更新提醒")
+            return
+        }
+        
         val index = _reminders.indexOfFirst { it.id == updatedReminder.id }
         if (index != -1) {
             val oldReminder = _reminders[index]
@@ -229,6 +297,12 @@ class ReminderViewModel : ViewModel() {
     }
     
     fun deleteReminder(id: Int) {
+        // 檢查是否已登入
+        if (!UserManager.isLoggedIn()) {
+            Log.d("ReminderViewModel", "用戶未登入，不刪除提醒")
+            return
+        }
+        
         val index = _reminders.indexOfFirst { it.id == id }
         if (index != -1) {
             val reminder = _reminders[index]
@@ -245,6 +319,12 @@ class ReminderViewModel : ViewModel() {
     }
     
     private fun addDefaultReminders() {
+        // 檢查是否已登入
+        if (!UserManager.isLoggedIn()) {
+            Log.d("ReminderViewModel", "用戶未登入，不添加默認提醒")
+            return
+        }
+        
         val defaultReminders = listOf(
             ReminderItem(
                 id = 1,
@@ -301,6 +381,12 @@ class ReminderViewModel : ViewModel() {
      * 設置當前提醒並顯示提醒對話框
      */
     fun showReminderAlert(reminderId: Int) {
+        // 檢查是否已登入
+        if (!UserManager.isLoggedIn()) {
+            Log.d("ReminderViewModel", "用戶未登入，不顯示提醒")
+            return
+        }
+        
         val reminder = _reminders.find { it.id == reminderId }
         if (reminder != null && reminder.isEnabled) { // 只有啟用的提醒才會顯示提醒對話框
             _currentReminder.value = reminder
@@ -313,6 +399,12 @@ class ReminderViewModel : ViewModel() {
      * 切換提醒的啟用/禁用狀態
      */
     fun toggleReminder(reminderId: Int, isEnabled: Boolean) {
+        // 檢查是否已登入
+        if (!UserManager.isLoggedIn()) {
+            Log.d("ReminderViewModel", "用戶未登入，不切換提醒狀態")
+            return
+        }
+        
         val index = _reminders.indexOfFirst { it.id == reminderId }
         if (index != -1) {
             val reminder = _reminders[index]
@@ -358,5 +450,13 @@ class ReminderViewModel : ViewModel() {
             Log.d("ReminderViewModel", "Snoozing reminder: ${reminder.id}")
         }
         hideReminderAlert()
+    }
+    
+    /**
+     * 當登入狀態變更時，重新加載提醒數據
+     * 可從外部呼叫此方法來響應登入/登出事件
+     */
+    fun onLoginStateChanged() {
+        loadReminders()
     }
 }

@@ -37,6 +37,7 @@ import com.example.myapplication.ui.theme.ThemeManager
 import com.example.myapplication.auth.UserManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.example.myapplication.MainActivity
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -344,16 +345,20 @@ fun LoginScreen(navController: NavController) {
                     
                     scope.launch {
                         // 嘗試登入
-                        val loginSuccess = UserManager.login(username, password)
-                        
-                        // 模擬網絡延遲
-                        delay(1000)
-                        
-                        isLoggingIn = false
-                        
-                        if (loginSuccess) {
+                        if (UserManager.login(username, password)) {
                             // 登入成功
                             showSuccessDialog = true
+                            
+                            // 通知ReminderViewModel更新提醒數據
+                            MainActivity.sharedReminderViewModel?.onLoginStateChanged()
+                            
+                            // 延遲一下再導航，讓成功訊息顯示
+                            kotlinx.coroutines.delay(1000)
+                            navController.navigate("home") {
+                                popUpTo("home") {
+                                    inclusive = true
+                                }
+                            }
                         } else {
                             // 登入失敗
                             errorMessage = if (isChineseLanguage) 

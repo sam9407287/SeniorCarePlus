@@ -21,6 +21,7 @@ import androidx.navigation.NavController
 import com.example.myapplication.ui.theme.LanguageManager
 import com.example.myapplication.ui.theme.ThemeManager
 import com.example.myapplication.auth.UserManager
+import com.example.myapplication.MainActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -212,6 +213,10 @@ fun ProfileScreen(navController: NavController) {
                 Button(
                     onClick = { 
                         UserManager.logout()
+                        
+                        // 通知ReminderViewModel更新提醒數據
+                        MainActivity.sharedReminderViewModel?.onLoginStateChanged()
+                        
                         navController.navigate("home") {
                             popUpTo("home") {
                                 inclusive = true

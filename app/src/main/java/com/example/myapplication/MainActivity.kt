@@ -428,6 +428,10 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                         // 登出當前帳戶
                         UserManager.logout()
                         showAccountOptionsDialog = false
+                        
+                        // 通知ReminderViewModel更新提醒數據
+                        MainActivity.sharedReminderViewModel?.onLoginStateChanged()
+                        
                         // 重定向到主頁
                         navController.navigate("home") {
                             popUpTo("home") {

@@ -246,6 +246,8 @@ object UserManager {
                 .putInt(KEY_CURRENT_ACCOUNT_TYPE, profile.accountType)
                 .putString(KEY_CURRENT_BIRTHDAY, profile.birthday)
                 .putInt(KEY_CURRENT_GENDER, profile.gender)
+                .putString(KEY_CURRENT_CHINESE_NAME, profile.chineseName)
+                .putString(KEY_CURRENT_ENGLISH_NAME, profile.englishName)
                 .putString(KEY_CURRENT_PHONE, profile.phoneNumber)
                 .putString(KEY_CURRENT_ADDRESS, profile.address)
                 .putString(KEY_CURRENT_PROFILE_PHOTO, profile.profilePhotoUri)

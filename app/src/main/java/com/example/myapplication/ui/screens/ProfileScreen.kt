@@ -193,7 +193,7 @@ fun ProfileScreen(navController: NavController) {
                             ProfileInfoItem(
                                 icon = Icons.Default.Person,
                                 label = if (isChineseLanguage) "中文姓名" else "Chinese Name",
-                                value = currentUserProfile.chineseName!!
+                                value = currentUserProfile.chineseName // 直接顯示存儲的內容，不加!!以避免非空斷言
                             )
                             
                             Divider(
@@ -207,7 +207,7 @@ fun ProfileScreen(navController: NavController) {
                             ProfileInfoItem(
                                 icon = Icons.Default.Person,
                                 label = if (isChineseLanguage) "英文姓名" else "English Name",
-                                value = currentUserProfile.englishName!!
+                                value = currentUserProfile.englishName // 直接顯示存儲的內容，不加!!以避免非空斷言
                             )
                             
                             Divider(
@@ -245,7 +245,7 @@ fun ProfileScreen(navController: NavController) {
                                 ProfileInfoItem(
                                     icon = Icons.Default.CalendarMonth,
                                     label = if (isChineseLanguage) "生日" else "Birthday",
-                                    value = currentUserProfile.birthday!!
+                                    value = currentUserProfile.birthday
                                 )
                             }
                             
@@ -259,7 +259,7 @@ fun ProfileScreen(navController: NavController) {
                                 ProfileInfoItem(
                                     icon = Icons.Default.Phone,
                                     label = if (isChineseLanguage) "聯絡電話" else "Phone",
-                                    value = currentUserProfile.phoneNumber!!
+                                    value = currentUserProfile.phoneNumber
                                 )
                             }
                             
@@ -273,7 +273,7 @@ fun ProfileScreen(navController: NavController) {
                                 ProfileInfoItem(
                                     icon = Icons.Default.LocationOn,
                                     label = if (isChineseLanguage) "地址" else "Address",
-                                    value = currentUserProfile.address!!
+                                    value = currentUserProfile.address
                                 )
                             }
                             

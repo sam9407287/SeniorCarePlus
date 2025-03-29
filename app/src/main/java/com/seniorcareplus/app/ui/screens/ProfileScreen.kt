@@ -218,64 +218,61 @@ fun ProfileScreen(navController: NavController) {
                             value = currentEmail
                         )
                         
-                        // 只有當用戶有性別信息時才顯示
-                        if (currentUserProfile != null) {
-                            Divider(
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                            )
-                            
-                            ProfileInfoItem(
-                                icon = Icons.Default.Face,
-                                label = if (isChineseLanguage) "性別" else "Gender",
-                                value = UserManager.getGenderName(currentUserProfile.gender, isChineseLanguage)
-                            )
-                            
-                            Divider(
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                            )
-                            
-                            ProfileInfoItem(
-                                icon = Icons.Default.CalendarMonth,
-                                label = if (isChineseLanguage) "生日" else "Birthday",
-                                value = currentUserProfile.birthday ?: ""
-                            )
-                            
-                            Divider(
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                            )
-                            
-                            ProfileInfoItem(
-                                icon = Icons.Default.Phone,
-                                label = if (isChineseLanguage) "聯絡電話" else "Phone",
-                                value = currentUserProfile.phoneNumber ?: ""
-                            )
-                            
-                            Divider(
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                            )
-                            
-                            ProfileInfoItem(
-                                icon = Icons.Default.LocationOn,
-                                label = if (isChineseLanguage) "地址" else "Address",
-                                value = currentUserProfile.address ?: ""
-                            )
-                            
-                            // 顯示帳號類型
-                            Divider(
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                            )
-                            
-                            ProfileInfoItem(
-                                icon = Icons.Default.AdminPanelSettings,
-                                label = if (isChineseLanguage) "帳號類型" else "Account Type",
-                                value = UserManager.getAccountTypeName(currentUserProfile.accountType, isChineseLanguage)
-                            )
-                        }
+                        Divider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                        )
+                        
+                        ProfileInfoItem(
+                            icon = Icons.Default.Face,
+                            label = if (isChineseLanguage) "性別" else "Gender",
+                            value = UserManager.getGenderName(currentUserProfile?.gender ?: 0, isChineseLanguage)
+                        )
+                        
+                        Divider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                        )
+                        
+                        ProfileInfoItem(
+                            icon = Icons.Default.CalendarMonth,
+                            label = if (isChineseLanguage) "生日" else "Birthday",
+                            value = currentUserProfile?.birthday ?: ""
+                        )
+                        
+                        Divider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                        )
+                        
+                        ProfileInfoItem(
+                            icon = Icons.Default.Phone,
+                            label = if (isChineseLanguage) "聯絡電話" else "Phone",
+                            value = currentUserProfile?.phoneNumber ?: ""
+                        )
+                        
+                        Divider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                        )
+                        
+                        ProfileInfoItem(
+                            icon = Icons.Default.LocationOn,
+                            label = if (isChineseLanguage) "地址" else "Address",
+                            value = currentUserProfile?.address ?: ""
+                        )
+                        
+                        // 顯示帳號類型
+                        Divider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                        )
+                        
+                        ProfileInfoItem(
+                            icon = Icons.Default.AdminPanelSettings,
+                            label = if (isChineseLanguage) "帳號類型" else "Account Type",
+                            value = UserManager.getAccountTypeName(currentUserProfile?.accountType ?: 1, isChineseLanguage)
+                        )
                     }
                 }
                 

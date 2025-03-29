@@ -160,6 +160,8 @@ fun ForgotPasswordScreen(navController: NavController) {
                 }
             }
             
+            Spacer(modifier = Modifier.height(24.dp))
+            
             // 頁面圖標和標題
             Icon(
                 imageVector = Icons.Default.Lock,

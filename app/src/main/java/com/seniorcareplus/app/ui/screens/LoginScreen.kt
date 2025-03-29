@@ -223,7 +223,7 @@ fun LoginScreen(navController: NavController) {
                 }
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             
             // 登入圖標和標題
             Icon(
@@ -375,6 +375,7 @@ fun LoginScreen(navController: NavController) {
                     Text(
                         text = if (isChineseLanguage) "修改密碼" else "Change Password",
                         style = MaterialTheme.typography.bodyMedium,
+                        fontSize = if (isChineseLanguage) 12.sp else 12.sp, // 比忘記密碼小四號
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
                             .clickable { 
@@ -437,8 +438,8 @@ fun LoginScreen(navController: NavController) {
                 },
                 enabled = username.isNotBlank() && password.isNotBlank() && !isLoggingIn,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                    .width(250.dp)
+                    .padding(vertical = 8.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
@@ -453,7 +454,7 @@ fun LoginScreen(navController: NavController) {
                 } else {
                     Text(
                         text = loginButtonText,
-                        fontSize = 16.sp,
+                        fontSize = if (isChineseLanguage) 16.sp else 12.sp, // 中文小四號(16sp)，英文小八號(12sp)
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -495,8 +496,8 @@ fun LoginScreen(navController: NavController) {
                     // 在實際應用中，這裡會調用Google登入API
                 },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                    .width(250.dp)
+                    .padding(vertical = 8.dp),
                 shape = RoundedCornerShape(12.dp),
                 border = ButtonDefaults.outlinedButtonBorder.copy(
                     width = 1.dp
@@ -526,7 +527,7 @@ fun LoginScreen(navController: NavController) {
                     
                     Text(
                         text = googleSignInText,
-                        fontSize = 16.sp,
+                        fontSize = if (isChineseLanguage) 16.sp else 12.sp, // 中文小四號(16sp)，英文小八號(12sp)
                         color = MaterialTheme.colorScheme.onBackground
                     )
                 }

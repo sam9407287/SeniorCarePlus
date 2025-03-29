@@ -209,6 +209,8 @@ fun ChangePasswordScreen(navController: NavController) {
                 }
             }
             
+            Spacer(modifier = Modifier.height(24.dp))
+            
             // 頁面圖標和標題
             Icon(
                 imageVector = Icons.Default.LockReset,
@@ -221,9 +223,8 @@ fun ChangePasswordScreen(navController: NavController) {
             
             Text(
                 text = screenTitle,
-                style = MaterialTheme.typography.titleLarge,  // Changed from headlineMedium to titleLarge
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                fontSize = if (isChineseLanguage) 26.sp else 22.sp, // Smaller than ForgotPasswordScreen
                 color = MaterialTheme.colorScheme.onBackground
             )
             

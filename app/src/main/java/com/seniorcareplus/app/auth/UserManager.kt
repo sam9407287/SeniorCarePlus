@@ -125,6 +125,8 @@ object UserManager {
             .putBoolean(KEY_IS_LOGGED_IN, true)
             .putString(KEY_CURRENT_USERNAME, username)
             .putString(KEY_CURRENT_EMAIL, email)
+            .putString(KEY_CURRENT_CHINESE_NAME, userProfile?.chineseName)
+            .putString(KEY_CURRENT_ENGLISH_NAME, userProfile?.englishName)
             .putInt(KEY_CURRENT_ACCOUNT_TYPE, userProfile?.accountType ?: 1)
             .putString(KEY_CURRENT_BIRTHDAY, userProfile?.birthday)
             .putInt(KEY_CURRENT_GENDER, userProfile?.gender ?: 0)

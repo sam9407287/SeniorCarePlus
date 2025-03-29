@@ -49,6 +49,9 @@ app/
 │   │   │               │   │   ├── ButtonScreen.kt      # 緊急按鈕界面 | Emergency button screen
 │   │   │               │   │   ├── LoginScreen.kt       # 登入界面 | Login screen
 │   │   │               │   │   ├── RegisterScreen.kt    # 註冊界面 | Registration screen
+│   │   │               │   │   ├── ForgotPasswordScreen.kt # 忘記密碼界面 | Forgot password screen
+│   │   │               │   │   ├── VerificationCodeScreen.kt # 驗證碼界面 | Verification code screen
+│   │   │               │   │   ├── ResetPasswordScreen.kt # 重設密碼界面 | Reset password screen
 │   │   │               │   │   ├── ProfileScreen.kt     # 個人資料界面 | Profile screen
 │   │   │               │   │   ├── ProfileEditScreen.kt # 個人資料編輯界面 | Profile editing screen
 │   │   │               │   │   ├── ReminderViewModel.kt # 提醒視圖模型 | Reminder view model
@@ -246,7 +249,23 @@ app/
 
 ## 更新日誌 | Update Log
 
-### v8 (最新版本 | Latest Version)
+### v9 (最新版本 | Latest Version)
+- 添加完整的密碼重置流程功能：
+  - 忘記密碼頁面：允許用戶輸入用戶名和電子郵件
+  - 驗證碼驗證功能：生成四位數驗證碼並顯示給用戶
+  - 重設密碼頁面：允許用戶設置新密碼
+  - 支持任何已註冊帳戶進行密碼重設
+  - 為測試帳戶添加默認電子郵件地址
+  - 增強數據庫和用戶管理器以支持密碼重置流程
+  *Added complete password reset flow:*
+  *- Forgot password page: allows users to enter username and email*
+  *- Verification code feature: generates a four-digit code and displays it to the user*
+  *- Reset password page: allows users to set a new password*
+  *- Support for password reset for any registered account*
+  *- Added default email address for test accounts*
+  *- Enhanced database and user manager to support password reset flow*
+
+### v8
 - 修復個人資料頁面顯示問題，確保所有資料欄位無論有無值都會顯示
   *Fixed profile page display issue, ensuring all data fields are shown regardless of whether they contain values*
 - 將深淺模式切換按鈕從標題欄移至設置頁面，提供更一致的用戶體驗

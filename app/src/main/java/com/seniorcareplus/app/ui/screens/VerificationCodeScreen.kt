@@ -124,32 +124,31 @@ fun VerificationCodeScreen(navController: NavController, username: String, email
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 頂部欄
+            // 頂部欄 (簡潔版本)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    .padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
                     onClick = { navController.navigateUp() },
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = if (isChineseLanguage) "返回" else "Back",
                         tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
                 
-                Spacer(modifier = Modifier.width(16.dp))
-                
                 Text(
                     text = screenTitle,
-                    fontSize = 24.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(start = 4.dp)
                 )
                 
                 Spacer(modifier = Modifier.weight(1f))
@@ -158,7 +157,7 @@ fun VerificationCodeScreen(navController: NavController, username: String, email
                 SettingsButton()
             }
             
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
             // 頁面圖標和標題
             Icon(

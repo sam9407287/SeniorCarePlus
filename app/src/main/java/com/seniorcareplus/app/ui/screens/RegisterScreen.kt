@@ -215,33 +215,34 @@ fun RegisterScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 頂部欄
+            // 頂部欄 (簡潔版本)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    .padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // 返回按鈕
                 IconButton(
-                    onClick = { navController.popBackStack() }
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = if (isChineseLanguage) "返回" else "Back",
-                        tint = MaterialTheme.colorScheme.onBackground
+                        tint = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
                 
                 Text(
                     text = if (isChineseLanguage) "註冊帳戶" else "Register Account",
-                    fontSize = 24.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = 4.dp)
                 )
                 
                 Spacer(modifier = Modifier.weight(1f))
@@ -249,8 +250,6 @@ fun RegisterScreen(navController: NavController) {
                 // 設置按鈕
                 SettingsButton()
             }
-            
-            Spacer(modifier = Modifier.height(16.dp))
             
             // 用戶名輸入
             OutlinedTextField(

@@ -6,11 +6,14 @@ import android.util.Log
 import com.seniorcareplus.app.MyApplication
 import com.seniorcareplus.app.database.AppDatabase
 import com.seniorcareplus.app.models.UserProfile
+import java.util.Date
 
 /**
  * 用戶管理類，處理用戶認證相關功能
  */
 object UserManager {
+    // 定義靜態標記，用於檢查是否已初始化
+    private var isInitialized = false
     // 帳號類型常數
     const val ACCOUNT_TYPE_PATIENT = 1    // 院友
     const val ACCOUNT_TYPE_FAMILY = 2     // 家屬
@@ -41,6 +44,8 @@ object UserManager {
     private const val KEY_CURRENT_PHONE = "current_phone"
     private const val KEY_CURRENT_ADDRESS = "current_address"
     private const val KEY_CURRENT_PROFILE_PHOTO = "current_profile_photo"
+    private const val KEY_LAST_LOGIN_TIME = "last_login_time"
+    private const val KEY_AUTO_LOGOUT = "auto_logout"
     
     // 記住我功能的存儲鍵
     private const val KEY_REMEMBER_ME = "remember_me"
@@ -54,7 +59,39 @@ object UserManager {
     
     // 獲取SharedPreferences
     private fun getPrefs(): SharedPreferences {
-        return MyApplication.instance.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val context = try {
+            MyApplication.instance
+        } catch (e: Exception) {
+            Log.e("UserManager", "獲取Application實例失敗: ${e.message}")
+            return MyApplication.instance.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        }
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    }
+    
+    /**
+     * 初始化使用者狀態
+     * 當應用啟動時自動檢查登錄狀態
+     */
+    fun initialize() {
+        // 檢查是否有保存的用戶資訊，即使沒有標記登錄狀態
+        val prefs = getPrefs()
+        val username = prefs.getString(KEY_CURRENT_USERNAME, null)
+        
+        if (username != null && username.isNotEmpty()) {
+            // 如果有儲存使用者名稱，將登錄狀態設為真
+            prefs.edit().putBoolean(KEY_IS_LOGGED_IN, true).apply()
+            Log.d("UserManager", "啟動時發現使用者資訊，自動恢復登錄狀態: $username")
+        } else if (hasRememberedCredentials()) {
+            // 如果沒有登錄資訊但有保存的登錄憑證，嘗試自動登錄
+            val rememberedUsername = getSavedUsername()
+            val password = getSavedPassword()
+            if (rememberedUsername.isNotEmpty() && password.isNotEmpty()) {
+                Log.d("UserManager", "嘗試使用已儲存的憑證自動登錄: $rememberedUsername")
+                login(rememberedUsername, password, true)
+            }
+        } else {
+            Log.d("UserManager", "無使用者登錄資訊，需要重新登錄")
+        }
     }
     
     /**
@@ -194,23 +231,35 @@ object UserManager {
      * 保存登錄狀態到SharedPreferences
      */
     private fun saveLoginState(username: String, email: String?) {
-        // 先從資料庫中取得該用戶的個人資訊
-        val userProfile = getUserProfile(username)
-        
-        getPrefs().edit()
-            .putBoolean(KEY_IS_LOGGED_IN, true)
-            .putString(KEY_CURRENT_USERNAME, username)
-            .putString(KEY_CURRENT_EMAIL, email)
+        try {
+            // 先從資料庫中取得該用戶的個人資訊
+            val userProfile = getUserProfile(username)
+            
+            val editor = getPrefs().edit()
+            editor.putBoolean(KEY_IS_LOGGED_IN, true)
+            editor.putString(KEY_CURRENT_USERNAME, username)
+            editor.putString(KEY_CURRENT_EMAIL, email)
             // 即使值为null或空字符串也要保存，确保空值能正确覆盖旧值
-            .putString(KEY_CURRENT_CHINESE_NAME, userProfile?.chineseName ?: "")
-            .putString(KEY_CURRENT_ENGLISH_NAME, userProfile?.englishName ?: "")
-            .putInt(KEY_CURRENT_ACCOUNT_TYPE, userProfile?.accountType ?: 1)
-            .putString(KEY_CURRENT_BIRTHDAY, userProfile?.birthday ?: "")
-            .putInt(KEY_CURRENT_GENDER, userProfile?.gender ?: 0)
-            .putString(KEY_CURRENT_PHONE, userProfile?.phoneNumber ?: "")
-            .putString(KEY_CURRENT_ADDRESS, userProfile?.address ?: "")
-            .putString(KEY_CURRENT_PROFILE_PHOTO, userProfile?.profilePhotoUri ?: "")
-            .apply()
+            editor.putString(KEY_CURRENT_CHINESE_NAME, userProfile?.chineseName ?: "")
+            editor.putString(KEY_CURRENT_ENGLISH_NAME, userProfile?.englishName ?: "")
+            editor.putInt(KEY_CURRENT_ACCOUNT_TYPE, userProfile?.accountType ?: 1)
+            editor.putString(KEY_CURRENT_BIRTHDAY, userProfile?.birthday ?: "")
+            editor.putInt(KEY_CURRENT_GENDER, userProfile?.gender ?: 0)
+            editor.putString(KEY_CURRENT_PHONE, userProfile?.phoneNumber ?: "")
+            editor.putString(KEY_CURRENT_ADDRESS, userProfile?.address ?: "")
+            editor.putString(KEY_CURRENT_PROFILE_PHOTO, userProfile?.profilePhotoUri ?: "")
+            // 儲存最後登錄時間和自動登出設定
+            editor.putLong(KEY_LAST_LOGIN_TIME, System.currentTimeMillis())
+            // 預設為不自動登出
+            editor.putBoolean(KEY_AUTO_LOGOUT, false)
+            
+            // 使用commit而不是apply確保立即儲存
+            val result = editor.commit()
+            
+            Log.d("UserManager", "登錄狀態儲存${if (result) "成功" else "失敗"}: $username")
+        } catch (e: Exception) {
+            Log.e("UserManager", "儲存登錄狀態時發生錯誤: ${e.message}")
+        }
     }
     
     /**
@@ -218,7 +267,33 @@ object UserManager {
      * @return 如果用戶已登錄返回true，否則返回false
      */
     fun isLoggedIn(): Boolean {
-        return getPrefs().getBoolean(KEY_IS_LOGGED_IN, false)
+        try {
+            val prefs = getPrefs()
+            
+            // 取得用戶名是判斷登錄狀態的主要依據
+            val username = prefs.getString(KEY_CURRENT_USERNAME, null)
+            
+            // 如果有用戶名，就視為登錄狀態
+            if (username != null && username.isNotEmpty()) {
+                // 確保登錄狀態標記為真
+                if (!prefs.getBoolean(KEY_IS_LOGGED_IN, false)) {
+                    prefs.edit().putBoolean(KEY_IS_LOGGED_IN, true).commit() // 立即儲存
+                    Log.d("UserManager", "登錄狀態標記不一致，已自動修正為已登錄")
+                }
+                return true
+            }
+            
+            // 如果沒有用戶名但登錄狀態為真，則清除登錄狀態
+            if (prefs.getBoolean(KEY_IS_LOGGED_IN, false)) {
+                prefs.edit().putBoolean(KEY_IS_LOGGED_IN, false).commit()
+                Log.d("UserManager", "登錄狀態標記不一致，已自動修正為未登錄")
+            }
+            
+            return false
+        } catch (e: Exception) {
+            Log.e("UserManager", "檢查登錄狀態時發生錯誤: ${e.message}")
+            return false
+        }
     }
     
     /**
@@ -246,35 +321,62 @@ object UserManager {
     }
     
     /**
+     * 設置是否在應用關閉時自動登出
+     * @param autoLogout 是否自動登出
+     */
+    fun setAutoLogout(autoLogout: Boolean) {
+        getPrefs().edit()
+            .putBoolean(KEY_AUTO_LOGOUT, autoLogout)
+            .apply()
+        
+        Log.d("UserManager", "設置自動登出: $autoLogout")
+    }
+    
+    /**
+     * 檢查是否設置了自動登出
+     * @return 是否自動登出
+     */
+    fun isAutoLogoutEnabled(): Boolean {
+        return getPrefs().getBoolean(KEY_AUTO_LOGOUT, false)
+    }
+    
+    /**
      * 登出用戶
      * @param clearRememberMe 是否同時清除「記住我」的憑證，默認不清除
      */
     fun logout(clearRememberMe: Boolean = false) {
-        val editor = getPrefs().edit()
-            .putBoolean(KEY_IS_LOGGED_IN, false)
-            .remove(KEY_CURRENT_USERNAME)
-            .remove(KEY_CURRENT_EMAIL)
-            .remove(KEY_CURRENT_CHINESE_NAME)
-            .remove(KEY_CURRENT_ENGLISH_NAME)
-            .remove(KEY_CURRENT_ACCOUNT_TYPE)
-            .remove(KEY_CURRENT_BIRTHDAY)
-            .remove(KEY_CURRENT_GENDER)
-            .remove(KEY_CURRENT_PHONE)
-            .remove(KEY_CURRENT_ADDRESS)
-            .remove(KEY_CURRENT_PROFILE_PHOTO)
-        
-        // 如果需要，同時清除記住我功能的憑證
-        if (clearRememberMe) {
-            editor.putBoolean(KEY_REMEMBER_ME, false)
-                .remove(KEY_SAVED_USERNAME)
-                .remove(KEY_SAVED_PASSWORD)
+        try {
+            val editor = getPrefs().edit()
+            editor.putBoolean(KEY_IS_LOGGED_IN, false)
+            editor.remove(KEY_CURRENT_USERNAME)
+            editor.remove(KEY_CURRENT_EMAIL)
+            editor.remove(KEY_CURRENT_CHINESE_NAME)
+            editor.remove(KEY_CURRENT_ENGLISH_NAME)
+            editor.remove(KEY_CURRENT_ACCOUNT_TYPE)
+            editor.remove(KEY_CURRENT_BIRTHDAY)
+            editor.remove(KEY_CURRENT_GENDER)
+            editor.remove(KEY_CURRENT_PHONE)
+            editor.remove(KEY_CURRENT_ADDRESS)
+            editor.remove(KEY_CURRENT_PROFILE_PHOTO)
+            editor.remove(KEY_LAST_LOGIN_TIME)
             
-            Log.d("UserManager", "用戶已登出，已清除記住我憑證")
-        } else {
-            Log.d("UserManager", "用戶已登出，保留記住我憑證")
+            // 如果需要，同時清除記住我功能的憑證
+            if (clearRememberMe) {
+                editor.putBoolean(KEY_REMEMBER_ME, false)
+                editor.remove(KEY_SAVED_USERNAME)
+                editor.remove(KEY_SAVED_PASSWORD)
+                
+                Log.d("UserManager", "用戶已登出，已清除記住我憑證")
+            } else {
+                Log.d("UserManager", "用戶已登出，保留記住我憑證")
+            }
+            
+            // 使用commit而不是apply確保立即儲存
+            val result = editor.commit()
+            Log.d("UserManager", "登出操作${if (result) "成功" else "失敗"}")
+        } catch (e: Exception) {
+            Log.e("UserManager", "登出時發生錯誤: ${e.message}")
         }
-        
-        editor.apply()
     }
     
     /**

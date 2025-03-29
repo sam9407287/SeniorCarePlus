@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.seniorcareplus.app.MainActivity
 import com.seniorcareplus.app.R
+import com.seniorcareplus.app.auth.UserManager
 import com.seniorcareplus.app.ui.theme.LanguageManager
 
 class ReminderReceiver : BroadcastReceiver() {
@@ -25,6 +26,12 @@ class ReminderReceiver : BroadcastReceiver() {
     
     override fun onReceive(context: Context, intent: Intent) {
         Log.d("ReminderReceiver", "Received reminder broadcast")
+        
+        // 檢查用戶是否登錄，只有登錄狀態才送出通知
+        if (!UserManager.isLoggedIn()) {
+            Log.d("ReminderReceiver", "用戶未登錄，不發送通知")
+            return
+        }
         
         val title = intent.getStringExtra(EXTRA_TITLE) ?: "提醒"
         val type = intent.getStringExtra(EXTRA_TYPE) ?: ""

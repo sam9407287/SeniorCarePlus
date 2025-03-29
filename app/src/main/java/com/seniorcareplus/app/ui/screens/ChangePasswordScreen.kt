@@ -221,8 +221,9 @@ fun ChangePasswordScreen(navController: NavController) {
             
             Text(
                 text = screenTitle,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.titleLarge,  // Changed from headlineMedium to titleLarge
                 fontWeight = FontWeight.Bold,
+                fontSize = if (isChineseLanguage) 26.sp else 22.sp, // Smaller than ForgotPasswordScreen
                 color = MaterialTheme.colorScheme.onBackground
             )
             

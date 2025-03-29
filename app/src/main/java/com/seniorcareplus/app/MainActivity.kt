@@ -3,11 +3,15 @@
 
 package com.seniorcareplus.app
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -128,6 +132,7 @@ import androidx.compose.material3.ButtonDefaults
 import com.seniorcareplus.app.ui.screens.VerificationCodeScreen
 import com.seniorcareplus.app.ui.screens.ResetPasswordScreen
 import com.seniorcareplus.app.ui.screens.ChangePasswordScreen
+import com.seniorcareplus.app.utils.PermissionUtils
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -138,11 +143,27 @@ class MainActivity : ComponentActivity() {
         var updateLoginState: (() -> Unit)? = null
     }
     
+    // 注册通知权限请求
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Log.d("MainActivity", "通知权限已授予")
+        } else {
+            Log.d("MainActivity", "通知权限被拒绝")
+            // 可以在这里添加逻辑提示用户去设置页面手动开启权限
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // 在启动后切换到普通主题
         setTheme(R.style.Theme_SeniorCarePlus)
         
         super.onCreate(savedInstanceState)
+        
+        // 检查并请求通知权限
+        PermissionUtils.checkAndRequestNotificationPermission(this, requestPermissionLauncher)
+        
         setContent {
             // 使用我們的自定義主題，isDarkTheme會從ThemeManager中獲取
             SeniorCarePlusTheme {

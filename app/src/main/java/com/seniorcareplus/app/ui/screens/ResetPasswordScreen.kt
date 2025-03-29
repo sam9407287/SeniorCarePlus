@@ -171,7 +171,7 @@ fun ResetPasswordScreen(navController: NavController, username: String, email: S
                     Text(
                         text = if (isChineseLanguage) "長者照護系統" else "SENIOR CARE PLUS",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 28.sp,
+                        fontSize = if (isChineseLanguage) 28.sp else 24.sp,
                         modifier = Modifier.weight(1f),
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -194,12 +194,13 @@ fun ResetPasswordScreen(navController: NavController, username: String, email: S
                             )
                         }
                         
-                        // 添加說明文字
+                        // 添加可點擊的說明文字
                         Text(
                             text = if (isChineseLanguage) "語言" else "Language",
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.primary,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.clickable { LanguageManager.toggleLanguage() }
                         )
                     }
                 }

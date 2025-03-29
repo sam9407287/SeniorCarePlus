@@ -1,6 +1,7 @@
 package com.seniorcareplus.app.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -237,7 +238,7 @@ fun RegisterScreen(navController: NavController) {
                     Text(
                         text = if (isChineseLanguage) "長者照護系統" else "SENIOR CARE PLUS",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 28.sp,
+                        fontSize = if (isChineseLanguage) 28.sp else 24.sp,
                         modifier = Modifier.weight(1f),
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -260,12 +261,13 @@ fun RegisterScreen(navController: NavController) {
                             )
                         }
                         
-                        // 添加說明文字
+                        // 添加可點擊的說明文字
                         Text(
                             text = if (isChineseLanguage) "語言" else "Language",
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.primary,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.clickable { LanguageManager.toggleLanguage() }
                         )
                     }
                 }

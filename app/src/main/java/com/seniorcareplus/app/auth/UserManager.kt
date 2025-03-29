@@ -42,6 +42,11 @@ object UserManager {
     private const val KEY_CURRENT_ADDRESS = "current_address"
     private const val KEY_CURRENT_PROFILE_PHOTO = "current_profile_photo"
     
+    // 記住我功能的存儲鍵
+    private const val KEY_REMEMBER_ME = "remember_me"
+    private const val KEY_SAVED_USERNAME = "saved_username"
+    private const val KEY_SAVED_PASSWORD = "saved_password" // 注意：實際應用中應該加密儲存密碼
+    
     // 獲取SQLite數據庫實例
     private val database: AppDatabase by lazy {
         AppDatabase.getInstance(MyApplication.instance)
@@ -56,16 +61,25 @@ object UserManager {
      * 驗證登錄凭證
      * @param username 用戶名
      * @param password 密碼
+     * @param rememberMe 是否記住登錄憑證
      * @return 如果憑證有效返回true，否則返回false
      */
-    fun login(username: String, password: String): Boolean {
+    fun login(username: String, password: String, rememberMe: Boolean = false): Boolean {
         // 檢查是否為預設管理員帳號
         val isAdminAccount = username == DEFAULT_ADMIN_USERNAME && password == DEFAULT_ADMIN_PASSWORD
         
         if (isAdminAccount) {
             // 管理員登錄成功，保存登錄狀態
             saveLoginState(username, DEFAULT_ADMIN_EMAIL)
-            Log.d("UserManager", "管理員登錄成功: $username")
+            
+            // 如果選擇記住我，保存管理員登錄憑證
+            if (rememberMe) {
+                saveRememberMeCredentials(username, password)
+            } else {
+                clearRememberMeCredentials()
+            }
+            
+            Log.d("UserManager", "管理員登錄成功: $username, 記住我: $rememberMe")
             return true
         }
         
@@ -77,10 +91,72 @@ object UserManager {
             val email = database.getUserEmail(username)
             // 保存登錄狀態
             saveLoginState(username, email)
-            Log.d("UserManager", "一般用戶登錄成功: $username")
+            
+            // 如果選擇記住我，保存登錄憑證
+            if (rememberMe) {
+                saveRememberMeCredentials(username, password)
+            } else {
+                clearRememberMeCredentials()
+            }
+            
+            Log.d("UserManager", "一般用戶登錄成功: $username, 記住我: $rememberMe")
         }
         
         return isValidUser
+    }
+    
+    /**
+     * 保存「記住我」的登錄憑證
+     * @param username 用戶名
+     * @param password 密碼
+     */
+    private fun saveRememberMeCredentials(username: String, password: String) {
+        // 注意：實際應用中應該加密儲存密碼
+        getPrefs().edit()
+            .putBoolean(KEY_REMEMBER_ME, true)
+            .putString(KEY_SAVED_USERNAME, username)
+            .putString(KEY_SAVED_PASSWORD, password)
+            .apply()
+        
+        Log.d("UserManager", "已保存登錄憑證：$username")
+    }
+    
+    /**
+     * 清除「記住我」的登錄憑證
+     */
+    private fun clearRememberMeCredentials() {
+        getPrefs().edit()
+            .putBoolean(KEY_REMEMBER_ME, false)
+            .remove(KEY_SAVED_USERNAME)
+            .remove(KEY_SAVED_PASSWORD)
+            .apply()
+        
+        Log.d("UserManager", "已清除登錄憑證")
+    }
+    
+    /**
+     * 檢查是否已保存「記住我」的登錄憑證
+     * @return 如果已保存返回true，否則返回false
+     */
+    fun hasRememberedCredentials(): Boolean {
+        return getPrefs().getBoolean(KEY_REMEMBER_ME, false)
+    }
+    
+    /**
+     * 獲取已保存的用戶名
+     * @return 保存的用戶名，如果未保存則返回空字符串
+     */
+    fun getSavedUsername(): String {
+        return getPrefs().getString(KEY_SAVED_USERNAME, "") ?: ""
+    }
+    
+    /**
+     * 獲取已保存的密碼
+     * @return 保存的密碼，如果未保存則返回空字符串
+     */
+    fun getSavedPassword(): String {
+        // 注意：實際應用中應該解密存儲的密碼
+        return getPrefs().getString(KEY_SAVED_PASSWORD, "") ?: ""
     }
     
     /**
@@ -171,9 +247,10 @@ object UserManager {
     
     /**
      * 登出用戶
+     * @param clearRememberMe 是否同時清除「記住我」的憑證，默認不清除
      */
-    fun logout() {
-        getPrefs().edit()
+    fun logout(clearRememberMe: Boolean = false) {
+        val editor = getPrefs().edit()
             .putBoolean(KEY_IS_LOGGED_IN, false)
             .remove(KEY_CURRENT_USERNAME)
             .remove(KEY_CURRENT_EMAIL)
@@ -185,9 +262,19 @@ object UserManager {
             .remove(KEY_CURRENT_PHONE)
             .remove(KEY_CURRENT_ADDRESS)
             .remove(KEY_CURRENT_PROFILE_PHOTO)
-            .apply()
         
-        Log.d("UserManager", "用戶已登出")
+        // 如果需要，同時清除記住我功能的憑證
+        if (clearRememberMe) {
+            editor.putBoolean(KEY_REMEMBER_ME, false)
+                .remove(KEY_SAVED_USERNAME)
+                .remove(KEY_SAVED_PASSWORD)
+            
+            Log.d("UserManager", "用戶已登出，已清除記住我憑證")
+        } else {
+            Log.d("UserManager", "用戶已登出，保留記住我憑證")
+        }
+        
+        editor.apply()
     }
     
     /**

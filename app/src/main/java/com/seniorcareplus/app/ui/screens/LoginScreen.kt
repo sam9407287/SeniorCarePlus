@@ -39,6 +39,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.seniorcareplus.app.MainActivity
 import androidx.compose.foundation.BorderStroke
+import android.util.Log
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -67,12 +68,18 @@ fun LoginScreen(navController: NavController) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     
-    // 檢查用戶是否已登錄
+    // 檢查用戶是否已登錄或是否有保存的登錄憑證
     LaunchedEffect(Unit) {
         if (UserManager.isLoggedIn()) {
-            // 如果已登錄，自動填充用戶名並顯示登錄狀態信息
+            // 如果已登錄，自動填充用戶名
             username = UserManager.getCurrentUsername() ?: ""
-            // 這裡可以添加其他登錄狀態處理邏輯
+        } else if (UserManager.hasRememberedCredentials()) {
+            // 如果有保存的憑證，自動填充用戶名和密碼
+            username = UserManager.getSavedUsername()
+            password = UserManager.getSavedPassword()
+            rememberMe = true
+            
+            Log.d("LoginScreen", "自動填充記住的憑證: $username")
         }
     }
     
@@ -317,11 +324,32 @@ fun LoginScreen(navController: NavController) {
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { rememberMe = !rememberMe }
+                    modifier = Modifier.clickable { 
+                        // 切換記住我狀態
+                        rememberMe = !rememberMe 
+                        
+                        // 如果取消「記住我」，可以立即清除已保存的憑證
+                        if (!rememberMe && UserManager.hasRememberedCredentials()) {
+                            // 取消記住我時，如果用戶已登出，則清除已保存的憑證
+                            if (!UserManager.isLoggedIn()) {
+                                UserManager.logout(clearRememberMe = true)
+                            }
+                        }
+                    }
                 ) {
                     Checkbox(
                         checked = rememberMe,
-                        onCheckedChange = { rememberMe = it },
+                        onCheckedChange = { newState -> 
+                            rememberMe = newState 
+                            
+                            // 如果取消「記住我」，可以立即清除已保存的憑證
+                            if (!newState && UserManager.hasRememberedCredentials()) {
+                                // 取消記住我時，如果用戶已登出，則清除已保存的憑證
+                                if (!UserManager.isLoggedIn()) {
+                                    UserManager.logout(clearRememberMe = true)
+                                }
+                            }
+                        },
                         colors = CheckboxDefaults.colors(
                             checkedColor = MaterialTheme.colorScheme.primary
                         )
@@ -370,8 +398,8 @@ fun LoginScreen(navController: NavController) {
                     isLoggingIn = true
                     
                     scope.launch {
-                        // 嘗試登入
-                        if (UserManager.login(username, password)) {
+                        // 嘗試登入，並傳遞「記住我」的狀態
+                        if (UserManager.login(username, password, rememberMe)) {
                             // 登入成功
                             showSuccessDialog = true
                             

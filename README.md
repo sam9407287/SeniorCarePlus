@@ -248,15 +248,11 @@ app/
 
 ### v8 (最新版本 | Latest Version)
 - 修復個人資料頁面顯示問題，確保所有資料欄位無論有無值都會顯示
-  *Fixed profile page display issues, ensuring all data fields are displayed regardless of whether they have values*
-- 修復空白資料欄位在登出後不能保存的問題
-  *Fixed the issue where empty data fields could not be saved after logout*
-- 優化用戶資料更新機制，確保資料一致性
-  *Optimized user data update mechanism to ensure data consistency*
-- 改進界面響應性，減少加載時間
-  *Improved interface responsiveness, reduced loading time*
-- 添加中英文雙語README文檔
-  *Added bilingual README document in Chinese and English*
+  *Fixed profile page display issue, ensuring all data fields are shown regardless of whether they contain values*
+- 將深淺模式切換按鈕從標題欄移至設置頁面，提供更一致的用戶體驗
+  *Moved theme toggle button from title bar to settings page for a more consistent user experience*
+- 新增修改密碼功能，允許已登入用戶在設置頁面中更新其帳戶密碼
+  *Added password change functionality, allowing logged-in users to update their account passwords in the settings page*
 
 ### v7
 - 添加用戶註冊和登入系統

@@ -472,6 +472,9 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                         // 登出並清除數據
                         UserManager.logout()
                         
+                        // 強制更新UI，確保用戶名被清除
+                        currentUsername.value = ""
+                        
                         // 通知ReminderViewModel更新提醒數據
                         MainActivity.sharedReminderViewModel?.onLoginStateChanged()
                         

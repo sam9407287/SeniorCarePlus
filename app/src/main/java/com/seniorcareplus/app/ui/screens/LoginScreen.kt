@@ -169,28 +169,31 @@ fun LoginScreen(navController: NavController) {
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 頂部欄 (簡潔版本)
-            Row(
+            // 右上角添加語言切換按鈕
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(top = 16.dp, end = 16.dp)
             ) {
-                Text(
-                    text = if (isChineseLanguage) "登入" else "Login",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
-                
-                Spacer(modifier = Modifier.weight(1f))
-                
-                // 使用可重用的設置按鈕組件
-                SettingsButton()
+                // 語言切換按鈕
+                IconButton(
+                    onClick = { LanguageManager.toggleLanguage() },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                        .align(Alignment.TopEnd)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Language,
+                        contentDescription = if (isChineseLanguage) "切換英文" else "Switch to Chinese",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             
             // 登入圖標和標題
             Icon(

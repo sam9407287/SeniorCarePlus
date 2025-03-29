@@ -153,40 +153,8 @@ fun ChangePasswordScreen(navController: NavController) {
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 頂部欄 (簡潔版本)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = { navController.navigateUp() },
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = if (isChineseLanguage) "返回" else "Back",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                
-                Text(
-                    text = screenTitle,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
-                
-                Spacer(modifier = Modifier.weight(1f))
-                
-                // 設置按鈕
-                SettingsButton()
-            }
+            // 移除頂部欄
             
-            Spacer(modifier = Modifier.height(16.dp))
             
             // 頁面圖標和標題
             Icon(
@@ -415,6 +383,24 @@ fun ChangePasswordScreen(navController: NavController) {
             }
             
             Spacer(modifier = Modifier.height(32.dp))
+            
+            // 底部添加返回登录页面的链接
+            TextButton(
+                onClick = { 
+                    navController.navigate("login") {
+                        popUpTo("login") {
+                            inclusive = true
+                        }
+                    }
+                },
+                modifier = Modifier.padding(top = 16.dp)
+            ) {
+                Text(
+                    text = if (isChineseLanguage) "返回登入頁面" else "Back to Login",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 14.sp
+                )
+            }
         }
     }
 } 

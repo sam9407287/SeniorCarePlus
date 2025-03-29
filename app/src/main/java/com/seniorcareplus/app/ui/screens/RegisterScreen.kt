@@ -217,38 +217,20 @@ fun RegisterScreen(navController: NavController) {
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 頂部欄 (簡潔版本)
+            // 頂部欄 (簡潔版本) - 移除返回按鈕
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
-                // 返回按鈕
-                IconButton(
-                    onClick = { navController.popBackStack() },
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = if (isChineseLanguage) "返回" else "Back",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                
                 Text(
                     text = if (isChineseLanguage) "註冊帳戶" else "Register Account",
-                    fontSize = 20.sp,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(start = 4.dp)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
-                
-                Spacer(modifier = Modifier.weight(1f))
-                
-                // 設置按鈕
-                SettingsButton()
             }
             
             // 用戶名輸入

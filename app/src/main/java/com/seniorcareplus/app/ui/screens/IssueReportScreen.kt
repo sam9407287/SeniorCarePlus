@@ -89,25 +89,13 @@ fun IssueReportScreen(navController: NavController) {
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.Start
         ) {
-            // 頂部欄
+            // 頂部欄 - 已移除返回按鈕
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = { navController.navigateUp() },
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = if (isChineseLanguage) "返回" else "Back",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                
                 Text(
                     text = if (isChineseLanguage) "問題回報" else "Issue Report",
                     fontSize = 30.sp,
@@ -115,9 +103,6 @@ fun IssueReportScreen(navController: NavController) {
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.onBackground
                 )
-                
-                // 深色模式切換按鈕
-
             }
             
             // 問題回報表單

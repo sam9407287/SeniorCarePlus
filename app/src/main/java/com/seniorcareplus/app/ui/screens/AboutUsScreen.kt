@@ -54,16 +54,31 @@ fun AboutUsScreen(navController: NavController) {
                     .padding(bottom = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // 添加返回按钮 - 使用popBackStack确保完全移除当前页面
+                IconButton(
+                    onClick = { 
+                        // 使用popBackStack代替navigateUp以确保页面完全从导航栈中移除
+                        navController.popBackStack() 
+                    },
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = if (isChineseLanguage) "返回" else "Back",
+                        tint = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                
+                Spacer(modifier = Modifier.width(8.dp))
+                
                 Text(
                     text = if (isChineseLanguage) "關於我們" else "About Us",
-                    fontSize = if (isChineseLanguage) 30.sp else 24.sp,
+                    fontSize = if (isChineseLanguage) 24.sp else 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.onBackground
                 )
-                
-                // 深色模式切換按鈕
-
             }
             
             // 公司標誌

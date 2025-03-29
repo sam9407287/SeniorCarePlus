@@ -1,6 +1,7 @@
 package com.seniorcareplus.app.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -150,40 +151,8 @@ fun ResetPasswordScreen(navController: NavController, username: String, email: S
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 頂部欄 (簡潔版本)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = { navController.navigateUp() },
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = if (isChineseLanguage) "返回" else "Back",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                
-                Text(
-                    text = screenTitle,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
-                
-                Spacer(modifier = Modifier.weight(1f))
-                
-                // 設置按鈕
-                SettingsButton()
-            }
+            // 移除頂部欄
             
-            Spacer(modifier = Modifier.height(16.dp))
             
             // 頁面圖標和標題
             Icon(
@@ -355,7 +324,25 @@ fun ResetPasswordScreen(navController: NavController, username: String, email: S
                 }
             }
             
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // 返回登录页面链接
+            Text(
+                text = if (isChineseLanguage) "返回登入頁面" else "Back to Login",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clickable {
+                        // 导航到登录页面
+                        navController.navigate("login") {
+                            // 清除导航栈直到登录页面
+                            popUpTo("login") { inclusive = true }
+                        }
+                    }
+                    .padding(8.dp)
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 } 

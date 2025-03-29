@@ -943,9 +943,11 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                                                 }
                                                 else {
                                                     navController.navigate(item.route) {
-                                                        // 防止創建多個實例
+                                                        // 完全清空導航堆棧，不保存任何狀態
+                                                        // 這樣可以確保用戶通過底部導航切換頁面時，不會保留帶有返回按鈕的頁面的歷史記錄
                                                         popUpTo(navController.graph.findStartDestination().id) {
-                                                            saveState = true
+                                                            inclusive = true
+                                                            saveState = false  // 不保存狀態，確保完全重置
                                                         }
                                                         // 防止重複點擊
                                                         launchSingleTop = true

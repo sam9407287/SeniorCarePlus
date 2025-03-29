@@ -466,10 +466,21 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
         isLoggedIn.value = loggedIn
         currentUsername.value = UserManager.getCurrentUsername() ?: ""
         
+        Log.d("MainActivity", "LaunchedEffect: 已登錄=$loggedIn, 用戶名=${currentUsername.value}")
+        
         // 如果未登入，確保帳戶選項對話框被關閉
         if (!loggedIn) {
             showAccountOptionsDialog = false
         }
+    }
+    
+    // 應用啟動時也檢查登錄狀態
+    LaunchedEffect(Unit) {
+        // 立即更新登錄狀態和用戶名
+        isLoggedIn.value = UserManager.isLoggedIn()
+        currentUsername.value = UserManager.getCurrentUsername() ?: ""
+        
+        Log.d("MainActivity", "应用启动: 已登錄=${isLoggedIn.value}, 用戶名=${currentUsername.value}")
     }
     
     // 設置更新登錄狀態的函數
@@ -477,6 +488,12 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
         MainActivity.updateLoginState = {
             // 增加計數器觸發狀態重新計算
             loginStateKey.value += 1
+            
+            // 立即更新登錄狀態和用戶名
+            isLoggedIn.value = UserManager.isLoggedIn()
+            currentUsername.value = UserManager.getCurrentUsername() ?: ""
+            
+            Log.d("MainActivity", "登錄狀態已更新: 已登錄=${isLoggedIn.value}, 用戶名=${currentUsername.value}")
         }
         
         // 使用正確的方式返回清理函數

@@ -293,11 +293,12 @@ fun ProfileScreen(navController: NavController) {
                         // 使用狀態更新機制更新登錄狀態
                         MainActivity.updateLoginState?.invoke()
                         
-                        // 導航回首頁
-                        navController.navigate("home") {
-                            popUpTo("home") {
-                                inclusive = true
-                            }
+                        // 登出後導航到登录頁面
+                        navController.navigate("login") {
+                            // 清除整个导航堆栈到登录页面
+                            popUpTo(0) { inclusive = false }
+                            // 防止创建多个实例
+                            launchSingleTop = true
                         }
                     },
                     colors = ButtonDefaults.buttonColors(

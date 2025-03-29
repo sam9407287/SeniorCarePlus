@@ -577,9 +577,9 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                         // 使用狀態更新機制更新登錄狀態
                         MainActivity.updateLoginState?.invoke()
                         
-                        // 重定向到主頁
-                        navController.navigate("home") {
-                            popUpTo("home") {
+                        // 登出後直接导航到登录页面
+                        navController.navigate("login") {
+                            popUpTo(navController.graph.findStartDestination().id) {
                                 inclusive = true
                             }
                         }
@@ -814,93 +814,165 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                     .fillMaxSize()
                     .windowInsetsPadding(WindowInsets.statusBars) // 添加狀態欄填充
             ) {
-                // 獲取當前路由
+                // 获取当前路由以判断是否为登录相关页面
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
                 
-                // 根據當前路由決定點擊用戶圖標的行為
-                SeniorCareTopBar(
-                    onUserIconClick = {
-                        // 在所有頁面都打開側欄，不再做返回操作
-                        scope.launch {
-                            if (!leftDrawerState.isOpen) {
-                                leftDrawerState.open()
-                            } else {
-                                leftDrawerState.close()
-                            }
-                        }
-                    },
-                    onNotificationClick = {
-                        // 導航到通知頁面，不清空整個導航堆棧
-                        navController.navigate("notifications") {
-                            // 保留導航堆棧中的現有目的地
-                            // 防止創建多個實例
-                            launchSingleTop = true
-                            // 保存和恢復狀態
-                            restoreState = true
-                        }
-                    },
-                    isLoggedIn = isLoggedIn.value
+                // 定义登录相关页面的路由列表
+                val authRoutes = listOf(
+                    "login", 
+                    "register", 
+                    "forgot_password", 
+                    "verification_code/{username}/{email}",
+                    "reset_password/{username}/{email}/{code}",
+                    "change_password"
                 )
                 
+                // 检查当前是否在登录相关页面
+                val isAuthScreen = currentRoute?.let { route ->
+                    authRoutes.any { auth ->
+                        if (auth.contains("{")) {
+                            // 对于带参数的路由，只检查前缀部分
+                            route.startsWith(auth.substring(0, auth.indexOf("{")))
+                        } else {
+                            route == auth
+                        }
+                    }
+                } ?: false
+                
+                // 首次处理导航的标志，确保只在需要时重定向到登录页
+                val initialNavigationDone = remember { mutableStateOf(false) }
+                
+                // 只在用户已登录且首次导航时，尝试导航到首页
+                LaunchedEffect(key1 = isLoggedIn.value, key2 = currentRoute) {
+                    if (!initialNavigationDone.value) {
+                        if (isLoggedIn.value && currentRoute == "login") {
+                            // 如果已登录但在登录页，导航到首页
+                            Log.d("MainActivity", "已登录，从登录页导航到首页")
+                            navController.navigate("home") {
+                                popUpTo("login") { inclusive = true }
+                            }
+                        } else if (!isLoggedIn.value && currentRoute != null && !isAuthScreen && currentRoute != "login") {
+                            // 如果未登录且不在登录相关页面，导航到登录页
+                            Log.d("MainActivity", "未登录，导航到登录页，当前页面: $currentRoute")
+                            navController.navigate("login") {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    inclusive = true
+                                }
+                            }
+                        }
+                        // 标记已完成第一次导航
+                        initialNavigationDone.value = true
+                    }
+                }
+                
+                // 根據當前路由決定點擊用戶圖標的行為
+                // 在登录相关页面不显示顶部导航栏
+                if (!isAuthScreen) {
+                    SeniorCareTopBar(
+                        onUserIconClick = {
+                            // 在所有頁面都打開側欄，不再做返回操作
+                            scope.launch {
+                                if (!leftDrawerState.isOpen) {
+                                    leftDrawerState.open()
+                                } else {
+                                    leftDrawerState.close()
+                                }
+                            }
+                        },
+                        onNotificationClick = {
+                            // 導航到通知頁面，不清空整個導航堆棧
+                            navController.navigate("notifications") {
+                                // 保留導航堆棧中的現有目的地
+                                // 防止創建多個實例
+                                launchSingleTop = true
+                                // 保存和恢復狀態
+                                restoreState = true
+                            }
+                        },
+                        isLoggedIn = isLoggedIn.value
+                    )
+                }
+                
                 Scaffold(
+                    // 只在非登录相关页面显示底部导航栏
                     bottomBar = {
-                        NavigationBar {
-                            val navBackStackEntryForBottomNav by navController.currentBackStackEntryAsState()
-                            val currentDestination = navBackStackEntryForBottomNav?.destination
-                            
-                            bottomNavItems.forEach { item ->
-                                NavigationBarItem(
-                                    icon = { Icon(item.icon, contentDescription = item.name) },
-                                    label = { Text(item.name) },
-                                    selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
-                                    onClick = {
-                                        if (item.route == "more") {
-                                            // 點擊"更多"顯示右側邊欄
-                                            showRightDrawer = true
-                                        } else {
-                                            // 針對首頁按鈕做特殊處理
-                                            if (item.route == "home") {
-                                                // 完全清空導航堆棧到主頁
-                                                navController.navigate("home") {
-                                                    popUpTo("home") {
-                                                        inclusive = true
-                                                    }
-                                                }
-                                            } 
-                                            // 針對監控按鈕做特殊處理
-                                            else if (item.route == "monitor" && currentRoute in listOf("temperature_monitor", "heart_rate_monitor", "diaper_monitor")) {
-                                                // 如果已經在監控子頁面，點擊監控按鈕應該返回主監控頁面
-                                                navController.navigate("monitor") {
-                                                    // 清空監控相關頁面
-                                                    popUpTo("monitor") {
-                                                        inclusive = true
-                                                    }
-                                                }
-                                            }
-                                            else {
-                                                navController.navigate(item.route) {
-                                                    // 防止創建多個實例
+                        if (!isAuthScreen) {
+                            NavigationBar {
+                                val navBackStackEntryForBottomNav by navController.currentBackStackEntryAsState()
+                                val currentDestination = navBackStackEntryForBottomNav?.destination
+                                
+                                bottomNavItems.forEach { item ->
+                                    NavigationBarItem(
+                                        icon = { Icon(item.icon, contentDescription = item.name) },
+                                        label = { Text(item.name) },
+                                        selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
+                                        onClick = {
+                                            // 如果未登录，只能导航到登录页
+                                            if (!isLoggedIn.value && currentRoute != "login") {
+                                                navController.navigate("login") {
                                                     popUpTo(navController.graph.findStartDestination().id) {
-                                                        saveState = true
+                                                        inclusive = true
                                                     }
-                                                    // 防止重複點擊
-                                                    launchSingleTop = true
-                                                    // 恢復狀態
-                                                    restoreState = true
+                                                }
+                                                return@NavigationBarItem
+                                            }
+                                            
+                                            if (item.route == "more") {
+                                                // 點擊"更多"顯示右側邊欄
+                                                showRightDrawer = true
+                                            } else {
+                                                // 針對首頁按鈕做特殊處理
+                                                if (item.route == "home") {
+                                                    // 完全清空導航堆棧到主頁
+                                                    navController.navigate("home") {
+                                                        popUpTo("home") {
+                                                            inclusive = true
+                                                        }
+                                                    }
+                                                } 
+                                                // 針對監控按鈕做特殊處理
+                                                else if (item.route == "monitor" && currentRoute in listOf("temperature_monitor", "heart_rate_monitor", "diaper_monitor")) {
+                                                    // 如果已經在監控子頁面，點擊監控按鈕應該返回主監控頁面
+                                                    navController.navigate("monitor") {
+                                                        // 清空監控相關頁面
+                                                        popUpTo("monitor") {
+                                                            inclusive = true
+                                                        }
+                                                    }
+                                                }
+                                                else {
+                                                    navController.navigate(item.route) {
+                                                        // 防止創建多個實例
+                                                        popUpTo(navController.graph.findStartDestination().id) {
+                                                            saveState = true
+                                                        }
+                                                        // 防止重複點擊
+                                                        launchSingleTop = true
+                                                        // 恢復狀態
+                                                        restoreState = true
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
-                                )
+                                    )
+                                }
                             }
                         }
                     }
                 ) { innerPadding ->
+                    // 根据当前页面类型决定是否使用内边距
+                    val contentModifier = if (isAuthScreen) {
+                        // 登录相关页面不需要底部内边距
+                        Modifier
+                    } else {
+                        // 其他页面需要考虑底部导航栏的内边距
+                        Modifier.padding(innerPadding)
+                    }
                     NavHost(
                         navController = navController,
-                        startDestination = "home",
-                        modifier = Modifier.padding(innerPadding)
+                        startDestination = "login",
+                        modifier = contentModifier
                     ) {
                         composable("home") { HomeScreen(navController) }
                         composable("monitor") { MonitorScreen(navController) }

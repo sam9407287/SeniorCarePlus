@@ -17,7 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
@@ -30,11 +31,12 @@ import androidx.navigation.NavController
 import com.seniorcareplus.app.ui.theme.LanguageManager
 import com.seniorcareplus.app.ui.theme.ThemeManager
 import com.seniorcareplus.app.auth.UserManager
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun ForgotPasswordScreen(navController: NavController) {
+fun VerificationCodeScreen(navController: NavController, username: String, email: String) {
     // 獲取當前語言和主題狀態
     val isChineseLanguage = LanguageManager.isChineseLanguage
     val isDarkTheme = ThemeManager.isDarkTheme
@@ -43,11 +45,13 @@ fun ForgotPasswordScreen(navController: NavController) {
     val scrollState = rememberScrollState()
     
     // 狀態變量
-    var username by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var isRequestingReset by remember { mutableStateOf(false) }
+    var verificationCode by remember { mutableStateOf("") }
+    var isVerifying by remember { mutableStateOf(false) }
+    var isResending by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    var showCodeDisplay by remember { mutableStateOf(true) }
+    var displayedCode by remember { mutableStateOf(UserManager.getCurrentVerificationCode() ?: "----") }
     
     // 協程作用域
     val scope = rememberCoroutineScope()
@@ -55,23 +59,39 @@ fun ForgotPasswordScreen(navController: NavController) {
     // 鍵盤控制
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+    val focusRequester = remember { FocusRequester() }
     
     // UI文字翻譯
-    val screenTitle = if (isChineseLanguage) "忘記密碼" else "Forgot Password"
-    val screenSubtitle = if (isChineseLanguage) "請輸入您的帳號和電子郵件以重置密碼" else "Please enter your username and email to reset your password"
-    val usernameLabel = if (isChineseLanguage) "用戶名" else "Username"
-    val emailLabel = if (isChineseLanguage) "電子郵件" else "Email"
-    val requestCodeButtonText = if (isChineseLanguage) "發送驗證碼" else "Send Verification Code"
-    val backToLoginText = if (isChineseLanguage) "返回登入頁面" else "Back to Login"
+    val screenTitle = if (isChineseLanguage) "驗證碼" else "Verification Code"
+    val screenSubtitle = if (isChineseLanguage) 
+        "請輸入發送到您電子郵件的四位數驗證碼" 
+    else 
+        "Please enter the 4-digit verification code sent to your email"
+    val codeLabel = if (isChineseLanguage) "驗證碼" else "Verification Code"
+    val verifyButtonText = if (isChineseLanguage) "驗證" else "Verify"
+    val resendCodeText = if (isChineseLanguage) "重新發送驗證碼" else "Resend Code"
     val errorTitle = if (isChineseLanguage) "錯誤" else "Error"
-    val testAccountTitle = if (isChineseLanguage) "測試用帳號" else "Test Account"
+    val yourCodeText = if (isChineseLanguage) "您的驗證碼是：" else "Your verification code is: "
+    
+    // 顯示驗證碼並倒計時隱藏
+    LaunchedEffect(displayedCode) {
+        if (showCodeDisplay) {
+            delay(10000) // 10秒後隱藏驗證碼
+            showCodeDisplay = false
+        }
+    }
+    
+    // 自動聚焦到輸入框
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
     
     // 錯誤對話框
     if (showErrorDialog) {
         AlertDialog(
             onDismissRequest = { 
                 showErrorDialog = false
-                isRequestingReset = false 
+                isVerifying = false 
             },
             title = { Text(errorTitle) },
             text = { Text(errorMessage) },
@@ -79,7 +99,7 @@ fun ForgotPasswordScreen(navController: NavController) {
                 Button(
                     onClick = { 
                         showErrorDialog = false
-                        isRequestingReset = false
+                        isVerifying = false
                     }
                 ) {
                     Text(if (isChineseLanguage) "確定" else "OK")
@@ -154,7 +174,7 @@ fun ForgotPasswordScreen(navController: NavController) {
             
             // 頁面圖標和標題
             Icon(
-                imageVector = Icons.Default.Lock,
+                imageVector = Icons.Default.MarkEmailRead,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(80.dp)
@@ -178,53 +198,70 @@ fun ForgotPasswordScreen(navController: NavController) {
                 textAlign = TextAlign.Center
             )
             
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             
-            // 用戶名輸入框
+            // 顯示驗證碼（實際應用中通常通過郵件發送）
+            if (showCodeDisplay) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = yourCodeText,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Text(
+                            text = displayedCode,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            letterSpacing = 4.sp
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Text(
+                            text = if (isChineseLanguage) "（將在10秒後隱藏）" else "(Will hide in 10 seconds)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            // 驗證碼輸入框
             OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
-                label = { Text(usernameLabel) },
+                value = verificationCode,
+                onValueChange = { 
+                    // 限制只能輸入4位數字
+                    if (it.length <= 4 && it.all { char -> char.isDigit() }) {
+                        verificationCode = it
+                    }
+                },
+                label = { Text(codeLabel) },
                 leadingIcon = { 
                     Icon(
-                        imageVector = Icons.Default.Person, 
+                        imageVector = Icons.Default.Password, 
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     ) 
                 },
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                ),
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                    cursorColor = MaterialTheme.colorScheme.primary
-                )
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // 電子郵件輸入框
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text(emailLabel) },
-                leadingIcon = { 
-                    Icon(
-                        imageVector = Icons.Default.Email, 
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    ) 
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
+                    keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(
@@ -232,7 +269,9 @@ fun ForgotPasswordScreen(navController: NavController) {
                 ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
@@ -242,52 +281,34 @@ fun ForgotPasswordScreen(navController: NavController) {
             
             Spacer(modifier = Modifier.height(32.dp))
             
-            // 發送驗證碼按鈕
+            // 驗證按鈕
             Button(
                 onClick = { 
-                    // 隱藏鍵盤並開始請求驗證碼
                     keyboardController?.hide()
-                    isRequestingReset = true
+                    isVerifying = true
                     
                     scope.launch {
-                        // 檢查用戶資訊是否正確
-                        val result = UserManager.verifyUserEmail(username, email)
-                        
-                        when(result) {
-                            0 -> {
-                                // 生成驗證碼並導航到驗證碼頁面
-                                val verificationCode = UserManager.generateVerificationCode()
-                                // 在實際應用中，這裡應發送電子郵件
-                                // 在這個示例中，我們只是將驗證碼顯示在日誌中
-                                navController.navigate("verification_code/$username/$email")
+                        // 驗證驗證碼
+                        if (UserManager.verifyCode(verificationCode)) {
+                            // 驗證成功，導航到重設密碼頁面
+                            navController.navigate("reset_password/$username/$email") {
+                                popUpTo("forgot_password") {
+                                    inclusive = true
+                                }
                             }
-                            1 -> {
-                                errorMessage = if (isChineseLanguage) 
-                                    "找不到此用戶。" 
-                                else 
-                                    "User not found."
-                                showErrorDialog = true
-                            }
-                            2 -> {
-                                errorMessage = if (isChineseLanguage) 
-                                    "提供的電子郵件與用戶記錄不匹配。" 
-                                else 
-                                    "The provided email does not match the user record."
-                                showErrorDialog = true
-                            }
-                            else -> {
-                                errorMessage = if (isChineseLanguage) 
-                                    "發送驗證碼過程中發生錯誤。" 
-                                else 
-                                    "An error occurred during the verification code process."
-                                showErrorDialog = true
-                            }
+                        } else {
+                            // 驗證失敗
+                            errorMessage = if (isChineseLanguage) 
+                                "驗證碼錯誤，請重試。" 
+                            else 
+                                "Incorrect verification code. Please try again."
+                            showErrorDialog = true
                         }
                         
-                        isRequestingReset = false
+                        isVerifying = false
                     }
                 },
-                enabled = username.isNotBlank() && email.isNotBlank() && !isRequestingReset,
+                enabled = verificationCode.length == 4 && !isVerifying && !isResending,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -296,7 +317,7 @@ fun ForgotPasswordScreen(navController: NavController) {
                     containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
-                if (isRequestingReset) {
+                if (isVerifying) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
                         color = MaterialTheme.colorScheme.onPrimary,
@@ -304,7 +325,7 @@ fun ForgotPasswordScreen(navController: NavController) {
                     )
                 } else {
                     Text(
-                        text = requestCodeButtonText,
+                        text = verifyButtonText,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -313,65 +334,49 @@ fun ForgotPasswordScreen(navController: NavController) {
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            // 返回登入頁面
-            TextButton(
+            // 重新發送驗證碼按鈕
+            OutlinedButton(
                 onClick = { 
-                    navController.navigate("login") {
-                        popUpTo("login") {
-                            inclusive = true
-                        }
+                    isResending = true
+                    
+                    scope.launch {
+                        // 生成新的驗證碼
+                        val newCode = UserManager.generateVerificationCode()
+                        displayedCode = newCode
+                        showCodeDisplay = true
+                        
+                        // 重置驗證碼輸入
+                        verificationCode = ""
+                        focusRequester.requestFocus()
+                        
+                        isResending = false
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = backToLoginText,
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            // 測試用帳號卡片
-            Card(
+                enabled = !isVerifying && !isResending,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                ),
-                shape = RoundedCornerShape(8.dp)
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.primary
+                )
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = testAccountTitle,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                if (isResending) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 2.dp
                     )
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
+                } else {
                     Text(
-                        text = if (isChineseLanguage) "用戶名: admin" else "Username: admin",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    
-                    Text(
-                        text = if (isChineseLanguage) "電子郵件: admin@example.com" else "Email: admin@example.com",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    
-                    Text(
-                        text = if (isChineseLanguage) "注意: 每次發送驗證碼都會生成新的四位數驗證碼" else "Note: A new 4-digit code will be generated each time",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 8.dp)
+                        text = resendCodeText,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
+            
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 } 

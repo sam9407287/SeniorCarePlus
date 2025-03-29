@@ -378,6 +378,85 @@ object UserManager {
         }
     }
     
+    // 儲存當前驗證碼
+    private var currentVerificationCode: String? = null
+    
+    /**
+     * 驗證用戶電子郵件
+     * @param username 用戶名
+     * @param email 電子郵件
+     * @return 驗證結果：0=成功，1=用戶不存在，2=電子郵件不匹配
+     */
+    fun verifyUserEmail(username: String, email: String): Int {
+        // 檢查用戶是否存在
+        if (!isUserExists(username)) {
+            Log.d("UserManager", "驗證失敗：用戶不存在, $username")
+            return 1
+        }
+        
+        // 檢查電子郵件是否匹配
+        val userEmail = database.getUserEmail(username)
+        if (userEmail == null || userEmail.isEmpty() || userEmail != email) {
+            Log.d("UserManager", "驗證失敗：電子郵件不匹配, 提供: $email, 實際: $userEmail")
+            return 2
+        }
+        
+        // 驗證成功
+        return 0
+    }
+    
+    /**
+     * 生成4位驗證碼
+     * @return 4位數字驗證碼
+     */
+    fun generateVerificationCode(): String {
+        // 生成4位隨機數字
+        val code = (1000..9999).random().toString()
+        currentVerificationCode = code
+        Log.d("UserManager", "生成驗證碼: $code")
+        return code
+    }
+    
+    /**
+     * 獲取當前驗證碼
+     * @return 當前驗證碼，如果未生成則返回null
+     */
+    fun getCurrentVerificationCode(): String? {
+        return currentVerificationCode
+    }
+    
+    /**
+     * 驗證用戶提供的驗證碼
+     * @param code 用戶提供的驗證碼
+     * @return 驗證結果：true=成功，false=失敗
+     */
+    fun verifyCode(code: String): Boolean {
+        val result = code == currentVerificationCode
+        Log.d("UserManager", "驗證碼驗證${if (result) "成功" else "失敗"}: 提供: $code, 實際: $currentVerificationCode")
+        return result
+    }
+    
+    /**
+     * 重設用戶密碼（在驗證碼驗證成功後）
+     * @param username 用戶名
+     * @param newPassword 新密碼
+     * @return 重設結果：true=成功，false=失敗
+     */
+    fun resetPassword(username: String, newPassword: String): Boolean {
+        // 重設密碼
+        val result = database.resetPassword(username, newPassword)
+        
+        if (result) {
+            // 清除驗證碼
+            currentVerificationCode = null
+            Log.d("UserManager", "密碼重設成功: $username")
+        } else {
+            Log.e("UserManager", "密碼重設失敗: $username")
+        }
+        
+        return result
+    }
+    
     /**
      * 生成臨時密碼
      * @return 隨機生成的8位臨時密碼

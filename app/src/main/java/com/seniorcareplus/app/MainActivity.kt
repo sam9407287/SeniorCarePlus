@@ -82,6 +82,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import com.seniorcareplus.app.ui.screens.ButtonScreen
 import com.seniorcareplus.app.ui.screens.DiaperScreen
 import com.seniorcareplus.app.ui.screens.HeartRateScreen
@@ -123,6 +125,8 @@ import com.seniorcareplus.app.auth.UserManager
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import com.seniorcareplus.app.ui.screens.VerificationCodeScreen
+import com.seniorcareplus.app.ui.screens.ResetPasswordScreen
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -823,6 +827,32 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                         
                         // 忘記密碼頁面
                         composable("forgot_password") { ForgotPasswordScreen(navController) }
+                        
+                        // 驗證碼頁面
+                        composable(
+                            "verification_code/{username}/{email}",
+                            arguments = listOf(
+                                navArgument("username") { type = NavType.StringType },
+                                navArgument("email") { type = NavType.StringType }
+                            )
+                        ) { entry ->
+                            val username = entry.arguments?.getString("username") ?: ""
+                            val email = entry.arguments?.getString("email") ?: ""
+                            VerificationCodeScreen(navController, username, email)
+                        }
+                        
+                        // 重設密碼頁面
+                        composable(
+                            "reset_password/{username}/{email}",
+                            arguments = listOf(
+                                navArgument("username") { type = NavType.StringType },
+                                navArgument("email") { type = NavType.StringType }
+                            )
+                        ) { entry ->
+                            val username = entry.arguments?.getString("username") ?: ""
+                            val email = entry.arguments?.getString("email") ?: ""
+                            ResetPasswordScreen(navController, username, email)
+                        }
                         
                         // 添加新功能頁面的導航路由
                         composable("region") { RegionScreen(navController) }

@@ -333,15 +333,31 @@ fun LoginScreen(navController: NavController) {
                     )
                 }
                 
-                Text(
-                    text = forgotPasswordText,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { 
-                        // 導航到忘記密碼頁面
-                        navController.navigate("forgot_password")
-                    }
-                )
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = if (isChineseLanguage) "修改密碼" else "Change Password",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .clickable { 
+                                // 導航到修改密碼頁面
+                                navController.navigate("change_password")
+                            }
+                            .padding(bottom = 8.dp)
+                    )
+                    
+                    Text(
+                        text = forgotPasswordText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable { 
+                            // 導航到忘記密碼頁面
+                            navController.navigate("forgot_password")
+                        }
+                    )
+                }
             }
             
             Spacer(modifier = Modifier.height(32.dp))

@@ -492,4 +492,20 @@ object UserManager {
             .map(charPool::get)
             .joinToString("")
     }
+    
+    /**
+     * 驗證用戶密碼
+     * @param username 用戶名
+     * @param password 密碼
+     * @return 密碼是否正確
+     */
+    fun verifyPassword(username: String, password: String): Boolean {
+        // 檢查是否為預設管理員帳號
+        if (username == DEFAULT_ADMIN_USERNAME) {
+            return password == DEFAULT_ADMIN_PASSWORD
+        }
+        
+        // 從數據庫驗證用戶密碼
+        return database.validateUser(username, password)
+    }
 } 

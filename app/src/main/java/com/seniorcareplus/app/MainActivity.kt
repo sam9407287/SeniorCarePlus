@@ -127,6 +127,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import com.seniorcareplus.app.ui.screens.VerificationCodeScreen
 import com.seniorcareplus.app.ui.screens.ResetPasswordScreen
+import com.seniorcareplus.app.ui.screens.ChangePasswordScreen
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -853,6 +854,9 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                             val email = entry.arguments?.getString("email") ?: ""
                             ResetPasswordScreen(navController, username, email)
                         }
+                        
+                        // 修改密碼頁面
+                        composable("change_password") { ChangePasswordScreen(navController) }
                         
                         // 添加新功能頁面的導航路由
                         composable("region") { RegionScreen(navController) }

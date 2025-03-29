@@ -32,6 +32,7 @@ import androidx.navigation.NavController
 import com.seniorcareplus.app.ui.theme.LanguageManager
 import com.seniorcareplus.app.ui.theme.ThemeManager
 import com.seniorcareplus.app.auth.UserManager
+import com.seniorcareplus.app.ui.components.SettingsButton
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
@@ -182,21 +183,8 @@ fun ChangePasswordScreen(navController: NavController) {
                 
                 Spacer(modifier = Modifier.weight(1f))
                 
-                // 主題切換按鈕
-                IconButton(
-                    onClick = { ThemeManager.toggleTheme() },
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                ) {
-                    Icon(
-                        imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                        contentDescription = if (isChineseLanguage) "切換主題" else "Toggle Theme",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+                // 設置按鈕
+                SettingsButton()
             }
             
             Spacer(modifier = Modifier.height(32.dp))

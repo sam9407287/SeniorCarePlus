@@ -37,6 +37,7 @@ import androidx.navigation.NavController
 import com.seniorcareplus.app.auth.UserManager
 import com.seniorcareplus.app.ui.theme.LanguageManager
 import com.seniorcareplus.app.ui.theme.ThemeManager
+import com.seniorcareplus.app.ui.components.SettingsButton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -217,15 +218,39 @@ fun RegisterScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // 標題
-            Text(
-                text = if (isChineseLanguage) "註冊帳戶" else "Register Account",
-                color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 32.dp)
-            )
+            // 頂部欄
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // 返回按鈕
+                IconButton(
+                    onClick = { navController.popBackStack() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = if (isChineseLanguage) "返回" else "Back",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+                
+                Text(
+                    text = if (isChineseLanguage) "註冊帳戶" else "Register Account",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+                
+                Spacer(modifier = Modifier.weight(1f))
+                
+                // 設置按鈕
+                SettingsButton()
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
             
             // 用戶名輸入
             OutlinedTextField(

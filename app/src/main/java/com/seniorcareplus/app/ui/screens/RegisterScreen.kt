@@ -217,21 +217,45 @@ fun RegisterScreen(navController: NavController) {
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 頂部欄 (簡潔版本) - 移除返回按鈕
-            Row(
+            // 頂部標題欄，使用與主頁面一致的樣式和底色
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                Text(
-                    text = if (isChineseLanguage) "註冊帳戶" else "Register Account",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // 空白占位，替代左側的用戶圖標
+                    Spacer(modifier = Modifier.size(40.dp))
+                    
+                    // 居中標題，使用標準粗體字體
+                    Text(
+                        text = if (isChineseLanguage) "長者照護系統" else "SENIOR CARE PLUS",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 28.sp,
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    // 右側空白作為平衡
+                    Spacer(modifier = Modifier.size(40.dp))
+                }
             }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // 頁面標題
+            Text(
+                text = if (isChineseLanguage) "註冊帳戶" else "Register Account",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
             
             // 用戶名輸入
             OutlinedTextField(

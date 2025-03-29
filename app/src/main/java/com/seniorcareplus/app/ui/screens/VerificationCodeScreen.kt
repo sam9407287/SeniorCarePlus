@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -124,8 +125,35 @@ fun VerificationCodeScreen(navController: NavController, username: String, email
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 完全移除頂部欄
-            Spacer(modifier = Modifier.height(24.dp))
+            // 頂部標題欄，使用與主頁面一致的樣式和底色
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // 空白占位，替代左側的用戶圖標
+                    Spacer(modifier = Modifier.size(40.dp))
+                    
+                    // 居中標題，使用標準粗體字體
+                    Text(
+                        text = if (isChineseLanguage) "長者照護系統" else "SENIOR CARE PLUS",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 28.sp,
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    // 右側空白作為平衡
+                    Spacer(modifier = Modifier.size(40.dp))
+                }
+            }
             
             // 頁面圖標和標題
             Icon(

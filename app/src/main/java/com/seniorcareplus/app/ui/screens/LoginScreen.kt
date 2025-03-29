@@ -169,27 +169,43 @@ fun LoginScreen(navController: NavController) {
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 右上角添加語言切換按鈕
+            // 頂部標題欄，使用與主頁面一致的樣式和底色
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp, end = 16.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                // 語言切換按鈕
-                IconButton(
-                    onClick = { LanguageManager.toggleLanguage() },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                        .align(Alignment.TopEnd)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Language,
-                        contentDescription = if (isChineseLanguage) "切換英文" else "Switch to Chinese",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
+                    // 空白占位，替代左側的用戶圖標
+                    Spacer(modifier = Modifier.size(40.dp))
+                    
+                    // 居中標題，使用標準粗體字體
+                    Text(
+                        text = if (isChineseLanguage) "長者照護系統" else "SENIOR CARE PLUS",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 28.sp,
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    
+                    // 右側語言切換按鈕
+                    IconButton(
+                        onClick = { LanguageManager.toggleLanguage() },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Language,
+                            contentDescription = if (isChineseLanguage) "切換英文" else "Switch to Chinese",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
             }
             

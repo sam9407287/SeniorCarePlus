@@ -188,33 +188,29 @@ fun ProfileScreen(navController: NavController) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                         )
                         
-                        // 顯示中文姓名（如果有）
-                        if (currentUserProfile != null && !currentUserProfile.chineseName.isNullOrEmpty()) {
-                            ProfileInfoItem(
-                                icon = Icons.Default.Person,
-                                label = if (isChineseLanguage) "中文姓名" else "Chinese Name",
-                                value = currentUserProfile.chineseName // 直接顯示存儲的內容，不加!!以避免非空斷言
-                            )
-                            
-                            Divider(
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                            )
-                        }
+                        // 顯示中文姓名
+                        ProfileInfoItem(
+                            icon = Icons.Default.Person,
+                            label = if (isChineseLanguage) "中文姓名" else "Chinese Name",
+                            value = currentUserProfile?.chineseName ?: ""
+                        )
                         
-                        // 顯示英文姓名（如果有）
-                        if (currentUserProfile != null && !currentUserProfile.englishName.isNullOrEmpty()) {
-                            ProfileInfoItem(
-                                icon = Icons.Default.Person,
-                                label = if (isChineseLanguage) "英文姓名" else "English Name",
-                                value = currentUserProfile.englishName // 直接顯示存儲的內容，不加!!以避免非空斷言
-                            )
-                            
-                            Divider(
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                            )
-                        }
+                        Divider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                        )
+                        
+                        // 顯示英文姓名
+                        ProfileInfoItem(
+                            icon = Icons.Default.Person,
+                            label = if (isChineseLanguage) "英文姓名" else "English Name",
+                            value = currentUserProfile?.englishName ?: ""
+                        )
+                        
+                        Divider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                        )
                         
                         ProfileInfoItem(
                             icon = Icons.Default.Email,
@@ -235,47 +231,38 @@ fun ProfileScreen(navController: NavController) {
                                 value = UserManager.getGenderName(currentUserProfile.gender, isChineseLanguage)
                             )
                             
-                            // 只有當用戶有生日信息時才顯示
-                            if (!currentUserProfile.birthday.isNullOrEmpty()) {
-                                Divider(
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                                )
-                                
-                                ProfileInfoItem(
-                                    icon = Icons.Default.CalendarMonth,
-                                    label = if (isChineseLanguage) "生日" else "Birthday",
-                                    value = currentUserProfile.birthday
-                                )
-                            }
+                            Divider(
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                            )
                             
-                            // 顯示電話號碼（如果有）
-                            if (!currentUserProfile.phoneNumber.isNullOrEmpty()) {
-                                Divider(
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                                )
-                                
-                                ProfileInfoItem(
-                                    icon = Icons.Default.Phone,
-                                    label = if (isChineseLanguage) "聯絡電話" else "Phone",
-                                    value = currentUserProfile.phoneNumber
-                                )
-                            }
+                            ProfileInfoItem(
+                                icon = Icons.Default.CalendarMonth,
+                                label = if (isChineseLanguage) "生日" else "Birthday",
+                                value = currentUserProfile.birthday ?: ""
+                            )
                             
-                            // 顯示地址（如果有）
-                            if (!currentUserProfile.address.isNullOrEmpty()) {
-                                Divider(
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                                )
-                                
-                                ProfileInfoItem(
-                                    icon = Icons.Default.LocationOn,
-                                    label = if (isChineseLanguage) "地址" else "Address",
-                                    value = currentUserProfile.address
-                                )
-                            }
+                            Divider(
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                            )
+                            
+                            ProfileInfoItem(
+                                icon = Icons.Default.Phone,
+                                label = if (isChineseLanguage) "聯絡電話" else "Phone",
+                                value = currentUserProfile.phoneNumber ?: ""
+                            )
+                            
+                            Divider(
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                            )
+                            
+                            ProfileInfoItem(
+                                icon = Icons.Default.LocationOn,
+                                label = if (isChineseLanguage) "地址" else "Address",
+                                value = currentUserProfile.address ?: ""
+                            )
                             
                             // 顯示帳號類型
                             Divider(

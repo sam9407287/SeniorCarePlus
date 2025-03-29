@@ -28,6 +28,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -84,22 +86,6 @@ fun SettingsScreen(navController: NavController) {
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.onBackground
                 )
-                
-                // 主題切換按鈕
-                IconButton(
-                    onClick = { ThemeManager.toggleTheme() },
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                ) {
-                    Icon(
-                        imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                        contentDescription = if (isChineseLanguage) "切換主題" else "Toggle Theme",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
             }
             
             // 語言設定卡片
@@ -181,6 +167,71 @@ fun SettingsScreen(navController: NavController) {
                             text = "English",
                             modifier = Modifier.padding(start = 8.dp),
                             color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+            
+            // 添加主題設定卡片
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    // 主題設定標題
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isDarkTheme) Icons.Default.DarkMode else Icons.Default.LightMode,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Text(
+                            text = if (isChineseLanguage) "主題設定" else "Theme Settings",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 8.dp),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    
+                    Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // 主題切換開關
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = if (isChineseLanguage) {
+                                    if (isDarkTheme) "深色模式" else "淺色模式"
+                                } else {
+                                    if (isDarkTheme) "Dark Mode" else "Light Mode"
+                                },
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        
+                        Switch(
+                            checked = isDarkTheme,
+                            onCheckedChange = { ThemeManager.toggleTheme() },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                                uncheckedThumbColor = MaterialTheme.colorScheme.onSurface,
+                                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
                         )
                     }
                 }

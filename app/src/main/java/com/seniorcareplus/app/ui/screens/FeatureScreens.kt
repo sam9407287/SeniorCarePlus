@@ -79,21 +79,7 @@ fun RegionScreen(navController: NavController) {
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 
-                // 深色模式切换按钮
-                IconButton(
-                    onClick = { ThemeManager.toggleTheme() },
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                ) {
-                    Icon(
-                        imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                        contentDescription = if (isChineseLanguage) "切換主題" else "Toggle Theme",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+
             }
             
             // 内容区域

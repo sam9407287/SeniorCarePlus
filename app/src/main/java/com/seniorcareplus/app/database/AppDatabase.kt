@@ -354,16 +354,16 @@ class AppDatabase private constructor(context: Context) :
         
         // 初始化內容值
         val values = ContentValues().apply {
-            // 郵箱可以為空，但如果有則更新
-            profile.email?.let { put(COLUMN_EMAIL, it) }
-            profile.chineseName?.let { put(COLUMN_CHINESE_NAME, it) }
-            profile.englishName?.let { put(COLUMN_ENGLISH_NAME, it) }
-            profile.birthday?.let { put(COLUMN_BIRTHDAY, it) }
+            // 所有字段都应该被更新，包括空值
+            put(COLUMN_EMAIL, profile.email ?: "")
+            put(COLUMN_CHINESE_NAME, profile.chineseName ?: "")
+            put(COLUMN_ENGLISH_NAME, profile.englishName ?: "")
+            put(COLUMN_BIRTHDAY, profile.birthday ?: "")
             put(COLUMN_GENDER, profile.gender)
-            profile.phoneNumber?.let { put(COLUMN_PHONE, it) }
-            profile.address?.let { put(COLUMN_ADDRESS, it) }
+            put(COLUMN_PHONE, profile.phoneNumber ?: "")
+            put(COLUMN_ADDRESS, profile.address ?: "")
             put(COLUMN_ACCOUNT_TYPE, profile.accountType)
-            profile.profilePhotoUri?.let { put(COLUMN_USER_PROFILE_PHOTO, it) }
+            put(COLUMN_USER_PROFILE_PHOTO, profile.profilePhotoUri ?: "")
         }
         
         // 更新用戶資料

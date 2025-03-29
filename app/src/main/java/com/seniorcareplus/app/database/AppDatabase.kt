@@ -502,4 +502,81 @@ class AppDatabase private constructor(context: Context) :
         Log.d("AppDatabase", "刪除了${result}條體溫記錄，用戶=$username")
         return result
     }
+    
+    /**
+     * 更新用戶密碼
+     * @param username 用戶名
+     * @param currentPassword 當前密碼
+     * @param newPassword 新密碼
+     * @return 更新結果：0=成功，1=用戶不存在，2=當前密碼錯誤
+     */
+    fun updatePassword(username: String, currentPassword: String, newPassword: String): Int {
+        // 首先驗證現有密碼
+        if (!validateUser(username, currentPassword)) {
+            // 如果當前密碼驗證失敗
+            Log.d("AppDatabase", "密碼更新失敗：當前密碼驗證失敗，用戶=$username")
+            return if (isUserExists(username)) 2 else 1 // 2=當前密碼錯誤，1=用戶不存在
+        }
+        
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_PASSWORD, newPassword)
+        }
+        
+        // 更新密碼
+        val rowsAffected = db.update(
+            TABLE_USERS,
+            values,
+            "$COLUMN_USERNAME = ?",
+            arrayOf(username)
+        )
+        
+        db.close()
+        
+        if (rowsAffected > 0) {
+            Log.d("AppDatabase", "密碼更新成功：用戶=$username")
+            return 0 // 0=成功
+        } else {
+            Log.d("AppDatabase", "密碼更新失敗：資料庫操作錯誤，用戶=$username")
+            return 1 // 用戶不存在（雖然前面已經驗證過，但以防萬一）
+        }
+    }
+    
+    /**
+     * 重設用戶密碼（不需要當前密碼驗證）
+     * @param username 用戶名
+     * @param newPassword 新密碼
+     * @return 重設是否成功
+     */
+    fun resetPassword(username: String, newPassword: String): Boolean {
+        // 檢查用戶是否存在
+        if (!isUserExists(username)) {
+            Log.d("AppDatabase", "密碼重設失敗：用戶不存在，用戶=$username")
+            return false
+        }
+        
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_PASSWORD, newPassword)
+        }
+        
+        // 更新密碼
+        val rowsAffected = db.update(
+            TABLE_USERS,
+            values,
+            "$COLUMN_USERNAME = ?",
+            arrayOf(username)
+        )
+        
+        db.close()
+        
+        val success = rowsAffected > 0
+        if (success) {
+            Log.d("AppDatabase", "密碼重設成功：用戶=$username")
+        } else {
+            Log.d("AppDatabase", "密碼重設失敗：資料庫操作錯誤，用戶=$username")
+        }
+        
+        return success
+    }
 } 

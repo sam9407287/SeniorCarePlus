@@ -129,11 +129,11 @@ object UserManager {
             .putString(KEY_CURRENT_CHINESE_NAME, userProfile?.chineseName ?: "")
             .putString(KEY_CURRENT_ENGLISH_NAME, userProfile?.englishName ?: "")
             .putInt(KEY_CURRENT_ACCOUNT_TYPE, userProfile?.accountType ?: 1)
-            .putString(KEY_CURRENT_BIRTHDAY, userProfile?.birthday)
+            .putString(KEY_CURRENT_BIRTHDAY, userProfile?.birthday ?: "")
             .putInt(KEY_CURRENT_GENDER, userProfile?.gender ?: 0)
-            .putString(KEY_CURRENT_PHONE, userProfile?.phoneNumber)
-            .putString(KEY_CURRENT_ADDRESS, userProfile?.address)
-            .putString(KEY_CURRENT_PROFILE_PHOTO, userProfile?.profilePhotoUri)
+            .putString(KEY_CURRENT_PHONE, userProfile?.phoneNumber ?: "")
+            .putString(KEY_CURRENT_ADDRESS, userProfile?.address ?: "")
+            .putString(KEY_CURRENT_PROFILE_PHOTO, userProfile?.profilePhotoUri ?: "")
             .apply()
     }
     
@@ -245,15 +245,15 @@ object UserManager {
         // 如果是当前登入用戶，同時更新SharedPreferences
         if (result && getCurrentUsername() == profile.username) {
             getPrefs().edit()
-                .putString(KEY_CURRENT_EMAIL, profile.email)
+                .putString(KEY_CURRENT_EMAIL, profile.email ?: "")
                 .putInt(KEY_CURRENT_ACCOUNT_TYPE, profile.accountType)
-                .putString(KEY_CURRENT_BIRTHDAY, profile.birthday)
+                .putString(KEY_CURRENT_BIRTHDAY, profile.birthday ?: "")
                 .putInt(KEY_CURRENT_GENDER, profile.gender)
-                .putString(KEY_CURRENT_CHINESE_NAME, profile.chineseName)
-                .putString(KEY_CURRENT_ENGLISH_NAME, profile.englishName)
-                .putString(KEY_CURRENT_PHONE, profile.phoneNumber)
-                .putString(KEY_CURRENT_ADDRESS, profile.address)
-                .putString(KEY_CURRENT_PROFILE_PHOTO, profile.profilePhotoUri)
+                .putString(KEY_CURRENT_CHINESE_NAME, profile.chineseName ?: "")
+                .putString(KEY_CURRENT_ENGLISH_NAME, profile.englishName ?: "")
+                .putString(KEY_CURRENT_PHONE, profile.phoneNumber ?: "")
+                .putString(KEY_CURRENT_ADDRESS, profile.address ?: "")
+                .putString(KEY_CURRENT_PROFILE_PHOTO, profile.profilePhotoUri ?: "")
                 .apply()
         }
         
@@ -319,5 +319,77 @@ object UserManager {
         }
         
         return true
+    }
+    
+    /**
+     * 修改用戶密碼
+     * @param currentPassword 當前密碼
+     * @param newPassword 新密碼
+     * @return 修改結果：0=成功，1=用戶不存在或未登入，2=當前密碼錯誤
+     */
+    fun changePassword(currentPassword: String, newPassword: String): Int {
+        // 檢查用戶是否已登入
+        val currentUsername = getCurrentUsername() ?: return 1
+        
+        // 使用資料庫更新密碼
+        return database.updatePassword(currentUsername, currentPassword, newPassword)
+    }
+    
+    /**
+     * 請求重置密碼
+     * @param username 用戶名
+     * @param email 電子郵件（用於驗證用戶身份）
+     * @return 重置結果：0=成功，1=用戶不存在，2=電子郵件不匹配，3=其他錯誤
+     */
+    fun requestPasswordReset(username: String, email: String): Int {
+        // 檢查用戶是否存在
+        if (!isUserExists(username)) {
+            Log.d("UserManager", "重置密碼請求失敗：用戶不存在, $username")
+            return 1
+        }
+        
+        // 檢查電子郵件是否匹配
+        val userEmail = database.getUserEmail(username)
+        if (userEmail == null || userEmail.isEmpty() || userEmail != email) {
+            Log.d("UserManager", "重置密碼請求失敗：電子郵件不匹配, 提供: $email, 實際: $userEmail")
+            return 2
+        }
+        
+        // 生成臨時密碼
+        val tempPassword = generateTemporaryPassword()
+        
+        // 在實際應用中，這裡應該向用戶發送電子郵件
+        // 由於應用目前是演示，我們直接更新密碼
+        Log.d("UserManager", "生成臨時密碼: $tempPassword，用戶名: $username")
+        
+        try {
+            // 直接重置密碼（跳過當前密碼驗證）
+            val result = database.resetPassword(username, tempPassword)
+            if (result) {
+                Log.d("UserManager", "密碼重置成功: $username")
+                return 0
+            } else {
+                Log.e("UserManager", "密碼重置失敗: $username")
+                return 3
+            }
+        } catch (e: Exception) {
+            Log.e("UserManager", "密碼重置過程出錯: ${e.message}", e)
+            return 3
+        }
+    }
+    
+    /**
+     * 生成臨時密碼
+     * @return 隨機生成的8位臨時密碼
+     */
+    private fun generateTemporaryPassword(): String {
+        // 定義密碼字符集
+        val charPool = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+        
+        // 生成8位隨機密碼
+        return (1..8)
+            .map { kotlin.random.Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
     }
 } 

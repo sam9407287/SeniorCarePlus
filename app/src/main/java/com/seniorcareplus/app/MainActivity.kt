@@ -118,6 +118,7 @@ import com.seniorcareplus.app.ui.screens.MailboxScreen
 import com.seniorcareplus.app.ui.screens.ProfileScreen
 import com.seniorcareplus.app.ui.screens.ProfileEditScreen
 import com.seniorcareplus.app.ui.screens.RegisterScreen
+import com.seniorcareplus.app.ui.screens.ForgotPasswordScreen
 import com.seniorcareplus.app.auth.UserManager
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -819,6 +820,9 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
                         
                         // 註冊頁面
                         composable("register") { RegisterScreen(navController) }
+                        
+                        // 忘記密碼頁面
+                        composable("forgot_password") { ForgotPasswordScreen(navController) }
                         
                         // 添加新功能頁面的導航路由
                         composable("region") { RegionScreen(navController) }

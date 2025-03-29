@@ -337,7 +337,10 @@ fun LoginScreen(navController: NavController) {
                     text = forgotPasswordText,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { /* 忘記密碼處理 */ }
+                    modifier = Modifier.clickable { 
+                        // 導航到忘記密碼頁面
+                        navController.navigate("forgot_password")
+                    }
                 )
             }
             

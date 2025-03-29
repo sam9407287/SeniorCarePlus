@@ -180,6 +180,8 @@ fun VerificationCodeScreen(navController: NavController, username: String, email
                 }
             }
             
+            Spacer(modifier = Modifier.height(24.dp))
+            
             // 頁面圖標和標題
             Icon(
                 imageVector = Icons.Default.MarkEmailRead,

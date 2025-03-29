@@ -206,6 +206,8 @@ fun ResetPasswordScreen(navController: NavController, username: String, email: S
                 }
             }
             
+            Spacer(modifier = Modifier.height(24.dp))
+            
             // 頁面圖標和標題
             Icon(
                 imageVector = Icons.Default.LockReset,

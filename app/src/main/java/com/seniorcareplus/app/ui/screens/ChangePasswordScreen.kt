@@ -48,6 +48,7 @@ fun ChangePasswordScreen(navController: NavController) {
     val scrollState = rememberScrollState()
     
     // 狀態變量
+    var username by remember { mutableStateOf("") }
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -72,7 +73,8 @@ fun ChangePasswordScreen(navController: NavController) {
     
     // UI文字翻譯
     val screenTitle = if (isChineseLanguage) "修改密碼" else "Change Password"
-    val screenSubtitle = if (isChineseLanguage) "請輸入當前密碼和新密碼" else "Please enter your current password and new password"
+    val screenSubtitle = if (isChineseLanguage) "請輸入用戶名、當前密碼和新密碼" else "Please enter your username, current password and new password"
+    val usernameLabel = if (isChineseLanguage) "用戶名" else "Username"
     val currentPasswordLabel = if (isChineseLanguage) "當前密碼" else "Current Password"
     val newPasswordLabel = if (isChineseLanguage) "新密碼" else "New Password"
     val confirmPasswordLabel = if (isChineseLanguage) "確認密碼" else "Confirm Password"
@@ -239,6 +241,37 @@ fun ChangePasswordScreen(navController: NavController) {
             
             Spacer(modifier = Modifier.height(48.dp))
             
+            // 用戶名輸入框
+            OutlinedTextField(
+                value = username,
+                onValueChange = { username = it },
+                label = { Text(usernameLabel) },
+                leadingIcon = { 
+                    Icon(
+                        imageVector = Icons.Default.Person, 
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    ) 
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                    cursorColor = MaterialTheme.colorScheme.primary
+                )
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
             // 當前密碼輸入框
             OutlinedTextField(
                 value = currentPassword,
@@ -383,8 +416,17 @@ fun ChangePasswordScreen(navController: NavController) {
                     isChanging = true
                     
                     scope.launch {
-                        // 首先验证当前密码
-                        val username = UserManager.getCurrentUsername() ?: ""
+                        // 首先验证用户名和当前密码
+                        if (username.isEmpty()) {
+                            errorMessage = if (isChineseLanguage) 
+                                "請輸入用戶名。" 
+                            else 
+                                "Please enter your username."
+                            showErrorDialog = true
+                            isChanging = false
+                            return@launch
+                        }
+                        
                         val isCurrentPasswordValid = UserManager.verifyPassword(username, currentPassword)
                         
                         if (!isCurrentPasswordValid) {

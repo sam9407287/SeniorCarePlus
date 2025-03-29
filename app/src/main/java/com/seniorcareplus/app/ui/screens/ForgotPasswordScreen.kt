@@ -130,8 +130,31 @@ fun ForgotPasswordScreen(navController: NavController) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     
-                    // 右側空白作為平衡
-                    Spacer(modifier = Modifier.size(40.dp))
+                    // 右側語言切換按鈕
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        IconButton(
+                            onClick = { LanguageManager.toggleLanguage() },
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Language,
+                                contentDescription = if (isChineseLanguage) "切換英文" else "Switch to Chinese",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        
+                        // 添加說明文字
+                        Text(
+                            text = if (isChineseLanguage) "語言" else "Language",
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
             

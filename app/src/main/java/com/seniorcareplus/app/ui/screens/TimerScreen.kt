@@ -299,169 +299,164 @@ fun ReminderItemCard(
     // 使用 reminder 的 isEnabled 屬性作為初始值
     var isEnabled by remember { mutableStateOf(reminder.isEnabled) }
     
+    // 獲取提醒類型對應的顏色
+    val typeColor = if (isDarkTheme) reminder.type.darkColor else reminder.type.color
+    
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isDarkTheme) DarkCardBackground else LightCardBackground
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
         )
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp)
         ) {
-            // 图标
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (isDarkTheme) 
-                            reminder.type.darkColor.copy(alpha = 0.2f) 
-                        else 
-                            reminder.type.color.copy(alpha = 0.1f)
-                    ),
-                contentAlignment = Alignment.Center
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                when (reminder.type) {
-                    ReminderType.MEDICATION -> Icon(
-                        imageVector = Icons.Default.Medication, 
-                        contentDescription = null,
-                        tint = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    ReminderType.WATER -> Icon(
-                        imageVector = Icons.Default.WaterDrop, 
-                        contentDescription = null,
-                        tint = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    ReminderType.MEAL -> Icon(
-                        imageVector = Icons.Default.Restaurant, 
-                        contentDescription = null,
-                        tint = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    ReminderType.HEART_RATE -> Icon(
-                        imageVector = Icons.Default.Favorite, 
-                        contentDescription = null,
-                        tint = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    ReminderType.TEMPERATURE -> Icon(
-                        imageVector = Icons.Default.Thermostat, 
-                        contentDescription = null,
-                        tint = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    ReminderType.GENERAL -> Icon(
-                        imageVector = Icons.Default.Timer, 
-                        contentDescription = null,
-                        tint = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            // 内容
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = reminder.title,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                
-                Spacer(modifier = Modifier.height(4.dp))
-                
-                Text(
-                    text = reminder.time,
-                    fontSize = 20.sp,
-                    color = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
-                    fontWeight = FontWeight.Bold
-                )
-                
-                Spacer(modifier = Modifier.height(4.dp))
-                
-                // 根據當前語言設置顯示日期
-                val displayDays = if (isChineseLanguage) {
-                    reminder.days.joinToString(" · ")
-                } else {
-                    // 轉換為英文
-                    reminder.days.map { day ->
-                        when (day) {
-                            "週一" -> "Mon"
-                            "週二" -> "Tue"
-                            "週三" -> "Wed"
-                            "週四" -> "Thu"
-                            "週五" -> "Fri"
-                            "週六" -> "Sat"
-                            "週日" -> "Sun"
-                            else -> day
+                // 左侧：图标和标题
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    // 圖標
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(typeColor.copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        when (reminder.type) {
+                            ReminderType.MEDICATION -> Icon(
+                                imageVector = Icons.Default.Medication, 
+                                contentDescription = null,
+                                tint = typeColor,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            ReminderType.WATER -> Icon(
+                                imageVector = Icons.Default.WaterDrop, 
+                                contentDescription = null,
+                                tint = typeColor,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            ReminderType.MEAL -> Icon(
+                                imageVector = Icons.Default.Restaurant, 
+                                contentDescription = null,
+                                tint = typeColor,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            ReminderType.HEART_RATE -> Icon(
+                                imageVector = Icons.Default.Favorite, 
+                                contentDescription = null,
+                                tint = typeColor,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            ReminderType.TEMPERATURE -> Icon(
+                                imageVector = Icons.Default.Thermostat, 
+                                contentDescription = null,
+                                tint = typeColor,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            ReminderType.GENERAL -> Icon(
+                                imageVector = Icons.Default.Timer, 
+                                contentDescription = null,
+                                tint = typeColor,
+                                modifier = Modifier.size(24.dp)
+                            )
                         }
-                    }.joinToString(" · ")
+                    }
+                    
+                    Spacer(modifier = Modifier.width(12.dp))
+                    
+                    // 标题
+                    Column {
+                        Text(
+                            text = reminder.title,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        
+                        // 时间
+                        Text(
+                            text = reminder.time,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
                 
-                Text(
-                    text = displayDays,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                )
-            }
-            
-            // 按钮
-            Column(
-                horizontalAlignment = Alignment.End
-            ) {
-                // 启用/禁用开关
+                // 右侧：开关
                 Switch(
                     checked = isEnabled,
-                    onCheckedChange = { 
-                        isEnabled = it
-                        onToggle(it)
+                    onCheckedChange = { newValue ->
+                        isEnabled = newValue  // 更新本地状态
+                        onToggle(newValue)    // 通知外部状态更改
                     },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = if (isDarkTheme) reminder.type.darkColor else reminder.type.color,
-                        checkedTrackColor = if (isDarkTheme) 
-                            reminder.type.darkColor.copy(alpha = 0.5f) 
-                        else 
-                            reminder.type.color.copy(alpha = 0.3f)
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = typeColor,
+                        checkedBorderColor = typeColor,
+                        uncheckedThumbColor = Color.White,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        uncheckedBorderColor = MaterialTheme.colorScheme.outline
                     )
                 )
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // 显示重复日期
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = reminder.days.joinToString(" · "),
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
                 
-                Spacer(modifier = Modifier.height(8.dp))
-                
+                // 编辑和删除按钮
                 Row {
                     // 编辑按钮
                     IconButton(
                         onClick = onEdit,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(36.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = if (isChineseLanguage) "編輯" else "Edit",
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                     }
                     
-                    Spacer(modifier = Modifier.width(4.dp))
-                    
                     // 删除按钮
                     IconButton(
                         onClick = onDelete,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(36.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = if (isChineseLanguage) "刪除" else "Delete",
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(20.dp)
                         )
                     }

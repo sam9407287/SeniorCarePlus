@@ -388,10 +388,12 @@ class ReminderViewModel : ViewModel() {
         }
         
         val reminder = _reminders.find { it.id == reminderId }
-        if (reminder != null && reminder.isEnabled) { // 只有啟用的提醒才會顯示提醒對話框
+        if (reminder != null) { // 仅检查提醒是否存在，移除isEnabled检查
             _currentReminder.value = reminder
             _showFullScreenAlert.value = true  // 使用全屏提醒對話框
             Log.d("ReminderViewModel", "顯示全屏提醒對話框: ${reminder.title}")
+        } else {
+            Log.d("ReminderViewModel", "未找到ID为 $reminderId 的提醒或提醒已禁用")
         }
     }
     

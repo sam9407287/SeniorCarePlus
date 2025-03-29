@@ -8,6 +8,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -133,6 +135,7 @@ import com.seniorcareplus.app.ui.screens.VerificationCodeScreen
 import com.seniorcareplus.app.ui.screens.ResetPasswordScreen
 import com.seniorcareplus.app.ui.screens.ChangePasswordScreen
 import com.seniorcareplus.app.utils.PermissionUtils
+import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -151,7 +154,26 @@ class MainActivity : ComponentActivity() {
             Log.d("MainActivity", "通知权限已授予")
         } else {
             Log.d("MainActivity", "通知权限被拒绝")
-            // 可以在这里添加逻辑提示用户去设置页面手动开启权限
+            // 当用户拒绝权限时，提示用户并提供前往设置页面的选项
+            val isChineseLanguage = LanguageManager.isChineseLanguage
+            val message = if (isChineseLanguage) 
+                "通知權限被拒絕，部分功能將無法正常工作。請在應用設置中開啟通知權限。" 
+            else 
+                "Notification permission was denied. Some features may not work properly. Please enable notifications in app settings."
+            val buttonText = if (isChineseLanguage) "前往設置" else "Go to Settings"
+            val cancelText = if (isChineseLanguage) "取消" else "Cancel"
+            
+            // 使用Handler确保在UI线程上显示对话框
+            Handler(Looper.getMainLooper()).post {
+                android.app.AlertDialog.Builder(this)
+                    .setMessage(message)
+                    .setPositiveButton(buttonText) { _, _ ->
+                        // 打开应用设置页面
+                        PermissionUtils.openAppSettings(this)
+                    }
+                    .setNegativeButton(cancelText, null)
+                    .show()
+            }
         }
     }
 
@@ -163,6 +185,23 @@ class MainActivity : ComponentActivity() {
         
         // 检查并请求通知权限
         PermissionUtils.checkAndRequestNotificationPermission(this, requestPermissionLauncher)
+        
+        // 全局共享的 ReminderViewModel
+        // 全局只保留一个实例，方便通知显示提醒对话框
+        sharedReminderViewModel = ViewModelProvider(this)[ReminderViewModel::class.java]
+        
+        // 检查是否有从通知打开的提醒
+        val openReminderDialog = intent.getBooleanExtra("OPEN_REMINDER_DIALOG", false)
+        val reminderId = intent.getIntExtra("REMINDER_ID", -1)
+        
+        // 如果从通知打开，直接显示提醒对话框
+        if (openReminderDialog && reminderId != -1) {
+            Log.d("MainActivity", "启动时有提醒需要显示: ID=$reminderId")
+            sharedReminderViewModel?.showReminderAlert(reminderId)
+            
+            // 标记为已处理
+            ProcessedReminders.markAsProcessed(reminderId)
+        }
         
         setContent {
             // 使用我們的自定義主題，isDarkTheme會從ThemeManager中獲取
@@ -199,21 +238,23 @@ class MainActivity : ComponentActivity() {
         // 檢查是否有從通知打開的提醒
         val openReminderDialog = intent.getBooleanExtra("OPEN_REMINDER_DIALOG", false)
         val reminderId = intent.getIntExtra("REMINDER_ID", -1)
+        val timestamp = intent.getLongExtra("TIMESTAMP", 0)
         
-        Log.d("MainActivity", "onNewIntent: openReminderDialog=$openReminderDialog, reminderId=$reminderId")
+        Log.d("MainActivity", "onNewIntent: openReminderDialog=$openReminderDialog, reminderId=$reminderId, timestamp=$timestamp")
         
-        // 如果提醒有效且在應用生命週期內尚未處理過
-        if (openReminderDialog && reminderId != -1 && sharedReminderViewModel != null && !ProcessedReminders.isProcessed(reminderId)) {
+        // 如果提醒有效，直接显示，不管是否处理过
+        if (openReminderDialog && reminderId != -1 && sharedReminderViewModel != null) {
             // 標記提醒為已處理
             ProcessedReminders.markAsProcessed(reminderId)
             
-            // 直接更新 ViewModel 狀態
+            // 直接更新 ViewModel 狀態，显示对话框
             Log.d("MainActivity", "onNewIntent 處理提醒: ID=$reminderId")
             sharedReminderViewModel?.showReminderAlert(reminderId)
             
             // 清除 intent 標記，防止重複觸發
             intent.removeExtra("OPEN_REMINDER_DIALOG")
             intent.removeExtra("REMINDER_ID")
+            intent.removeExtra("TIMESTAMP")
         }
     }
 }
@@ -434,7 +475,7 @@ fun MainAppContent(openReminderDialog: Boolean = false, reminderId: Int = -1) {
     }
     
     // 如果從通知打開，且該提醒在應用生命週期內沒有被處理過，才顯示提醒對話框
-    if (openReminderDialog && reminderId != -1 && !ProcessedReminders.isProcessed(reminderId)) {
+    if (openReminderDialog && reminderId != -1) {
         // 標記為已處理（應用級別標記，不受重新組合影響）
         ProcessedReminders.markAsProcessed(reminderId)
         // 顯示提醒對話框

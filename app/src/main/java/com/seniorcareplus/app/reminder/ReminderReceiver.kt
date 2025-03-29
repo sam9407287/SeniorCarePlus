@@ -34,13 +34,16 @@ class ReminderReceiver : BroadcastReceiver() {
         
         // 在鎖屏狀態下也能顯示全屏提醒對話框
         val notificationIntent = Intent(context, MainActivity::class.java).apply {
-            // 使用適當的標記來確保應用程序能在鎖屏狀態下顯示
+            // 移除 FLAG_ACTIVITY_CLEAR_TOP 和 FLAG_ACTIVITY_CLEAR_TASK 以確保保留取上繼続聚焦
+            // 只保留 FLAG_ACTIVITY_NEW_TASK 和 FLAG_ACTIVITY_SINGLE_TOP
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or 
-                    Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                    Intent.FLAG_ACTIVITY_CLEAR_TASK  // 添加此标志以确保创建新任务
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP
             putExtra("OPEN_REMINDER_DIALOG", true)
             putExtra("REMINDER_ID", id)
+            // 添加提醒类型信息，确保显示正确的提醒类型
+            putExtra("REMINDER_TYPE", type)
+            // 添加标记，表示这是从通知打开的
+            putExtra("FROM_NOTIFICATION", true)
             // 添加时间戳确保Intent被视为新的
             putExtra("TIMESTAMP", System.currentTimeMillis())
         }

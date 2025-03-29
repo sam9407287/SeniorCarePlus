@@ -398,6 +398,106 @@ class ReminderViewModel : ViewModel() {
     }
     
     /**
+     * 設置當前提醒並顯示提醒對話框，但關閉後不跳轉到首頁
+     * 用於從通知打開的提醒，確保關閉後返回到原本的頁面
+     */
+    fun showReminderAlertWithoutRedirect(reminderId: Int) {
+        showReminderAlertWithoutRedirect(reminderId, null)
+    }
+    
+    /**
+     * 設置當前提醒並顯示提醒對話框，但關閉後不跳轉到首頁
+     * 用於從通知打開的提醒，確保關閉後返回到原本的頁面
+     * 且接受提醒类型参数，确保显示正确的提醒类型
+     */
+    fun showReminderAlertWithoutRedirect(reminderId: Int, reminderTypeStr: String?) {
+        // 檢查是否已登入
+        if (!UserManager.isLoggedIn()) {
+            Log.d("ReminderViewModel", "用戶未登入，不顯示提醒")
+            return
+        }
+        
+        var reminder = _reminders.find { it.id == reminderId }
+        
+        // 转换字符串类型为枚举类型（如果有）
+        val reminderType = try {
+            if (!reminderTypeStr.isNullOrEmpty()) ReminderType.valueOf(reminderTypeStr) else null
+        } catch (e: Exception) {
+            Log.e("ReminderViewModel", "无法转换提醒类型: $reminderTypeStr", e)
+            null
+        }
+        
+        if (reminder == null && reminderType != null) {
+            // 如果找不到提醒但有提供类型，创建一个新的提醒对象
+            Log.d("ReminderViewModel", "创建临时提醒对象，类型: $reminderType, ID: $reminderId")
+            
+            // 创建一个新的默认时间字符串
+            val defaultTime = "12:00"
+            
+            // 创建一个新的周列表
+            val defaultDays = listOf("週一", "週二", "週三", "週四", "週五", "週六", "週日")
+            
+            reminder = ReminderItem(
+                id = reminderId,
+                title = getDefaultTitleForType(reminderType),
+                time = defaultTime,
+                days = defaultDays,
+                type = reminderType,
+                isEnabled = true
+            )
+        }
+        
+        if (reminder != null && reminderType != null && reminder.type != reminderType) {
+            // 更新类型（如果提供了新类型）
+            Log.d("ReminderViewModel", "更新提醒类型从 ${reminder.type} 到 $reminderType")
+            
+            // 创建新的ReminderItem实例替换旧的
+            reminder = ReminderItem(
+                id = reminder.id,
+                title = reminder.title,
+                time = reminder.time,
+                days = reminder.days,
+                type = reminderType,
+                isEnabled = reminder.isEnabled
+            )
+        }
+        
+        if (reminder != null) {
+            _currentReminder.value = reminder
+            _showFullScreenAlert.value = true
+            Log.d("ReminderViewModel", "顯示不跳轉的全屏提醒對話框: ${reminder.title}, 类型: ${reminder.type}")
+        } else {
+            Log.d("ReminderViewModel", "未找到ID为 $reminderId 的提醒且未提供有效类型")
+        }
+    }
+    
+    /**
+     * 根据提醒类型获取默认标题
+     */
+    private fun getDefaultTitleForType(type: ReminderType): String {
+        return when(type) {
+            ReminderType.MEDICATION -> if (isChineseLanguage()) "服藥提醒" else "Medication Reminder"
+            ReminderType.WATER -> if (isChineseLanguage()) "喝水提醒" else "Water Reminder"
+            ReminderType.MEAL -> if (isChineseLanguage()) "用餐提醒" else "Meal Reminder"
+            ReminderType.HEART_RATE -> if (isChineseLanguage()) "心率提醒" else "Heart Rate Reminder"
+            ReminderType.TEMPERATURE -> if (isChineseLanguage()) "體溫提醒" else "Temperature Reminder"
+            else -> if (isChineseLanguage()) "自定義提醒" else "Custom Reminder"
+        }
+    }
+    
+    /**
+     * 检查当前是否为中文语言
+     */
+    private fun isChineseLanguage(): Boolean {
+        return try {
+            com.seniorcareplus.app.ui.theme.LanguageManager.isChineseLanguage
+        } catch (e: Exception) {
+            Log.e("ReminderViewModel", "检查语言时出错", e)
+            false
+        }
+    }
+    
+    /**
      * 切換提醒的啟用/禁用狀態
      */
     fun toggleReminder(reminderId: Int, isEnabled: Boolean) {

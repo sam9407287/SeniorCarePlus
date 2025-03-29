@@ -151,8 +151,8 @@ fun ReminderFullScreenDialog(
                 // 確認按鈕
                 Button(
                     onClick = {
-                        // 確保點擊事件被正確處理
-                        // 先調用 onDismiss 關閉對話框
+                        // 確保點擊事件只關閉對話框，不會導致頁面導航遷移
+                        // 直接調用 onDismiss 只關閉對話框不跳轉
                         onDismiss()
                     },
                     colors = ButtonDefaults.buttonColors(

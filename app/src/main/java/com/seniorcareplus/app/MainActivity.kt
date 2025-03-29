@@ -239,22 +239,33 @@ class MainActivity : ComponentActivity() {
         val openReminderDialog = intent.getBooleanExtra("OPEN_REMINDER_DIALOG", false)
         val reminderId = intent.getIntExtra("REMINDER_ID", -1)
         val timestamp = intent.getLongExtra("TIMESTAMP", 0)
+        val fromNotification = intent.getBooleanExtra("FROM_NOTIFICATION", false)
         
-        Log.d("MainActivity", "onNewIntent: openReminderDialog=$openReminderDialog, reminderId=$reminderId, timestamp=$timestamp")
+        Log.d("MainActivity", "onNewIntent: openReminderDialog=$openReminderDialog, reminderId=$reminderId, timestamp=$timestamp, fromNotification=$fromNotification")
         
         // 如果提醒有效，直接显示，不管是否处理过
         if (openReminderDialog && reminderId != -1 && sharedReminderViewModel != null) {
             // 標記提醒為已處理
             ProcessedReminders.markAsProcessed(reminderId)
             
+            // 获取提醒类型（如果有）
+            val reminderType = intent.getStringExtra("REMINDER_TYPE")
+            Log.d("MainActivity", "onNewIntent 處理提醒: ID=$reminderId, 类型=$reminderType")
+            
             // 直接更新 ViewModel 狀態，显示对话框
-            Log.d("MainActivity", "onNewIntent 處理提醒: ID=$reminderId")
-            sharedReminderViewModel?.showReminderAlert(reminderId)
+            if (fromNotification) {
+                // 如果是从通知打开的，添加标记使对话框关闭後不跳转到首页
+                sharedReminderViewModel?.showReminderAlertWithoutRedirect(reminderId, reminderType)
+                Log.d("MainActivity", "是從通知打開的，設置不跳轉到首頁")
+            } else {
+                sharedReminderViewModel?.showReminderAlert(reminderId)
+            }
             
             // 清除 intent 標記，防止重複觸發
             intent.removeExtra("OPEN_REMINDER_DIALOG")
             intent.removeExtra("REMINDER_ID")
             intent.removeExtra("TIMESTAMP")
+            intent.removeExtra("FROM_NOTIFICATION")
         }
     }
 }

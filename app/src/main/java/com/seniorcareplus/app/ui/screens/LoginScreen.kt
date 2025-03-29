@@ -94,11 +94,17 @@ fun LoginScreen(navController: NavController) {
     // 登入錯誤對話框
     if (showErrorDialog) {
         AlertDialog(
-            onDismissRequest = { showErrorDialog = false },
+            onDismissRequest = { 
+                showErrorDialog = false
+                isLoggingIn = false  // 確保關閉對話框時重置登入狀態
+            },
             title = { Text(loginErrorTitle) },
             text = { Text(errorMessage) },
             confirmButton = {
-                Button(onClick = { showErrorDialog = false }) {
+                Button(onClick = { 
+                    showErrorDialog = false
+                    isLoggingIn = false  // 確保點擊確認按鈕時重置登入狀態
+                }) {
                     Text(if (isChineseLanguage) "確定" else "OK")
                 }
             },
@@ -370,6 +376,7 @@ fun LoginScreen(navController: NavController) {
                             else 
                                 "Username or password is incorrect. Please try again."
                             showErrorDialog = true
+                            isLoggingIn = false  // 重置登入狀態
                         }
                     }
                 },

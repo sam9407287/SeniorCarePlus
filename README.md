@@ -32,7 +32,8 @@ app/
 │   │   │               │   ├── ReminderManager.kt       # 提醒管理器 | Reminder manager
 │   │   │               │   ├── ReminderReceiver.kt      # 提醒廣播接收器 | Reminder broadcast receiver
 │   │   │               │   ├── ReminderAlertDialog.kt   # 提醒彈窗界面 | Reminder alert dialog
-│   │   │               │   └── ReminderFullScreenDialog.kt # 全屏提醒對話框 | Full-screen reminder dialog
+│   │   │               │   ├── ReminderFullScreenDialog.kt # 全屏提醒對話框 | Full-screen reminder dialog
+│   │   │               │   └── ProcessedReminders # 提醒處理系統 | Reminder processing system
 │   │   │               ├── ui/              # UI相關代碼 | UI related code
 │   │   │               │   ├── components/  # 可重用UI組件 | Reusable UI components
 │   │   │               │   │   ├── AbnormalFilterChip.kt  # 異常篩選元件 | Abnormal filter component
@@ -52,6 +53,7 @@ app/
 │   │   │               │   │   ├── ForgotPasswordScreen.kt # 忘記密碼界面 | Forgot password screen
 │   │   │               │   │   ├── VerificationCodeScreen.kt # 驗證碼界面 | Verification code screen
 │   │   │               │   │   ├── ResetPasswordScreen.kt # 重設密碼界面 | Reset password screen
+│   │   │               │   │   ├── ChangePasswordScreen.kt # 更改密碼界面 | Change password screen
 │   │   │               │   │   ├── ProfileScreen.kt     # 個人資料界面 | Profile screen
 │   │   │               │   │   ├── ProfileEditScreen.kt # 個人資料編輯界面 | Profile editing screen
 │   │   │               │   │   ├── ReminderViewModel.kt # 提醒視圖模型 | Reminder view model
@@ -73,6 +75,7 @@ app/
 │   │   │               ├── utils/           # 工具類 | Utility classes
 │   │   │               │   └── UserManager.kt # 用戶管理工具 | User management utility
 │   │   │               ├── MainActivity.kt  # 主活動 | Main activity
+│   │   │               │   └── ProcessedReminders # 提醒處理系統 | Reminder processing system
 │   │   │               └── MyApplication.kt # 應用程式類 | Application class
 │   │   ├── res/              # 資源文件 | Resource files
 │   │   └── AndroidManifest.xml # 應用程式清單 | Application manifest
@@ -249,7 +252,43 @@ app/
 
 ## 更新日誌 | Update Log
 
-### v9 (最新版本 | Latest Version)
+### v10 (最新版本 | Latest Version)
+- 修復登入相關頁面的UI和導航問題：
+  - 更新所有登入相關頁面的標題樣式，使用灰色背景和28sp字體大小
+  - 改善UI導航和可訪問性
+  - 從所有登入後頁面移除主題切換按鈕，將主題切換功能集中到設置頁面
+  - 為登入相關頁面添加設置按鈕，支持語言和主題切換
+  - 修復缺少的Language圖標導入問題
+  - 設置登入頁面為初始畫面，移除登入頁面的返回按鈕
+  - 修復重複導航問題
+  - 修改登出功能，使其導航到登入頁面
+  - 實現"記住我"功能，提供憑證保存和自動填充
+  - 修復登入用戶名顯示問題，確保登入後無需重啟應用即可顯示用戶名
+- 修復提醒通知處理問題：
+  - 確保提醒類型從通知正確傳遞到應用程式
+  - 修復導航，使其返回到之前的畫面
+  - 修復提醒通知顯示問題
+  - 添加通知權限支持，修復提醒功能
+- 添加更改密碼功能和頁面
+  *Fixed UI and navigation issues for login-related pages:*
+  *- Updated header style for all login-related screens with gray background and 28sp font size*
+  *- Improved UI navigation and accessibility*
+  *- Removed theme toggle buttons from all post-login pages, centralized theme switching to Settings page only*
+  *- Added settings button with language and theme switching to login-related pages*
+  *- Fixed missing import for Language icon in RegisterScreen*
+  *- Set login page as initial screen, removed back button from login page*
+  *- Fixed duplicate navigation issues*
+  *- Modified logout to navigate to login page*
+  *- Implemented Remember Me functionality for credential saving and auto-filling*
+  *- Fixed login username display issue to ensure username appears immediately after login without requiring app restart*
+  *Fixed reminder notification handling issues:*
+  *- Ensured reminder type is properly passed from notification to app*
+  *- Fixed navigation to return to previous screen*
+  *- Fixed reminder notification display issues*
+  *- Added notification permission support to fix reminder functionality*
+  *Added change password feature and page*
+
+### v9
 - 添加完整的密碼重置流程功能：
   - 忘記密碼頁面：允許用戶輸入用戶名和電子郵件
   - 驗證碼驗證功能：生成四位數驗證碼並顯示給用戶

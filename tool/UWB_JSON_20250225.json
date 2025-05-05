@@ -1,0 +1,1806 @@
+{
+    "From Gateway": [
+        {
+            "Unnamed: 0": "Gateway Heartbeat",
+            "Unnamed: 1": "Topic: GWxxxx_Message",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"heartbeat\",\n   \"gateway id\":137205,\n   \"node\":\"GW\",\n   \"name\":\"GW17F5\",\n   \"fw ver\":\"1.0\",\n   \"fw serial\":100,\n   \"UWB HW Com OK\":\"yes\",\n   \"UWB Joined\":\"yes\",\n   \"UWB Network ID\":4660,\n   \"connected AP\":\"Wifi_Office\",\n   \"anchor cfg stack\":15\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Topic Info",
+            "Unnamed: 1": "Topic: UWB_Gateway",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"gateway topic\",\n   \"gateway id\":137205,\n   \"name\":\"GW17F5\",\n   \"fw ver\":\"1.0\",\n   \"fw serial\":100,\n   \"UWB HW Com OK\":\"yes\",\n   \"UWB Joined\":\"yes\",\n   \"UWB Network ID\":4660,\n   \"connected AP\":\"Wifi_Office\",\n   \"Wifi tx power(dBm)\":13,\n   \"set Wifi max tx power(dBm)\":20,\n   \"ble scan time\":5,\n   \"ble scan pause time\":20,\n   \"300B update time\":20,\n   \"diaper DV1 update time\":20,\n   \"battery voltage\":3.98,\n   \"5V plugged\":\"yes\",\n   \"uwb tx power changed\":\"no\",\n   \"uwb tx power\":{\n      \"boost norm(5.0~30.5dB)\":8.5,\n      \"boost 500(5.0~30.5dB)\":11,\n      \"boost 250(5.0~30.5dB)\":13.5,\n      \"boost 125(5.0~30.5dB)\":16\n   },\n   \"uwb tx power change every tag\":\"yes\",\n   \"tag uwb tx power\":{\n      \"boost norm(5.0~30.5dB)\":8.5,\n      \"boost 500(5.0~30.5dB)\":11,\n      \"boost 250(5.0~30.5dB)\":13.5,\n      \"boost 125(5.0~30.5dB)\":16\n   },\n   \"uwb tx power change every anchor\":\"yes\",\n   \"anc uwb tx power\":{\n      \"boost norm(5.0~30.5dB)\":8.5,\n      \"boost 500(5.0~30.5dB)\":11,\n      \"boost 250(5.0~30.5dB)\":13.5,\n      \"boost 125(5.0~30.5dB)\":16\n   },\n   \"tag config pub\":\"yes\",\n   \"pub topic\":{\n      \"anchor config\":\"GW17F5_AncConf\",\n      \"tag config\":\"GW17F5_TagConf\",\n      \"location\":\"GW17F5_Loca\",\n      \"message\":\"GW17F5_Message\",\n      \"ack from node\":\"GW17F5_Ack\",\n      \"health\":\"GW17F5_Health\"\n   },\n   \"sub topic\":{\n      \"downlink\":\"GW17F5_Dwlink\"\n   },\n   \"discard IOT data time(0.1s)\":30,\n   \"discarded IOT data\":38,\n   \"total discarded data\":65,\n   \"1st sync\":\"2023-338 11:05:37.00\",\n   \"last sync\":\"2023-339 02:38:17.00\",\n   \"current\":\"2023-339 02:39:10.20\"\n}",
+            "Unnamed: 2": "Revised"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway Power On/Reset done",
+            "Unnamed: 1": "Topic: UWB_Gateway",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"gateway reset done\",\n   \"gateway id\":137205,\n   \"name\":\"GW17F5\",\n   \"fw ver\":\"1.0\",\n   \"fw serial\":100\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "TagConfig Ack",
+            "Unnamed: 1": "Topic: GWxxxx_Ack",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"ack from gateway\",\n   \"gateway id\":137205,\n   \"command\":\"configChange\",\n   \"node\":\"TAG\",\n   \"id\":23349,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "TagCommand Ack",
+            "Unnamed: 1": "Topic: GWxxxx_Ack",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"ack from gateway\",\n   \"gateway id\":137205,\n   \"command\":\"downlink alert\",\n   \"node\":\"TAG\",\n   \"id\":23349,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "TagMessage Ack",
+            "Unnamed: 1": "Topic: GWxxxx_Ack",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"ack from gateway\",\n   \"gateway id\":137205,\n   \"command\":\"message\",\n   \"node\":\"TAG\",\n   \"id\":23349,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "TagQRcode Ack",
+            "Unnamed: 1": "Topic: GWxxxx_Ack",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"ack from gateway\",\n   \"gateway id\":137205,\n   \"command\":\"qr code\",\n   \"node\":\"TAG\",\n   \"id\":23349,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "TagImage Ack",
+            "Unnamed: 1": "Topic: GWxxxx_Ack",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"ack from gateway\",\n   \"gateway id\":137205,\n   \"command\":\"image\",\n   \"node\":\"TAG\",\n   \"id\":23349,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "AnchorConfig Ack",
+            "Unnamed: 1": "Topic: GWxxxx_Ack",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"ack from gateway\",\n   \"gateway id\":137205,\n   \"command\":\"configChange\",\n   \"node\":\"ANCHOR\",\n   \"id\":23349,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "NewFirmware Ack",
+            "Unnamed: 1": "Topic: GWxxxx_Ack",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"ack from gateway\",\n   \"gateway id\":137205,\n   \"command\":\"new fw notify\",\n   \"response\":\"OK\",\n   \"node\":\"GW\",\n   \"id\":0,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "response = \"OK\" / \"NACK\"",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "QoS Ack",
+            "Unnamed: 1": "Topic: GWxxxx_Ack",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"ack from gateway\",\n   \"gateway id\":137205,\n   \"command\":\"QoS request\",\n   \"node\":\"GW\",\n   \"id\":0,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "TagCfgRequest Ack",
+            "Unnamed: 1": "Topic: GWxxxx_Ack",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"ack from gateway\",\n   \"gateway id\":137205,\n   \"command\":\"tag cfg request\",\n   \"node\":\"GW\",\n   \"id\":0,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "GwResetRequest Ack",
+            "Unnamed: 1": "Topic: GWxxxx_Ack",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"ack from gateway\",\n   \"gateway id\":137205,\n   \"command\":\"gateway reset request\",\n   \"node\":\"GW\",\n   \"id\":0,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "GwSetDiscardIOTDataTimeRequest Ack",
+            "Unnamed: 1": "Topic: GWxxxx_Ack",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"ack from gateway\",\n   \"gateway id\":137205,\n   \"command\":\"discard IOT data time(0.1s)\",\n   \"node\":\"GW\",\n   \"id\":0,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway Info",
+            "Unnamed: 1": "Topic: GWxxxx_Message",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "5V Plug Info",
+            "Unnamed: 1": "{\n   \"content\":\"5V status\",\n   \"gateway id\":137205,\n   \"node\":\"GW\",\n   \"id\":53397,\n   \"5V plugged\":\"yes\",\n   \"serial no\":7763\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "5V plugged = \"yes\" / \"no\"",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway Info",
+            "Unnamed: 1": "Topic: GWxxxx_Message",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway connect to WiFi",
+            "Unnamed: 1": "{\n   \"content\":\"WiFi connected\",\n   \"gateway id\":137205,\n   \"name\":\"GW17F5\",\n   \"serial no\":7763\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway Info",
+            "Unnamed: 1": "Topic: GWxxxx_Message",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway connect to MQTT",
+            "Unnamed: 1": "{\n   \"content\":\"MQTT connected\",\n   \"gateway id\":137205,\n   \"name\":\"GW17F5\",\n   \"serial no\":7763\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway Info",
+            "Unnamed: 1": "Topic: GWxxxx_Message",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "BLE scanned node",
+            "Unnamed: 1": "{\n   \"content\":\"ble scanned node\",\n   \"gateway id\":137205,\n   \"ANCHOR\":{\n      \"DWD095\":{\n         \"initiator\":\"yes\",\n         \"UWB\":\"active\"\n      },\n      \"DW4C0B\":{\n         \"initiator\":\"no\",\n         \"UWB\":\"passive\"\n      },\n      \"DW8326\":{\n         \"initiator\":\"no\",\n         \"UWB\":\"active\"\n      }\n   },\n   \"TAG\":{\n      \"DW1D00\":{\n         \"UWB\":\"active\"\n      },\n      \"DW1023\":{\n         \"UWB\":\"active\"\n      }\n   },\n   \"GW\":{\n      \"UWB_Gateway1234\":{\n         \"UWB HW Com OK\":\"yes\",\n         \"UWB Joined\":\"yes\",\n         \"UWB Network ID\":4660,\n         \"AP Connected\":\"yes\",\n         \"SSID\":\"Wifi_Office_1\",\n         \"MQTT connected\":\"yes\"\n      },\n      \"UWB_GatewayABCD\":{\n         \"UWB HW Com OK\":\"yes\",\n         \"UWB Joined\":\"yes\",\n         \"UWB Network ID\":4660,\n         \"AP Connected\":\"no\",\n         \"SSID\":\"Wifi_Office_2\",\n         \"MQTT connected\":\"no\"\n      }\n   },\n   \"serial no\":1725\n}",
+            "Unnamed: 2": "Revised"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway Tx Power",
+            "Unnamed: 1": "Topic: GWxxxx_Message",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"gateway tx power config\",\n   \"gateway id\":137205,\n   \"name\":\"GW17F5\",\n   \"boost norm(5.0~30.5dB)\":8.5,\n   \"boost 500(5.0~30.5dB)\":11,\n   \"boost 250(5.0~30.5dB)\":13.5,\n   \"boost 125(5.0~30.5dB)\":16,\n   \"default value\":{\n      \"boost norm(5.0~30.5dB)\":8.5,\n      \"boost 500(5.0~30.5dB)\":11,\n      \"boost 250(5.0~30.5dB)\":13.5,\n      \"boost 125(5.0~30.5dB)\":16\n   },\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "AnchorConfig Fail",
+            "Unnamed: 1": "Topic: GWxxxx_Ack",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"fail from gateway\",\n   \"gateway id\":137205,\n   \"command\":\"configChange\",\n   \"node\":\"ANCHOR\",\n   \"id\":23349,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "SSID info to others gateway via BLE Response",
+            "Unnamed: 1": "Topic: GWxxxx_Message",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "SSID info to others gateway via BLE Success",
+            "Unnamed: 1": "{\n   \"content\":\"gw ssidChange via ble success\",\n   \"gateway id\":137205,\n   \"name\":\"UWB_Gateway5B70\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "SSID info to others gateway via BLE Failed",
+            "Unnamed: 1": "{\n   \"content\":\"gw ssidChange via ble failed\",\n   \"gateway id\":137205,\n   \"name\":\"UWB_Gateway5B70\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        }
+    ],
+    "To Gateway": [
+        {
+            "Unnamed: 0": "Gateway Topic Request",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"topic request\",\n   \"gateway id\":137205,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway New Firmware Notification",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"new fw notify\",\n   \"gateway id\":137205,\n   \"link\":\"https://www.bunchparty.com/iword/uploads/files/gateway/bbb0a71aeda1d258332a0a929f3fae0a.bin\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway QoS Request",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"QoS request\",\n   \"gateway id\":137205,\n   \"QoS\":0,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "QoS = 0 ~ 2",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway Tag Config Request",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"tag cfg request\",\n   \"gateway id\":137205,\n   \"enable\":\"yes\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "enable = \"yes\" / \"no\"",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway Reset Request",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"gateway reset request\",\n   \"gateway id\":137205,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway Set Discard IOT data time Request",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"discard IOT data time(0.1s)\",\n   \"gateway id\":137205,\n   \"value\":30,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "value = 10 ~ 199",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway Sound",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Buzzer Sound",
+            "Unnamed: 1": "{\n   \"content\":\"gateway alert\",\n   \"id\":23349,\n   \"level\":1,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "level = 0 ~ 12",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway Set UWB network ID Request",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"set gateway network id\",\n   \"gateway id\":137205,\n   \"value\":4660,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "value = 1 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway Wifi Max Tx Power",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"wifi tx power max change\",\n   \"gateway id\":137205,\n   \"tx power max(<=21.00)(dBm)\":18,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "tx power max = 2 ~ 20",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"wifi tx power max default\",\n   \"gateway id\":137205,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway BLE Scan Timing",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"set gateway ble scan time\",\n   \"gateway id\":137205,\n   \"scan(sec)\":3,\n   \"pause(sec)\":25,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "scan = 0 ~ 30",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "pause = 0 ~ 180",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway 300B Update Timing",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"set 300B update time\",\n   \"gateway id\":137205,\n   \"time(sec)\":90,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "time = 5 ~ 600",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway Diaper DV1 Update Timing",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"set diaper DV1 update time\",\n   \"gateway id\":137205,\n   \"time(sec)\":90,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "time = 5 ~ 600",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway Change UWB Tx Power Config",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"gateway tx power configChange\",\n   \"gateway id\":137205,\n   \"boost norm(5.0~30.5dB)\":8.5,\n   \"boost 500(5.0~30.5dB)\":11,\n   \"boost 250(5.0~30.5dB)\":13.5,\n   \"boost 125(5.0~30.5dB)\":16,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"gateway tx power configChange default\",\n   \"gateway id\":137205,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Inform SSID info to others gateway via BLE",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"gw ssidChange via ble\",\n   \"gateway id\":137205,\n   \"name\":\"UWB_Gateway5B70\",\n   \"SSID\":\"office_wifi\",\n   \"pw\":\"12345678\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Gateway Reset Request via BLE",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"gw reset request via ble\",\n   \"gateway id\":137205,\n   \"name\":\"UWB_Gateway5B70\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        }
+    ],
+    "From Tag": [
+        {
+            "Unnamed: 0": "Tag Location",
+            "Unnamed: 1": "Topic: GWxxxx_Loca",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"location\",\n   \"gateway id\":137205,\n   \"node\":\"TAG\",\n   \"id\":23349,\n   \"position\":{\n      \"x\":1.500000,\n      \"y\":-2.300000,\n      \"z\":0.800000,\n      \"quality\":89\n   },\n   \"time\":\"2023-011 14:15:11.67\",\n   \"serial no\":785\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Config",
+            "Unnamed: 1": "Topic: GWxxxx_TagConf",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"config\",\n   \"gateway id\":137205\n   \"node\":\"TAG\",\n   \"name\":\"DW5B35\",\n   \"id\":23349,\n   \"fw update\":0,\n   \"led\":1,\n   \"ble\":0,\n   \"location engine\":1,\n   \"responsive mode(0=On,1=Off)\":0,\n   \"stationary detect\":0,\n   \"nominal udr(hz)\":10,\n   \"stationary udr(hz)\":1\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Info",
+            "Unnamed: 1": "Topic: GWxxxx_Message",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Info",
+            "Unnamed: 1": "{\n   \"content\":\"info\",\n   \"gateway id\":1612681207,\n   \"node\":\"TAG\",\n   \"id\":5345,\n   \"fw ver\":0.755,\n   \"battery level\":89,\n   \"battery voltage\":3.98,\n   \"led on time(1ms)\":20,\n   \"led off time(1ms)\":10000,\n   \"bat detect time(1s)\":300,\n   \"5V plugged\":\"yes\",\n   \"uwb tx power changed\":\"no\",\n   \"uwb tx power\":{\n      \"boost norm(5.0~30.5dB)\":8.5,\n      \"boost 500(5.0~30.5dB)\":11,\n      \"boost 250(5.0~30.5dB)\":13.5,\n      \"boost 125(5.0~30.5dB)\":16\n   },\n   \"serial no\":7763\n}",
+            "Unnamed: 2": "Revised"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "led on time(1ms) = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "led off time(1ms) = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "bat detect time(1s) = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "5V plugged = \"yes\" / \"no\"",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "uwb tx power changed = \"yes\" / \"no\"",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Key Status",
+            "Unnamed: 1": "{\n   \"content\":\"info\",\n   \"gateway id\":1612681207,\n   \"node\":\"TAG\",\n   \"id\":5345,\n   \"key status\":1,\n   \"serial no\":7763\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Fall Detection",
+            "Unnamed: 1": "{\n   \"content\":\"info\",\n   \"gateway id\":1612681207,\n   \"node\":\"TAG\",\n   \"id\":5345,\n   \"fall detect level\":1,\n   \"serial no\":7763\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "fall detect level = 1 ~ 3",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Info via BLE",
+            "Unnamed: 1": "Topic: GWxxxx_Message",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Read Config via BLE Response",
+            "Unnamed: 1": "{\n   \"content\":\"config via ble\",\n   \"gateway id\":137205,\n   \"node\":\"TAG\",\n   \"UWB Network ID\":4660,\n   \"name\":\"DW5B35\",\n   \"id\":23349,\n   \"fw update\":0,\n   \"led\":0,\n   \"ble\":1,\n   \"location engine\":1,\n   \"responsive mode(0=On,1=Off)\":0,\n   \"stationary detect\":0,\n   \"nominal udr(hz)\":10,\n   \"stationary udr(hz)\":1,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Read Config via BLE Failed",
+            "Unnamed: 1": "{\n   \"content\":\"config via ble read failed\",\n   \"gateway id\":137205,\n   \"name\":\"DW5B35\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Change Config via BLE Response",
+            "Unnamed: 1": "{\n   \"content\":\"config via ble change success\",\n   \"gateway id\":137205,\n   \"node\":\"TAG\",\n   \"name\":\"DW5B35\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Change Config via BLE Failed",
+            "Unnamed: 1": "{\n   \"content\":\"config via ble change failed\",\n   \"gateway id\":137205,\n   \"name\":\"DW5B35\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Tx Power",
+            "Unnamed: 1": "Topic: GWxxxx_Message",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"tx power config\",\n   \"gateway id\":137205,\n   \"node\":\"TAG\",\n   \"id\":23349,\n   \"boost norm(5.0~30.5dB)\":8.5,\n   \"boost 500(5.0~30.5dB)\":11,\n   \"boost 250(5.0~30.5dB)\":13.5,\n   \"boost 125(5.0~30.5dB)\":16,\n   \"default value\":{\n      \"boost norm(5.0~30.5dB)\":8.5,\n      \"boost 500(5.0~30.5dB)\":11,\n      \"boost 250(5.0~30.5dB)\":13.5,\n      \"boost 125(5.0~30.5dB)\":16\n   },\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        }
+    ],
+    "To Tag": [
+        {
+            "Unnamed: 0": "Tag Config Change",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"configChange\",\n   \"gateway id\":137205,\n   \"node\":\"TAG\",\n   \"name\":\"DW5B35\",\n   \"id\":23349,\n   \"fw update\":0,\n   \"led\":1,\n   \"ble\":0,\n   \"location engine\":1,\n   \"responsive mode(0=On,1=Off)\":0,\n   \"stationary detect\":0,\n   \"nominal udr(hz)\":10,\n   \"stationary udr(hz)\":1,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Sound",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Buzzer Sound",
+            "Unnamed: 1": "{\n   \"content\":\"downlink alert\",\n   \"gateway id\":137205,\n   \"id\":23349,\n   \"level\":1,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "Option:\n\"level\":1 => access defined area\n\"level\":2 => leave defined area\n\"level\":3 => stay defined area over time",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag LED",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"tag led config\",\n   \"gateway id\":137205,\n   \"id\":23349,\n   \"on time(1ms)\":20,\n   \"off time(1ms)\":10000,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "on time = 0 ~ 65535; 0 = LED off, no flashing",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "off time = 0 ~ 65535; 0 = LED on, no flashing",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Detect Battery",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"tag bat detect config\",\n   \"gateway id\":137205,\n   \"id\":23349,\n   \"time(1s)\":300,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "time = 1 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Reset",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"downlink reset\",\n   \"gateway id\":137205,\n   \"id\":23349,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Message",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"message\",\n   \"gateway id\":137205,\n   \"id\":21376,\n   \"title\":\"msg001\",\n   \"text\":\"Hello world!\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "Max length of \"text\" item: 400 characters",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag QR Code",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"qr code\",\n   \"gateway id\":137205,\n   \"id\":21376,\n   \"title\":\"qrc001\",\n   \"text\":\"Hello world!\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "Max length of \"text\" item: 70 characters",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Image",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"image\",\n   \"gateway id\":137205,\n   \"id\":137205,\n   \"title\":\"img001\",\n   \"pic no\":207,\n   \"width\":80,\n   \"length\":80,\n   \"total\":29,\n   \"current\":3,\n   \"data\":\"AQIDBAUGBwgJEBESExQVFhcYGSAhIiMkJSY=\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "\"total\" item is the total number of JSON messages needed to send for the image. Max. = 45.",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "Max. value of \"width\" and \"length is 96",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "\"current\" is order number of this JSON message",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "\"data\" item is base 64 encoded image data",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "Max decoded of \"data\" item: 26 Bytes",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "pic no = 0 ~ 255",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Read Config via BLE",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"configRead via ble\",\n   \"gateway id\":137205,\n   \"name\":\"DW5380\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Change Config via BLE",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Search a Node by name and set it as Tag",
+            "Unnamed: 1": "{\n   \"content\":\"configChange via ble\",\n   \"gateway id\":137205,\n   \"name\":\"DW5B35\",\n   \"node\":\"TAG\",\n   \"UWB Network ID\":4660,\n   \"fw update\":0,\n   \"led\":0,\n   \"location engine\":1,\n   \"responsive mode(0=On,1=Off)\":0,\n   \"stationary detect\":0,\n   \"nominal udr(hz)\":10,\n   \"stationary udr(hz)\":1,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Read Tx Power Config",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"tx power configRead\",\n   \"gateway id\":137205,\n   \"id\":23349,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Change Tx Power Config",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"tx power configChange\",\n   \"gateway id\":137205,\n   \"id\":23349,\n   \"boost norm(5.0~30.5dB)\":8.5,\n   \"boost 500(5.0~30.5dB)\":11,\n   \"boost 250(5.0~30.5dB)\":13.5,\n   \"boost 125(5.0~30.5dB)\":16,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"tx power configChange default\",\n   \"gateway id\":137205,\n   \"id\":23349,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"tx power configChange every tag\",\n   \"gateway id\":137205,\n   \"boost norm(5.0~30.5dB)\":8.5,\n   \"boost 500(5.0~30.5dB)\":11,\n   \"boost 250(5.0~30.5dB)\":13.5,\n   \"boost 125(5.0~30.5dB)\":16,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"tx power configChange stop every tag\",\n   \"gateway id\":137205,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Tag Info Request",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"node info request\",\n   \"gateway id\":137205,\n   \"id\":23349,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "Tag will response this request by Tag Info JSON",
+            "Unnamed: 2": null
+        }
+    ],
+    "From Anchor": [
+        {
+            "Unnamed: 0": "Anchor Heartbeat",
+            "Unnamed: 1": "Topic: GWxxxx_Message",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"heartbeat\",\n   \"gateway id\":137205,\n   \"node\":\"ANCHOR\",\n   \"name\":\"DWD095\",\n   \"id\":53397\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Anchor Config",
+            "Unnamed: 1": "Topic: GWxxxx_AncConf",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"config\",\n   \"gateway id\":137205\n   \"node\":\"ANCHOR\",\n   \"name\":\"DWD095\",\n   \"id\":53397,\n   \"fw update\":0,\n   \"led\":1,\n   \"ble\":1,\n   \"initiator\":1,\n   \"position\":{\n      \"x\":4.000000,\n      \"y\":-3.750000,\n      \"z\":1.000000\n   }\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Anchor Info",
+            "Unnamed: 1": "Topic: GWxxxx_Message",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "5V Plug Info",
+            "Unnamed: 1": "{\n   \"content\":\"5V status\",\n   \"gateway id\":137205,\n   \"node\":\"ANCHOR\",\n   \"id\":53397,\n   \"5V plugged\":\"yes\",\n   \"serial no\":7763\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "5V plugged = \"yes\" / \"no\"",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Anchor Info",
+            "Unnamed: 1": "{\n   \"content\":\"info\",\n   \"gateway id\":1612681207,\n   \"node\":\"ANCHOR\",\n   \"id\":5345,\n   \"fw ver\":0.755,\n   \"battery level\":89,\n   \"battery voltage\":3.98,\n   \"bat detect time(1s)\":300,\n   \"5V plugged\":\"yes\",\n   \"uwb tx power changed\":\"no\",\n   \"uwb tx power\":{\n      \"boost norm(5.0~30.5dB)\":8.5,\n      \"boost 500(5.0~30.5dB)\":11,\n      \"boost 250(5.0~30.5dB)\":13.5,\n      \"boost 125(5.0~30.5dB)\":16\n   },\n   \"serial no\":7763\n}",
+            "Unnamed: 2": "Revised"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "bat detect time(1s) = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "5V plugged = \"yes\" / \"no\"",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "uwb tx power changed = \"yes\" / \"no\"",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Anchor pos changed",
+            "Unnamed: 1": "{\n   \"content\":\"pos changed\",\n   \"gateway id\":137205,\n   \"node\":\"ANCHOR\",\n   \"id\":53397,\n   \"position\":{\n      \"x\":4.000000,\n      \"y\":-3.750000,\n      \"z\":1.000000\n   },\n   \"serial no\":7763\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Anchor Read Config via BLE Response",
+            "Unnamed: 1": "{\n   \"content\":\"config via ble\",\n   \"gateway id\":137205,\n   \"node\":\"ANCHOR\",\n   \"UWB Network ID\":4660,\n   \"name\":\"DWD095\",\n   \"id\":53397,\n   \"UWB Joined\":\"yes\",\n   \"seat no.\":5,\n   \"detected anchor\":9,\n   \"fw update\":0,\n   \"led\":1,\n   \"ble\":1,\n   \"initiator\":1,\n   \"position\":{\n      \"x\":4.000000,\n      \"y\":-3.750000,\n      \"z\":1.000000\n   },\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Anchor Read Config via BLE Failed",
+            "Unnamed: 1": "{\n   \"content\":\"config via ble read failed\",\n   \"gateway id\":137205,\n   \"name\":\"DWD095\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Anchor Change Config via BLE Response",
+            "Unnamed: 1": "{\n   \"content\":\"config via ble change success\",\n   \"gateway id\":137205,\n   \"node\":\"ANCHOR\",\n   \"name\":\"DWD095\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Anchor Change Config via BLE Failed",
+            "Unnamed: 1": "{\n   \"content\":\"config via ble change failed\",\n   \"gateway id\":137205,\n   \"name\":\"DWD095\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Anchor Tx Power",
+            "Unnamed: 1": "Topic: GWxxxx_Message",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"tx power config\",\n   \"gateway id\":137205,\n   \"node\":\"ANCHOR\",\n   \"id\":23349,\n   \"boost norm(5.0~30.5dB)\":8.5,\n   \"boost 500(5.0~30.5dB)\":11,\n   \"boost 250(5.0~30.5dB)\":13.5,\n   \"boost 125(5.0~30.5dB)\":16,\n   \"default value\":{\n      \"boost norm(5.0~30.5dB)\":8.5,\n      \"boost 500(5.0~30.5dB)\":11,\n      \"boost 250(5.0~30.5dB)\":13.5,\n      \"boost 125(5.0~30.5dB)\":16\n   },\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        }
+    ],
+    "To Anchor": [
+        {
+            "Unnamed: 0": "Anchor Config Change",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"configChange\",\n   \"gateway id\":36855,\n   \"node\":\"ANCHOR\",\n   \"name\":\"DW5380\",\n   \"id\":21376,\n   \"fw update\":0,\n   \"led\":0,\n   \"ble\":1,\n   \"initiator\":0,\n   \"position\":{\n      \"x\":0.6,\n      \"y\":2.96,\n      \"z\":1.13\n   },\n   \"serial no\":1302\n}",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Anchor Sound",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Buzzer Sound",
+            "Unnamed: 1": "{\n   \"content\":\"downlink alert\",\n   \"gateway id\":137205,\n   \"id\":23349,\n   \"level\":1,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "level = 0 ~ 12",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Anchor Read Config via BLE",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"configRead via ble\",\n   \"gateway id\":137205,\n   \"name\":\"DW5380\",\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Anchor Change Config via BLE",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Search a Node by name and set it as Anchor",
+            "Unnamed: 1": "{\n   \"content\":\"configChange via ble\",\n   \"gateway id\":137205,\n   \"name\":\"DWD095\",\n   \"node\":\"ANCHOR\",\n   \"UWB Network ID\":4660,\n   \"fw update\":0,\n   \"led\":1,\n   \"initiator\":1,\n   \"position\":{\n      \"x\":4.000000,\n      \"y\":-3.750000,\n      \"z\":1.000000\n   },\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Anchor Read Tx Power Config",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"tx power configRead\",\n   \"gateway id\":137205,\n   \"id\":23349,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Anchor Change Tx Power Config",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"tx power configChange\",\n   \"gateway id\":137205,\n   \"id\":23349,\n   \"boost norm(5.0~30.5dB)\":8.5,\n   \"boost 500(5.0~30.5dB)\":11,\n   \"boost 250(5.0~30.5dB)\":13.5,\n   \"boost 125(5.0~30.5dB)\":16,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"tx power configChange default\",\n   \"gateway id\":137205,\n   \"id\":23349,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"tx power configChange every anchor\",\n   \"gateway id\":137205,\n   \"boost norm(5.0~30.5dB)\":8.5,\n   \"boost 500(5.0~30.5dB)\":11,\n   \"boost 250(5.0~30.5dB)\":13.5,\n   \"boost 125(5.0~30.5dB)\":16,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"tx power configChange stop every anchor\",\n   \"gateway id\":137205,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": null,
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": "Anchor Info Request",
+            "Unnamed: 1": "Topic: GWxxxx_Dwlink",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"node info request\",\n   \"gateway id\":137205,\n   \"id\":23349,\n   \"serial no\":1302\n}",
+            "Unnamed: 2": "New"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535",
+            "Unnamed: 2": null
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "Anchor will response this request by Anchor Info JSON",
+            "Unnamed: 2": null
+        }
+    ],
+    "From 300B": [
+        {
+            "Unnamed: 0": "300B Info",
+            "Unnamed: 1": "Topic: GWxxxx_Health"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"300B\",\n   \"gateway id\":137205,\n   \"MAC\":\"E0:0E:08:36:93:F8\",\n   \"SOS\":0,\n   \"hr\":85,\n   \"SpO2\":96,\n   \"bp syst\":130,\n   \"bp diast\":87,\n   \"skin temp\":33.5,\n   \"room temp\":24.5,\n   \"steps\":3857,\n   \"sleep time\":\"22:46\",\n   \"wake time\":\"7:13\",\n   \"light sleep (min)\":297,\n   \"deep sleep (min)\":38,\n   \"move\":26,\n   \"wear\":1,\n   \"battery level\":86,\n   \"serial no\":1302\n}"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535"
+        }
+    ],
+    "From Diaper DV1": [
+        {
+            "Unnamed: 0": "Diaper DV1 Info",
+            "Unnamed: 1": "Topic: GWxxxx_Health"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "{\n   \"content\":\"diaper DV1\",\n   \"gateway id\":137205,\n   \"MAC\":\"E0:0E:08:36:93:F8\",\n   \"name\":\"DV1_3693F8\",\n   \"fw ver\":1.01,\n   \"temp\":33.5,\n   \"humi\":57.2,\n   \"button\":0,\n   \"mssg idx\":143,\n   \"ack\":0,\n   \"battery level\":86,\n   \"serial no\":1302\n}"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "Button =\n0: No button pressed,\n1: Button short pressed,\n2: Button long pressed"
+        },
+        {
+            "Unnamed: 0": null,
+            "Unnamed: 1": "serial no = 0 ~ 65535"
+        }
+    ]
+}

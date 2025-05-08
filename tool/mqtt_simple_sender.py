@@ -112,34 +112,34 @@ def send_test_data():
     print("開始發送測試MQTT消息...")
     
     try:
-        # 1. 發送位置數據
+        # 1. 發送位置數據（使用retain=True保留最新数据）
         location_data = generate_location_data()
         location_json = json.dumps(location_data)
-        publish.single(TOPIC_LOCATION, location_json, hostname=MQTT_BROKER, port=MQTT_PORT)
+        publish.single(TOPIC_LOCATION, location_json, hostname=MQTT_BROKER, port=MQTT_PORT, retain=True)
         print(f"已發送位置數據到 {TOPIC_LOCATION}:")
         print(json.dumps(location_data, indent=2, ensure_ascii=False))
         time.sleep(1)
         
-        # 2. 發送健康數據
+        # 2. 發送健康數據（使用retain=True保留最新数据）
         health_data = generate_health_data()
         health_json = json.dumps(health_data)
-        publish.single(TOPIC_HEALTH, health_json, hostname=MQTT_BROKER, port=MQTT_PORT)
+        publish.single(TOPIC_HEALTH, health_json, hostname=MQTT_BROKER, port=MQTT_PORT, retain=True)
         print(f"已發送健康數據到 {TOPIC_HEALTH}:")
         print(json.dumps(health_data, indent=2, ensure_ascii=False))
         time.sleep(1)
         
-        # 3. 發送尿布數據
+        # 3. 發送尿布數據（使用retain=True保留最新数据）
         diaper_data = generate_diaper_data()
         diaper_json = json.dumps(diaper_data)
-        publish.single(TOPIC_HEALTH, diaper_json, hostname=MQTT_BROKER, port=MQTT_PORT)
+        publish.single(TOPIC_HEALTH, diaper_json, hostname=MQTT_BROKER, port=MQTT_PORT, retain=True)
         print(f"已發送尿布數據到 {TOPIC_HEALTH}:")
         print(json.dumps(diaper_data, indent=2, ensure_ascii=False))
         time.sleep(1)
         
-        # 4. 發送消息數據
+        # 4. 發送消息數據（使用retain=True保留最新数据）
         message_data = generate_message_data()
         message_json = json.dumps(message_data)
-        publish.single(TOPIC_MESSAGE, message_json, hostname=MQTT_BROKER, port=MQTT_PORT)
+        publish.single(TOPIC_MESSAGE, message_json, hostname=MQTT_BROKER, port=MQTT_PORT, retain=True)
         print(f"已發送消息數據到 {TOPIC_MESSAGE}:")
         print(json.dumps(message_data, indent=2, ensure_ascii=False))
         

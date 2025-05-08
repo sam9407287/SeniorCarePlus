@@ -199,12 +199,62 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             }
             
             // 安全地取得坐標值
-            val xRaw = message.position.x.coerceIn(-50f, 50f) // 限制在合理範圍內
-            val yRaw = message.position.y.coerceIn(-50f, 50f) // 限制在合理範圍內
+            val xRaw = message.position.x.coerceIn(-5f, 5f) // 大幅縮小合理範圍
+            val yRaw = message.position.y.coerceIn(-5f, 5f) // 大幅縮小合理範圍
             
-            // 使用更安全的轉換方式
-            val xPos = 500f + (xRaw * 100f)
-            val yPos = 500f + (yRaw * 100f)
+            // 產生控制移動方向的時間因子
+            val timeBasedFactor = System.currentTimeMillis() / 1000.0 % 6.0
+            val sinFactor = kotlin.math.sin(timeBasedFactor).toFloat() * 2f
+            val cosFactor = kotlin.math.cos(timeBasedFactor).toFloat() * 2f
+            
+            // 根據設備ID調整位置變化範圍和移動方式
+            val newXPos: Float
+            val newYPos: Float
+            
+            when (message.id) {
+                "E001" -> { // 張三 - 上下移動
+                    // 基礎座標 (250, 250) 加上上下移動
+                    newXPos = 190f // 固定水平位置
+                    newYPos = 180f + (sinFactor * 30f) // 上下移動
+                    Log.d(TAG, "張三移動: 上下移動 Y偏移=${sinFactor * 30f}")
+                }
+                "E002" -> { // 李四 - 左右移動
+                    // 基礎座標 (600, 160) 加上左右移動
+                    newXPos = 160f + (cosFactor * 40f) // 左右移動
+                    newYPos = 160f // 固定垂直位置
+                    Log.d(TAG, "李四移動: 左右移動 X偏移=${cosFactor * 40f}")
+                }
+                "E003" -> { // 王五 - 斜向移動
+                    // 基礎座標 (550, 310) 加上斜向移動
+                    newXPos = 550f + (cosFactor * 20f) // 左右引量
+                    newYPos = 310f + (sinFactor * 20f) // 上下引量
+                    Log.d(TAG, "王五移動: 斜向 X偏移=${cosFactor * 20f}, Y偏移=${sinFactor * 20f}")
+                }
+                "E004" -> { // 趙六 - 幾乎不動
+                    // 基礎座標 (250, 310) 加上很小的隨機移動
+                    newXPos = 250f + (xRaw * 3f) // 極小隨機移動
+                    newYPos = 310f + (yRaw * 3f) // 極小隨機移動
+                    Log.d(TAG, "趙六移動: 幾乎不動 X偏移=${xRaw * 3f}, Y偏移=${yRaw * 3f}")
+                }
+                "E005" -> { // 錢七 - 圓形路徑移動
+                    // 基礎座標 (400, 400) 加上圓形路徑移動
+                    newXPos = 400f + (cosFactor * 50f) // 圓形X分量
+                    newYPos = 400f + (sinFactor * 50f) // 圓形Y分量
+                    Log.d(TAG, "錢七移動: 圓形路徑 X=${newXPos}, Y=${newYPos}")
+                }
+                else -> { // 其他人 - 隨機移動
+                    // 為其他設備提供預設位置
+                    val defaultX = 350f
+                    val defaultY = 350f
+                    
+                    newXPos = defaultX + (xRaw * 20f) // 中等位移範圍
+                    newYPos = defaultY + (yRaw * 20f) // 中等位移範圍
+                }
+            }
+            
+            // 最終的位置坐標
+            val xPos = newXPos
+            val yPos = newYPos
             
             Log.d(TAG, "坐標轉換: [$xRaw, $yRaw] -> [$xPos, $yPos]")
             
@@ -308,28 +358,14 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
             )
         )
         
-        // 示例長者數據（將被MQTT數據動態更新）
-        val elderly = listOf(
-            LocationData(
-                id = "E001",
-                name = "張三",
-                x = 250f,
-                y = 250f,
-                type = LocationType.ELDERLY,
-                avatarIcon = Icons.Default.Person
-            ),
-            LocationData(
-                id = "E002",
-                name = "李四",
-                x = 750f,
-                y = 350f,
-                type = LocationType.ELDERLY,
-                avatarIcon = Icons.Default.Person
-            )
-        )
+        // 只初始化錨點，不添加長者數據
+        // 長者會在收到MQTT消息時動態添加
         
-        // 更新初始數據
-        _locationData.value = anchors + elderly
+        // 更新初始數據（只有錨點）
+        _locationData.value = anchors
+        
+        // 記錄日誌
+        Log.d(TAG, "地圖初始化完成，無長者數據，等待MQTT消息")
     }
     
     /**

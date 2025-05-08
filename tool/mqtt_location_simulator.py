@@ -6,6 +6,7 @@ import json
 import time
 import random
 import threading
+import math
 from datetime import datetime
 
 # MQTT設置
@@ -43,20 +44,54 @@ def setup_mqtt():
     print(f"已連接到MQTT代理 {MQTT_BROKER}:{MQTT_PORT}")
 
 def move_users():
-    """隨機移動所有用戶位置"""
+    """移動所有用戶位置，每個用戶有特定的移動模式"""
+    # 獲取基於時間的周期性因子，用於產生圓形和波浪運動
+    time_factor = time.time() % (2 * 3.14159)  # 時間循環在0到2π之間
+    sin_factor = math.sin(time_factor)
+    cos_factor = math.cos(time_factor)
+    
     for user in USERS:
-        # X軸隨機移動
-        move_x = random.uniform(-MOVE_STEP, MOVE_STEP)
+        user_id = user["id"]
+        
+        if user_id == "E001":  # 張三 - 只上下移動
+            # 保持X軸幾乎不變，Y軸做正弦波動
+            move_x = random.uniform(-0.005, 0.005)  # 極小隨機偏移
+            move_y = 0.05 * sin_factor  # 有規律的上下移動
+        
+        elif user_id == "E002":  # 李四 - 只左右移動
+            # 保持Y軸幾乎不變，X軸做正弦波動
+            move_x = 0.05 * cos_factor  # 有規律的左右移動
+            move_y = random.uniform(-0.005, 0.005)  # 極小隨機偏移
+        
+        elif user_id == "E003":  # 王五 - 斜向移動
+            # X和Y軸同時變化，形成斜向運動
+            move_x = 0.03 * cos_factor
+            move_y = 0.03 * sin_factor
+        
+        elif user_id == "E004":  # 趙六 - 幾乎不動
+            # 極小的隨機移動
+            move_x = random.uniform(-0.002, 0.002)
+            move_y = random.uniform(-0.002, 0.002)
+        
+        elif user_id == "E005":  # 錢七 - 圓形移動
+            # 使用正弦和餘弦函數產生圓形軌跡
+            move_x = 0.04 * cos_factor
+            move_y = 0.04 * sin_factor
+        
+        else:  # 其他用戶 - 隨機移動
+            move_x = random.uniform(-MOVE_STEP, MOVE_STEP)
+            move_y = random.uniform(-MOVE_STEP, MOVE_STEP)
+        
+        # 計算新位置
         new_x = user["position"]["x"] + move_x
+        new_y = user["position"]["y"] + move_y
+        
         # 確保在範圍內
         new_x = max(MIN_X, min(MAX_X, new_x))
-        user["position"]["x"] = new_x
-        
-        # Y軸隨機移動
-        move_y = random.uniform(-MOVE_STEP, MOVE_STEP)
-        new_y = user["position"]["y"] + move_y
-        # 確保在範圍內
         new_y = max(MIN_Y, min(MAX_Y, new_y))
+        
+        # 更新位置
+        user["position"]["x"] = new_x
         user["position"]["y"] = new_y
         
         # 隨機改變信號質量

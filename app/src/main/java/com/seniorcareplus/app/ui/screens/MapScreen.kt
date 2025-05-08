@@ -364,12 +364,32 @@ fun MapScreen(navController: NavController = rememberNavController()) {
                         MaterialTheme.colorScheme.primary
                     }
                     
+                    // 記錄映射前的原始座標
+                    val originalX = data.x
+                    val originalY = data.y
+                    
+                    // 獲取螢幕密度和計算地圖邊界
+                    val density = LocalDensity.current.density
+                    
+                    // 地圖範圍 - 調整為適合圖片的實際尺寸
+                    val mapWidth = 800f
+                    val mapHeight = 600f
+                    
+                    // 更合理的座標映射 - 從實際座標映射到顯示座標
+                    // 確保座標在地圖範圍內
+                    val mappedX = (originalX / 1000f) * mapWidth
+                    val mappedY = (originalY / 1000f) * mapHeight
+                    
+                    // 調試日誌 - 輸出映射後的座標
+                    Log.d("MapScreen", "地圖座標映射: ${data.name} - 原始:(${originalX},${originalY}) → 映射:(${mappedX},${mappedY})")
+                    
                     Box(
                         modifier = Modifier
                             .size(iconSize)
                             .offset(
-                                x = (data.x / 1000 * (LocalDensity.current.density * 300)).dp,
-                                y = (data.y / 1000 * (LocalDensity.current.density * 300)).dp
+                                // 直接使用修改後的座標，不再除以1000
+                                x = with(LocalDensity.current) { (originalX * 0.32f).toDp() },
+                                y = with(LocalDensity.current) { (originalY * 0.32f).toDp() }
                             )
                             .zIndex(if (hoveredDeviceId == data.id) 10f else 1f)
                             .clickable {

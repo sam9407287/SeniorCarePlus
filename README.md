@@ -163,8 +163,14 @@ app/
   *User Binding: Reminder data is associated with user accounts, ensuring data isolation*
 
 ### 4. 位置追蹤功能 | Location Tracking Function
-- **地圖顯示**: 整合地圖功能，顯示用戶位置
-  *Map Display: Integrates map functionality, displays user location*
+- **地圖顯示**: 整合地圖功能，動態顯示用戶位置
+  *Map Display: Integrates map functionality, dynamically displays user location*
+- **即時追蹤**: 接收MQTT位置數據，實時更新用戶位置
+  *Real-time Tracking: Receives MQTT location data, updates user positions in real-time*
+- **多用戶追蹤**: 同時追蹤多名長者的位置，採用不同顏色和圖標區分
+  *Multi-user Tracking: Simultaneously tracks multiple elderly positions, distinguishes with different colors and icons*
+- **客製化移動模式**: 支持不同移動模式的長者顯示（上下移動、左右移動、圓形路徑等）
+  *Customized Movement Patterns: Supports display of different movement patterns (vertical, horizontal, circular paths, etc.)*
 - **安全區域**: 設置安全區域，離開時發出警報
   *Safety Zones: Sets up safety zones, issues alerts when leaving*
 - **位置歷史**: 記錄位置歷史資料
@@ -193,12 +199,61 @@ app/
 ## 技術實現 | Technical Implementation
 
 ### 使用的技術和框架 | Technologies and Frameworks Used
-- **程式語言**: Kotlin
-  *Programming Language: Kotlin*
+- **程式語言**: Kotlin, Python(模擬器)
+  *Programming Languages: Kotlin, Python(simulator)*
 - **UI框架**: Jetpack Compose
   *UI Framework: Jetpack Compose*
 - **架構**: MVVM (Model-View-ViewModel)
   *Architecture: MVVM (Model-View-ViewModel)*
+- **通訊協議**: MQTT
+  *Communication Protocol: MQTT*
+- **JSON處理**: Gson
+  *JSON Processing: Gson*
+- **靜態類型調整器**: TypeAdapter, TypeAdapterFactory
+  *Static Type Adapters: TypeAdapter, TypeAdapterFactory*
+
+### MQTT位置模擬器 | MQTT Location Simulator
+
+本專案包含一個 Python 編寫的 MQTT 位置模擬器，用於測試和演示地圖功能。
+
+*This project includes a Python-based MQTT location simulator for testing and demonstrating the map functionality.*
+
+- **檔案位置**: `/tool/mqtt_location_simulator.py`
+  *File Location: `/tool/mqtt_location_simulator.py`*
+  
+- **功能特點**:
+  *Key Features:*
+  - 模擬多個長者的位置數據
+    *Simulates location data for multiple elderly users*
+  - 支援不同的移動模式（上下移動、左右移動、圓形路徑等）
+    *Supports various movement patterns (vertical, horizontal, circular paths, etc.)*
+  - 使用數學函數產生平滑的運動路徑
+    *Uses mathematical functions to generate smooth movement paths*
+  - 生成符合系統要求的MQTT JSON格式消息
+    *Generates MQTT JSON-formatted messages conforming to system requirements*
+  
+- **使用方式**:
+  *Usage:*
+  ```
+  cd /Users/sam/Desktop/SeniorCarePlus/tool
+  python mqtt_location_simulator.py
+  ```
+
+### 對象動態顯示技術 | Dynamic Object Display Technology
+
+地圖上的人物對象實現了以下功能：
+*The character objects on the map implement the following features:*
+
+1. **動態加載**: 系統在接收到MQTT位置消息時才加載人物標記
+   *Dynamic Loading: The system loads character markers only when receiving MQTT location messages*
+   
+2. **ID識別與更新**: 使用唯一ID識別人物，確保相同ID只更新位置而不重複創建
+   *ID Recognition and Updates: Uses unique IDs to identify characters, ensuring that the same ID only updates position without creating duplicates*
+   
+3. **座標轉換系統**: 將MQTT消息中的原始座標轉換為地圖顯示座標
+   *Coordinate Conversion System: Converts raw coordinates in MQTT messages to map display coordinates*
+
+## 開發工具 | Development Tools
 - **導航**: Compose Navigation
   *Navigation: Compose Navigation*
 - **資料持久化**: 

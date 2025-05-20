@@ -7,6 +7,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,11 +31,14 @@ import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Thermostat
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -230,7 +237,6 @@ fun TemperatureMonitorScreen(navController: NavController) {
                         
                         Spacer(modifier = Modifier.width(8.dp))
 
-                        
                         val displayText = if (selectedPatientName.isEmpty()) {
                             if (isChineseLanguage) "等待數據中..." else "Waiting for data..."
                         } else {
@@ -246,16 +252,12 @@ fun TemperatureMonitorScreen(navController: NavController) {
                         )
                         
                         IconButton(
-                            onClick = { showPatientDropdown = true },
-                            enabled = actualPatientList.isNotEmpty() // 只有當有病患時才啟用
+                            onClick = { showPatientDropdown = true }
                         ) {
                             Icon(
                                 imageVector = if (showPatientDropdown) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                                 contentDescription = if (isChineseLanguage) "選擇患者" else "Select Patient",
-                                tint = if (actualPatientList.isNotEmpty()) 
-                                    MaterialTheme.colorScheme.onSurface 
-                                else 
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
                         
@@ -263,13 +265,50 @@ fun TemperatureMonitorScreen(navController: NavController) {
                         DropdownMenu(
                             expanded = showPatientDropdown,
                             onDismissRequest = { showPatientDropdown = false },
-                            modifier = Modifier
-                                .width(200.dp)
-                                .background(MaterialTheme.colorScheme.surface)
+                            modifier = Modifier.background(
+                                if (isDarkTheme) 
+                                    MaterialTheme.colorScheme.surfaceVariant 
+                                else 
+                                    Color.White
+                            )
                         ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = if (isChineseLanguage) "選擇患者" else "Select Patient",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.align(Alignment.CenterStart)
+                                )
+                                
+                                IconButton(
+                                    onClick = { showPatientDropdown = false },
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .align(Alignment.CenterEnd)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = if (isChineseLanguage) "關閉" else "Close",
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                            
+                            HorizontalDivider()
+                            
                             actualPatientList.forEach { patient ->
                                 DropdownMenuItem(
-                                    text = { Text(text = patient.second) },
+                                    text = { 
+                                        Text(
+                                            text = patient.second,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    },
                                     onClick = {
                                         selectedPatientId = patient.first
                                         selectedPatientName = patient.second

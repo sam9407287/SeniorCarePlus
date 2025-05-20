@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -20,6 +21,7 @@ fun TimeRangeChip(
     isSelected: Boolean,
     onClick: () -> Unit,
     isDarkTheme: Boolean,
+    color: Color? = null,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -27,7 +29,7 @@ fun TimeRangeChip(
             .clip(RoundedCornerShape(16.dp))
             .background(
                 if (isSelected) 
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                    (color ?: MaterialTheme.colorScheme.primary).copy(alpha = 0.2f)
                 else 
                     MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             )
@@ -38,7 +40,7 @@ fun TimeRangeChip(
         Text(
             text = text,
             color = if (isSelected) 
-                MaterialTheme.colorScheme.primary
+                color ?: MaterialTheme.colorScheme.primary
             else 
                 MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal

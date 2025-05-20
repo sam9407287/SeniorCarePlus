@@ -447,6 +447,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
                                 isSelected = filterType == 0,
                                 onClick = { filterType = 0 },
                                 isDarkTheme = isDarkTheme,
+                                color = if (isDarkTheme) Color(0xFF81C784) else Color(0xFF4CAF50), // 綠色
                                 modifier = Modifier.fillMaxWidth(0.9f)
                             )
                         }
@@ -499,6 +500,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
                                 isSelected = selectedTimeRange == 1,
                                 onClick = { selectedTimeRange = 1 },
                                 isDarkTheme = isDarkTheme,
+                                color = if (isDarkTheme) Color(0xFF81C784) else Color(0xFF4CAF50), // 綠色
                                 modifier = Modifier.fillMaxWidth(0.9f)
                             )
                         }
@@ -513,6 +515,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
                                 isSelected = selectedTimeRange == 3,
                                 onClick = { selectedTimeRange = 3 },
                                 isDarkTheme = isDarkTheme,
+                                color = if (isDarkTheme) Color(0xFFFF5252) else Color.Red, // 紅色，與高溫按鈕相同
                                 modifier = Modifier.fillMaxWidth(0.9f)
                             )
                         }

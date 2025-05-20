@@ -53,8 +53,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
@@ -130,12 +133,22 @@ fun TemperatureMonitorScreen(navController: NavController) {
         }
     }
     
-    // 獲取指定病人的溫度數據
-    val temperatureData by temperatureViewModel.getPatientTemperatureData(
+    // 設置過濾類型: 0 = 全部, 1 = 僅高溫, 2 = 僅低溫
+    var filterType by remember { mutableStateOf(0) }
+    
+    // 獲取指定病人的完整溫度數據（用於圖表顯示，不受過濾選項影響）
+    val fullTemperatureData by temperatureViewModel.getPatientTemperatureData(
         patientId = selectedPatientId, 
         daysToShow = selectedTimeRange, 
-        showAbnormalOnly = showAbnormalOnly
+        showAbnormalOnly = false // 始終顯示全部數據
     ).collectAsState(initial = emptyList())
+    
+    // 獲取經過過濾的溫度數據（用於下方記錄列表顯示，受過濾選項影響）
+    val filteredRecords = when (filterType) {
+        1 -> fullTemperatureData.filter { it.temperature > 37.5f } // 高溫
+        2 -> fullTemperatureData.filter { it.temperature < 36.0f } // 低溫
+        else -> fullTemperatureData // 全部
+    }
     
     // 使用語言設置
     // val isChineseLanguage already defined above
@@ -146,9 +159,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
     } else {
         listOf("Today", "This Week", "This Month")
     }
-    
-    // 設置過濾類型: 0 = 全部, 1 = 僅高溫, 2 = 僅低溫
-    var filterType by remember { mutableStateOf(0) }
+
     
     // 根據選擇的標籤頁索引更新顯示天數
     LaunchedEffect(selectedTabIndex) {
@@ -159,22 +170,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
         }
     }
     
-    // 根據過濾類型更新異常過濾設置
-    LaunchedEffect(filterType) {
-        // 只有當filterType是1(高溫)或2(低溫)時才啟用異常過濾
-        showAbnormalOnly = filterType != 0
-        
-        // 通知ViewModel更新過濾設置
-        if (filterType != 0) {
-            // 1 = 僅高溫, 2 = 僅低溫
-            temperatureViewModel.setAbnormalFilter(
-                if (filterType == 1) TemperatureStatus.HIGH else TemperatureStatus.LOW
-            )
-        } else {
-            // 重置過濾器
-            temperatureViewModel.setAbnormalFilter(null)
-        }
-    }
+    // 我們現在直接在UI層過濾數據，不再需要通知ViewModel
     
     // 使用LazyColumn替代Column让整个页面可以滚动
     LazyColumn(
@@ -317,34 +313,6 @@ fun TemperatureMonitorScreen(navController: NavController) {
                 }
                 
                 Spacer(modifier = Modifier.height(16.dp))
-                
-                // 過濾選項
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    // 温度过滤按钮
-                    AbnormalFilterChip(
-                        text = if (isChineseLanguage) "全部" else "All",
-                        isSelected = filterType == 0,
-                        onClick = { filterType = 0 },
-                        isDarkTheme = isDarkTheme
-                    )
-                    
-                    AbnormalFilterChip(
-                        text = if (isChineseLanguage) "高溫" else "High",
-                        isSelected = filterType == 1,
-                        onClick = { filterType = 1 },
-                        isDarkTheme = isDarkTheme
-                    )
-                    
-                    AbnormalFilterChip(
-                        text = if (isChineseLanguage) "低溫" else "Low",
-                        isSelected = filterType == 2,
-                        onClick = { filterType = 2 },
-                        isDarkTheme = isDarkTheme
-                    )
-                }
             }
         }
         
@@ -362,7 +330,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
                         Color.White
                 )
             ) {
-                if (temperatureData.isEmpty()) {
+                if (fullTemperatureData.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -374,7 +342,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
                     }
                 } else {
                     TemperatureChart(
-                        temperatureData = temperatureData,
+                        temperatureData = fullTemperatureData,
                         isDarkTheme = isDarkTheme,
                         isChineseLanguage = isChineseLanguage
                     )
@@ -393,7 +361,39 @@ fun TemperatureMonitorScreen(navController: NavController) {
             )
         }
         
-        if (temperatureData.isEmpty()) {
+        // 過濾選項（移至體溫記錄標題下方）
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                // 温度过滤按钮
+                AbnormalFilterChip(
+                    text = if (isChineseLanguage) "全部" else "All",
+                    isSelected = filterType == 0,
+                    onClick = { filterType = 0 },
+                    isDarkTheme = isDarkTheme
+                )
+                
+                AbnormalFilterChip(
+                    text = if (isChineseLanguage) "高溫" else "High",
+                    isSelected = filterType == 1,
+                    onClick = { filterType = 1 },
+                    isDarkTheme = isDarkTheme
+                )
+                
+                AbnormalFilterChip(
+                    text = if (isChineseLanguage) "低溫" else "Low",
+                    isSelected = filterType == 2,
+                    onClick = { filterType = 2 },
+                    isDarkTheme = isDarkTheme
+                )
+            }
+        }
+        
+        if (filteredRecords.isEmpty()) {
             item {
                 Box(
                     modifier = Modifier
@@ -409,7 +409,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
             }
         } else {
             // 體溫記錄項目
-            items(temperatureData) { record ->
+            items(filteredRecords) { record ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -455,10 +455,20 @@ fun TemperatureChart(temperatureData: List<TemperatureData>, isDarkTheme: Boolea
     val minTemp = sortedRecords.minOfOrNull { it.temperature }?.minus(0.5f) ?: 35.5f
     val maxTemp = sortedRecords.maxOfOrNull { it.temperature }?.plus(0.5f) ?: 39.5f
     
+    // 定義高溫和低溫閾值
+    val highTempThreshold = 37.5f
+    val lowTempThreshold = 36.0f
+    
+    // 定義顏色
+    val mainLineColor = Color(0xFFFF4081) // 主要線顏色（粉紅色）
+    val highTempColor = Color(0xFFFF5252) // 高溫閾值線顏色（紅色）
+    val lowTempColor = Color(0xFF2196F3)  // 低溫閾值線顏色（藍色）
+    val backgroundFillColor = Color(0x20FF4081) // 圖表背景填充顏色（淡粉色）
+    
     Canvas(
         modifier = Modifier
             .fillMaxSize()
-            .background(if (isDarkTheme) DarkChartBackground else LightChartBackground)
+            .background(Color.White)
     ) {
         val height = size.height
         val width = size.width
@@ -472,7 +482,7 @@ fun TemperatureChart(temperatureData: List<TemperatureData>, isDarkTheme: Boolea
         val verticalStepSize = chartHeight / (maxTemp - minTemp)
         val horizontalStepSize = chartWidth / (sortedRecords.size - 1).coerceAtLeast(1)
         
-        // 设置网格和轴线颜色
+        // 設置網格和軸線顏色
         val gridColor = if (isDarkTheme) Color(0xFF444444) else Color.LightGray
         val textColor = if (isDarkTheme) Color(0xFFCCCCCC) else Color.DarkGray
         
@@ -491,6 +501,59 @@ fun TemperatureChart(temperatureData: List<TemperatureData>, isDarkTheme: Boolea
             end = Offset(width, chartHeight),
             strokeWidth = 1f
         )
+        
+        // 繪製圖表底色
+        drawRect(
+            color = backgroundFillColor,
+            topLeft = Offset(yAxisWidth, 0f),
+            size = Size(width - yAxisWidth, chartHeight)
+        )
+
+        // 繪製高溫閾值水平線
+        val highTempY = chartHeight - (highTempThreshold - minTemp) * verticalStepSize
+        drawLine(
+            color = highTempColor,
+            start = Offset(yAxisWidth, highTempY),
+            end = Offset(width, highTempY),
+            strokeWidth = 2.5f,
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+        )
+        
+        // 繪製低溫閾值水平線
+        val lowTempY = chartHeight - (lowTempThreshold - minTemp) * verticalStepSize
+        drawLine(
+            color = lowTempColor,
+            start = Offset(yAxisWidth, lowTempY),
+            end = Offset(width, lowTempY),
+            strokeWidth = 2.5f,
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+        )
+        
+        // 在高溫閾值線旁添加文字標註
+        drawContext.canvas.nativeCanvas.apply {
+            drawText(
+                String.format("%.1f", highTempThreshold),
+                width - 40f,
+                highTempY - 5f,
+                Paint().apply {
+                    color = highTempColor.toArgb()
+                    textSize = 12.sp.toPx()
+                    textAlign = Paint.Align.RIGHT
+                    isFakeBoldText = true
+                }
+            )
+            drawText(
+                String.format("%.1f", lowTempThreshold),
+                width - 40f,
+                lowTempY - 5f,
+                Paint().apply {
+                    color = lowTempColor.toArgb()
+                    textSize = 12.sp.toPx()
+                    textAlign = Paint.Align.RIGHT
+                    isFakeBoldText = true
+                }
+            )
+        }
         
         // Y軸標籤
         val ySteps = 5
@@ -545,10 +608,6 @@ fun TemperatureChart(temperatureData: List<TemperatureData>, isDarkTheme: Boolea
             }
         }
         
-        // 正常範圍區域
-        val normalLowY = chartHeight - (36.0f - minTemp) * verticalStepSize
-        val normalHighY = chartHeight - (37.5f - minTemp) * verticalStepSize
-        
         // 畫折線
         val points = sortedRecords.mapIndexed { index, record ->
             val x = yAxisWidth + index * horizontalStepSize
@@ -556,48 +615,71 @@ fun TemperatureChart(temperatureData: List<TemperatureData>, isDarkTheme: Boolea
             Offset(x, y)
         }
         
-        // 绘制整个折线图下方的填充
-        val belowCurvePath = Path()
-        belowCurvePath.moveTo(yAxisWidth, chartHeight)
-        for (point in points) {
-            belowCurvePath.lineTo(point.x, point.y)
+        // 1. 低溫區域填充（藍色）
+        if (points.isNotEmpty()) {
+            val lowTempPath = Path()
+            lowTempPath.moveTo(yAxisWidth, lowTempY)
+            for (point in points) {
+                // 只有低於閾值的點才連接到曲線上
+                if (point.y > lowTempY) {
+                    lowTempPath.lineTo(point.x, point.y)
+                } else {
+                    lowTempPath.lineTo(point.x, lowTempY)
+                }
+            }
+            lowTempPath.lineTo(width, lowTempY)
+            lowTempPath.close()
+            
+            drawPath(
+                path = lowTempPath,
+                color = lowTempColor.copy(alpha = 0.15f)
+            )
         }
-        belowCurvePath.lineTo(width, chartHeight)
-        belowCurvePath.close()
         
-        // 使用根据主题调整的填充颜色
-        drawPath(
-            path = belowCurvePath,
-            color = if (isDarkTheme) 
-                DarkChartLine.copy(alpha = 0.15f) 
-            else 
-                Color(0x55FFB6C1) // 浅色模式保持原来的淡红色
-        )
+        // 2. 高溫區域填充（紅色）
+        if (points.isNotEmpty()) {
+            val highTempPath = Path()
+            highTempPath.moveTo(yAxisWidth, highTempY)
+            for (point in points) {
+                // 只有高於閾值的點才連接到曲線上
+                if (point.y < highTempY) {
+                    highTempPath.lineTo(point.x, point.y)
+                } else {
+                    highTempPath.lineTo(point.x, highTempY)
+                }
+            }
+            highTempPath.lineTo(width, highTempY)
+            highTempPath.close()
+            
+            drawPath(
+                path = highTempPath,
+                color = highTempColor.copy(alpha = 0.15f)
+            )
+        }
         
         // 繪製点和線
         for (i in 0 until points.size - 1) {
             val current = points[i]
             val next = points[i + 1]
             
-            // 線條
             drawLine(
-                color = if (isDarkTheme) DarkChartLine else LightChartLine,
+                color = mainLineColor,
                 start = current,
                 end = next,
-                strokeWidth = 2f
+                strokeWidth = 2.5f
             )
             
             // 異常體溫彩色點
             val record = sortedRecords[i]
             val pointColor = when {
-                record.temperature > 37.5f -> Color.Red
-                record.temperature < 36.0f -> Color.Blue
-                else -> if (isDarkTheme) DarkChartLine else LightChartLine
+                record.temperature > 37.5f -> highTempColor
+                record.temperature < 36.0f -> lowTempColor
+                else -> mainLineColor
             }
             
             drawCircle(
                 color = pointColor,
-                radius = 4f,
+                radius = 5f,
                 center = current
             )
         }
@@ -606,15 +688,23 @@ fun TemperatureChart(temperatureData: List<TemperatureData>, isDarkTheme: Boolea
         if (points.isNotEmpty()) {
             val lastRecord = sortedRecords.last()
             val lastPointColor = when {
-                lastRecord.temperature > 37.5f -> Color.Red
-                lastRecord.temperature < 36.0f -> Color.Blue
-                else -> if (isDarkTheme) DarkChartLine else LightChartLine
+                lastRecord.temperature > 37.5f -> highTempColor
+                lastRecord.temperature < 36.0f -> lowTempColor
+                else -> mainLineColor
             }
             
+            // 最後一個點顯示為較大的圓點
             drawCircle(
                 color = lastPointColor,
-                radius = 4f,
+                radius = 8f,
                 center = points.last()
+            )
+            // 加外圈
+            drawCircle(
+                color = Color.White,
+                radius = 10f,
+                center = points.last(),
+                style = Stroke(width = 2f)
             )
         }
     }

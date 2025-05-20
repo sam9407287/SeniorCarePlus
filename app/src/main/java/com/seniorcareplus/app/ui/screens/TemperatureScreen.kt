@@ -73,8 +73,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import kotlin.math.abs
 import com.seniorcareplus.app.ui.theme.DarkCardBackground
 import com.seniorcareplus.app.ui.theme.DarkChartBackground
 import com.seniorcareplus.app.ui.theme.DarkChartLine
@@ -86,12 +89,72 @@ import com.seniorcareplus.app.ui.theme.LanguageManager
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.lifecycle.viewmodel.compose.viewModel
-import java.time.temporal.ChronoUnit
 import com.seniorcareplus.app.ui.components.TimeRangeChip
 import com.seniorcareplus.app.ui.components.AbnormalFilterChip
 import com.seniorcareplus.app.models.TemperatureData
 import com.seniorcareplus.app.ui.viewmodels.TemperatureViewModel
 import com.seniorcareplus.app.models.TemperatureStatus
+
+/**
+ * 按固定的時間間隔（10分鐘）對溫度數據進行取樣
+ * 如果每10分鐘的整點附近有多個數據點，則按時間取最接近整點的那個
+ */
+fun getSampledTemperatureData(temperatureData: List<TemperatureData>): List<TemperatureData> {
+    if (temperatureData.isEmpty()) return emptyList()
+    
+    // 按時間排序
+    val sortedData = temperatureData.sortedBy { it.getLocalDateTime() }
+    
+    // 如果數據少於24點，直接返回原数据，避免圖表過稀疏
+    if (sortedData.size <= 24) return sortedData
+    
+    val result = mutableListOf<TemperatureData>()
+    val startTime = sortedData.first().getLocalDateTime()
+    val endTime = sortedData.last().getLocalDateTime()
+    
+    // 計算一天的時間點（10分鐘一個）
+    val timePoints = mutableListOf<LocalDateTime>()
+    var currentTime = startTime.withMinute((startTime.minute / 10) * 10).withSecond(0).withNano(0)
+    
+    while (currentTime.isBefore(endTime) || currentTime.isEqual(endTime)) {
+        timePoints.add(currentTime)
+        currentTime = currentTime.plusMinutes(10)
+    }
+    
+    // 為每個10分鐘的整點找最接近的數據點
+    for (timePoint in timePoints) {
+        // 如果有多個與整點相同的時間，選擇第一個
+        val exactMatch = sortedData.firstOrNull { 
+            val recordTime = it.getLocalDateTime()
+            recordTime.minute == timePoint.minute && 
+            recordTime.hour == timePoint.hour && 
+            recordTime.dayOfMonth == timePoint.dayOfMonth && 
+            recordTime.month == timePoint.month && 
+            recordTime.year == timePoint.year
+        }
+        
+        if (exactMatch != null) {
+            result.add(exactMatch)
+            continue
+        }
+        
+        // 找最接近整點的數據
+        val closestRecord = sortedData.minByOrNull { record -> 
+            abs(ChronoUnit.SECONDS.between(record.getLocalDateTime(), timePoint)).toInt()
+        }
+        
+        // 如果最接近的點與整點相差不超過5分鐘，才添加
+        if (closestRecord != null && 
+            abs(ChronoUnit.MINUTES.between(closestRecord.getLocalDateTime(), timePoint)) <= 5) {
+            // 確保不重復添加
+            if (!result.contains(closestRecord)) {
+                result.add(closestRecord)
+            }
+        }
+    }
+    
+    return result
+}
 
 @Composable
 fun TemperatureMonitorScreen(navController: NavController) {
@@ -131,6 +194,9 @@ fun TemperatureMonitorScreen(navController: NavController) {
     var showAbnormalOnly by remember { mutableStateOf(false) }
     // 選擇的時間範圍
     var selectedTimeRange by remember { mutableStateOf(7) } // 默認為7天
+    
+    // 日期選擇狀態
+    var selectedDayIndex by remember { mutableStateOf(0) } // 0:今天, 1:昨天, 2:前天
     
     // 當病人列表更新且非空時，選擇第一個病人
     LaunchedEffect(actualPatientList) {
@@ -175,19 +241,15 @@ fun TemperatureMonitorScreen(navController: NavController) {
     
     // 標籤頁選項
     val tabTitles = if (isChineseLanguage) {
-        listOf("今日", "本週", "本月")
+        listOf("今日", "昨天", "前天")
     } else {
-        listOf("Today", "This Week", "This Month")
+        listOf("Today", "Yesterday", "Day Before")
     }
 
     
-    // 根據選擇的標籤頁索引更新顯示天數
+    // 根據選擇的標籤頁索引更新顯示選擇的日期
     LaunchedEffect(selectedTabIndex) {
-        selectedTimeRange = when (selectedTabIndex) {
-            0 -> 1     // 今日
-            1 -> 7     // 本週
-            else -> 30 // 本月
-        }
+        selectedDayIndex = selectedTabIndex // 直接同步選擇的天數索引
     }
     
     // 我們現在直接在UI層過濾數據，不再需要通知ViewModel
@@ -337,67 +399,96 @@ fun TemperatureMonitorScreen(navController: NavController) {
             }
         }
         
-        // 頁籤選擇列
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                TabRow(
-                    selectedTabIndex = selectedTabIndex,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.primary
-                ) {
-                    val tabTitles = if (isChineseLanguage) {
-                        listOf("今日", "本週", "本月")
-                    } else {
-                        listOf("Today", "This Week", "This Month")
-                    }
-                    
-                    tabTitles.forEachIndexed { index, title ->
-                        Tab(
-                            selected = selectedTabIndex == index,
-                            onClick = { selectedTabIndex = index },
-                            text = { Text(title) }
-                        )
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-        }
+        // 頁籤選擇列已移至體溫趨勢圖卡片中
+        // 此處移除重複的Tab元素
         
-        // 顯示體溫圖表
+        // 頁籤欄 - 改為今天、昨天、前天
         item {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = if (isDarkTheme) 
                         MaterialTheme.colorScheme.surface 
                     else 
-                        Color.White
+                        Color(0xFFF0F4FF) // 淺藍色背景，與心率圖表一致
                 )
             ) {
-                if (fullTemperatureData.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // 頁籤選擇列
+                    TabRow(
+                        selectedTabIndex = selectedTabIndex,
+                        contentColor = MaterialTheme.colorScheme.primary
                     ) {
-                        Text(
-                            text = if (isChineseLanguage) "無體溫記錄" else "No temperature records",
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
+                        val tabTitles = if (isChineseLanguage) {
+                            listOf("今日", "昨天", "前天")
+                        } else {
+                            listOf("Today", "Yesterday", "Day Before")
+                        }
+                        
+                        tabTitles.forEachIndexed { index, title ->
+                            Tab(
+                                selected = selectedTabIndex == index,
+                                onClick = { selectedTabIndex = index },
+                                text = { Text(title) }
+                            )
+                        }
                     }
-                } else {
-                    TemperatureChart(
-                        temperatureData = fullTemperatureData,
-                        isDarkTheme = isDarkTheme,
-                        isChineseLanguage = isChineseLanguage
+                    
+                    // 體溫趨勢圖標題
+                    Text(
+                        text = if (isChineseLanguage) "體溫趨勢圖" else "Temperature Trend",
+                        modifier = Modifier.padding(start = 16.dp, top = 12.dp),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
+                    
+                    // 顯示體溫圖表
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .padding(8.dp)
+                    ) {
+                        if (fullTemperatureData.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (isChineseLanguage) "無體溫記錄" else "No temperature records",
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                )
+                            }
+                        } else {
+                            // 篩選數據 - 根據所選日期和10分鐘間隔進行過濾
+                            val today = java.time.LocalDate.now()
+                            val selectedDate = when(selectedTabIndex) {
+                                0 -> today // 今天
+                                1 -> today.minusDays(1) // 昨天
+                                else -> today.minusDays(2) // 前天
+                            }
+                            
+                            // 過濾所選日期的數據
+                            val dateFilteredData = fullTemperatureData.filter { record ->
+                                val recordDate = record.getLocalDateTime().toLocalDate()
+                                recordDate == selectedDate
+                            }
+                            
+                            // 按10分鐘間隔取樣數據
+                            val sampledData = getSampledTemperatureData(dateFilteredData)
+                            
+                            TemperatureChart(
+                                temperatureData = sampledData,
+                                isDarkTheme = isDarkTheme,
+                                isChineseLanguage = isChineseLanguage
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -586,7 +677,7 @@ fun TemperatureMonitorScreen(navController: NavController) {
 @Composable
 fun TemperatureChart(temperatureData: List<TemperatureData>, isDarkTheme: Boolean, isChineseLanguage: Boolean) {
     // 排序記錄，按時間順序
-    val sortedRecords = temperatureData.sortedBy { it.timestamp }
+    val sortedRecords = temperatureData.sortedBy { it.getLocalDateTime() }
     
     if (sortedRecords.isEmpty()) {
         Box(
@@ -601,24 +692,28 @@ fun TemperatureChart(temperatureData: List<TemperatureData>, isDarkTheme: Boolea
         return
     }
     
-    // 獲取最高和最低體溫，添加一些邊界
-    val minTemp = sortedRecords.minOfOrNull { it.temperature }?.minus(0.5f) ?: 35.5f
-    val maxTemp = sortedRecords.maxOfOrNull { it.temperature }?.plus(0.5f) ?: 39.5f
+    // 固定溫度顯示範圍為34°C到40°C
+    val minTemp = 34.0f // 圖表最低顯示溫度
+    val maxTemp = 40.0f // 圖表最高顯示溫度
     
     // 定義高溫和低溫閾值
     val highTempThreshold = 37.5f
     val lowTempThreshold = 36.0f
     
     // 定義顏色
-    val mainLineColor = Color(0xFFFF4081) // 主要線顏色（粉紅色）
-    val highTempColor = Color(0xFFFF5252) // 高溫閾值線顏色（紅色）
-    val lowTempColor = Color(0xFF2196F3)  // 低溫閾值線顏色（藍色）
-    val backgroundFillColor = Color(0x20FF4081) // 圖表背景填充顏色（淡粉色）
+    val backgroundWhite = Color.White // 白色圖表背景
+    val fillPink = Color(0xFFFFECEF).copy(alpha = 0.9f) // 非常淺的粉色填充區域
+    val normalPointColor = Color(0xFFFF4081) // 正常點的淺紅色
+    val lineColor = Color(0xFFFF4081) // 淺紅色線條
+    val highTempColor = Color(0xFFE53935) // 高溫點的深紅色
+    val lowTempColor = Color(0xFF2196F3) // 低溫點的藍色
+    
+    val chartBackgroundColor = if (isDarkTheme) Color(0xFF121212) else backgroundWhite
     
     Canvas(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(chartBackgroundColor)
     ) {
         val height = size.height
         val width = size.width
@@ -630,60 +725,39 @@ fun TemperatureChart(temperatureData: List<TemperatureData>, isDarkTheme: Boolea
         val chartWidth = width - yAxisWidth
         
         val verticalStepSize = chartHeight / (maxTemp - minTemp)
-        val horizontalStepSize = chartWidth / (sortedRecords.size - 1).coerceAtLeast(1)
         
         // 設置網格和軸線顏色
-        val gridColor = if (isDarkTheme) Color(0xFF444444) else Color.LightGray
+        val gridColor = if (isDarkTheme) Color(0xFF444444) else Color.LightGray.copy(alpha = 0.4f)
         val textColor = if (isDarkTheme) Color(0xFFCCCCCC) else Color.DarkGray
         
-        // 畫Y軸
-        drawLine(
-            color = gridColor,
-            start = Offset(yAxisWidth, 0f),
-            end = Offset(yAxisWidth, chartHeight),
-            strokeWidth = 1f
-        )
-        
-        // 畫X軸
-        drawLine(
-            color = gridColor,
-            start = Offset(yAxisWidth, chartHeight),
-            end = Offset(width, chartHeight),
-            strokeWidth = 1f
-        )
-        
-        // 繪製圖表底色
-        drawRect(
-            color = backgroundFillColor,
-            topLeft = Offset(yAxisWidth, 0f),
-            size = Size(width - yAxisWidth, chartHeight)
-        )
-
-        // 繪製高溫閾值水平線
+        // 計算高溫和低溫閾值線的Y坐標
         val highTempY = chartHeight - (highTempThreshold - minTemp) * verticalStepSize
+        val lowTempY = chartHeight - (lowTempThreshold - minTemp) * verticalStepSize
+        
+        // 先不繪製背景填充，稍後在點之間的連線下面填充
+        // 繪製高溫閾值水平線
         drawLine(
             color = highTempColor,
-            start = Offset(yAxisWidth, highTempY),
+            start = Offset(0f, highTempY),
             end = Offset(width, highTempY),
             strokeWidth = 2.5f,
-            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+            pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
         )
         
         // 繪製低溫閾值水平線
-        val lowTempY = chartHeight - (lowTempThreshold - minTemp) * verticalStepSize
         drawLine(
             color = lowTempColor,
-            start = Offset(yAxisWidth, lowTempY),
+            start = Offset(0f, lowTempY),
             end = Offset(width, lowTempY),
             strokeWidth = 2.5f,
-            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+            pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
         )
         
-        // 在高溫閾值線旁添加文字標註
+        // 在右側增加高低溫閾值標註
         drawContext.canvas.nativeCanvas.apply {
             drawText(
                 String.format("%.1f", highTempThreshold),
-                width - 40f,
+                width - 15f,
                 highTempY - 5f,
                 Paint().apply {
                     color = highTempColor.toArgb()
@@ -694,7 +768,7 @@ fun TemperatureChart(temperatureData: List<TemperatureData>, isDarkTheme: Boolea
             )
             drawText(
                 String.format("%.1f", lowTempThreshold),
-                width - 40f,
+                width - 15f,
                 lowTempY - 5f,
                 Paint().apply {
                     color = lowTempColor.toArgb()
@@ -705,26 +779,17 @@ fun TemperatureChart(temperatureData: List<TemperatureData>, isDarkTheme: Boolea
             )
         }
         
-        // Y軸標籤
+        // Y軸溫度标签
         val ySteps = 5
-        val yRange = maxTemp - minTemp
-        val yStepValue = yRange / ySteps
-        
+        val temperatureRange = maxTemp - minTemp
         for (i in 0..ySteps) {
-            val y = chartHeight - (i * yRange / ySteps) * verticalStepSize
-            val temp = minTemp + (i * yStepValue)
-            
-            drawLine(
-                color = gridColor,
-                start = Offset(yAxisWidth, y),
-                end = Offset(width, y),
-                strokeWidth = 0.5f
-            )
+            val temperature = minTemp + (temperatureRange * i) / ySteps
+            val y = chartHeight - (temperature - minTemp) * verticalStepSize
             
             drawContext.canvas.nativeCanvas.apply {
                 drawText(
-                    String.format("%.1f", temp),
-                    5f,
+                    String.format("%.1f", temperature),
+                    15f,
                     y + 5f,
                     Paint().apply {
                         color = textColor.toArgb()
@@ -735,127 +800,125 @@ fun TemperatureChart(temperatureData: List<TemperatureData>, isDarkTheme: Boolea
             }
         }
         
-        // X軸標籤
-        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-        val xLabelCount = 4
-        val xStep = sortedRecords.size / xLabelCount.coerceAtLeast(1)
+        // 分前為24小時，繪製 X 軸小時刻度
+        val hours = 24
+        val hourWidth = width / hours
         
-        for (i in 0 until sortedRecords.size step xStep.coerceAtLeast(1)) {
-            val x = yAxisWidth + i * horizontalStepSize
-            val time = sortedRecords[i].timestamp.format(timeFormatter)
+        // 取得日期部分作為標題
+        val date = sortedRecords.firstOrNull()?.getLocalDateTime()?.toLocalDate() ?: java.time.LocalDate.now()
+        val dateStr = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+        
+        // 在頂部繪制日期標題
+        drawContext.canvas.nativeCanvas.apply {
+            drawText(
+                dateStr,
+                width / 2,
+                20f,
+                Paint().apply {
+                    color = textColor.toArgb()
+                    textSize = 14.sp.toPx()
+                    textAlign = Paint.Align.CENTER
+                    isFakeBoldText = true
+                }
+            )
+        }
+        
+        // 繪製每個小時的標記
+        for (hour in 0 until hours) {
+            val x = hour * hourWidth
             
-            drawContext.canvas.nativeCanvas.apply {
-                drawText(
-                    time,
-                    x,
-                    height - 10f,
-                    Paint().apply {
-                        color = textColor.toArgb()
-                        textSize = 12.sp.toPx()
-                        textAlign = Paint.Align.CENTER
+            // 繪製垂直網格線
+            drawLine(
+                color = gridColor,
+                start = Offset(x, 0f),
+                end = Offset(x, chartHeight),
+                strokeWidth = 0.5f
+            )
+            
+            // 只在每3小時顯示時間標簽，減少擠擬
+            if (hour % 3 == 0 || hour == 23) {
+                drawContext.canvas.nativeCanvas.apply {
+                    drawText(
+                        String.format("%02d:00", hour),
+                        x,
+                        height - 5f,
+                        Paint().apply {
+                            color = textColor.toArgb()
+                            textSize = 12.sp.toPx()
+                            textAlign = Paint.Align.CENTER
+                        }
+                    )
+                }
+            }
+        }
+        
+        // 將體溫資料點映射到圖表上
+        if (sortedRecords.isNotEmpty()) {
+            // 計算一天內的相對時間位置
+            val dayStartTime = sortedRecords.first().getLocalDateTime().withHour(0).withMinute(0).withSecond(0)
+            
+            val points = sortedRecords.map { record ->
+                val recordTime = record.getLocalDateTime()
+                val minutesSinceDayStart = ChronoUnit.MINUTES.between(dayStartTime, recordTime).toFloat()
+                val dayProgressRatio = minutesSinceDayStart / (24 * 60)
+                val x = dayProgressRatio * width
+                val y = chartHeight - (record.temperature - minTemp) * verticalStepSize
+                Triple(x, y, record)
+            }
+            
+            // 繪製體溫折線和填充區域 - 類似心率圖的效果
+            if (points.size >= 2) {
+                // 先為所有點間的連線創建填充路徑
+                val fillPath = Path().apply {
+                    // 路徑起點為第一個點
+                    moveTo(points.first().first, points.first().second)
+                    
+                    // 連接所有點
+                    for (i in 1 until points.size) {
+                        lineTo(points[i].first, points[i].second)
                     }
+                    
+                    // 向下走到圖表底部右角
+                    lineTo(points.last().first, chartHeight)
+                    
+                    // 水平走回到圖表左下角
+                    lineTo(points.first().first, chartHeight)
+                    
+                    // 往上回到起點以封閉路徑
+                    close()
+                }
+                
+                // 繪製紅色填充區域
+                drawPath(
+                    path = fillPath,
+                    color = fillPink
+                )
+                
+                // 繪製所有點之間的連線
+                for (i in 0 until points.size - 1) {
+                    drawLine(
+                        color = lineColor,
+                        start = Offset(points[i].first, points[i].second),
+                        end = Offset(points[i + 1].first, points[i + 1].second),
+                        strokeWidth = 2f
+                    )
+                }
+            }
+            
+            // 繪製體溫點
+            points.forEach { (x, y, record) ->
+                val pointColor = when {
+                    record.temperature > highTempThreshold -> highTempColor // 高溫
+                    record.temperature < lowTempThreshold -> lowTempColor  // 低溫
+                    else -> normalPointColor // 正常
+                }
+                
+                drawCircle(
+                    color = pointColor,
+                    radius = 5f,
+                    center = Offset(x, y)
                 )
             }
-        }
-        
-        // 畫折線
-        val points = sortedRecords.mapIndexed { index, record ->
-            val x = yAxisWidth + index * horizontalStepSize
-            val y = chartHeight - (record.temperature - minTemp) * verticalStepSize
-            Offset(x, y)
-        }
-        
-        // 1. 低溫區域填充（藍色）
-        if (points.isNotEmpty()) {
-            val lowTempPath = Path()
-            lowTempPath.moveTo(yAxisWidth, lowTempY)
-            for (point in points) {
-                // 只有低於閾值的點才連接到曲線上
-                if (point.y > lowTempY) {
-                    lowTempPath.lineTo(point.x, point.y)
-                } else {
-                    lowTempPath.lineTo(point.x, lowTempY)
-                }
-            }
-            lowTempPath.lineTo(width, lowTempY)
-            lowTempPath.close()
-            
-            drawPath(
-                path = lowTempPath,
-                color = lowTempColor.copy(alpha = 0.15f)
-            )
-        }
-        
-        // 2. 高溫區域填充（紅色）
-        if (points.isNotEmpty()) {
-            val highTempPath = Path()
-            highTempPath.moveTo(yAxisWidth, highTempY)
-            for (point in points) {
-                // 只有高於閾值的點才連接到曲線上
-                if (point.y < highTempY) {
-                    highTempPath.lineTo(point.x, point.y)
-                } else {
-                    highTempPath.lineTo(point.x, highTempY)
-                }
-            }
-            highTempPath.lineTo(width, highTempY)
-            highTempPath.close()
-            
-            drawPath(
-                path = highTempPath,
-                color = highTempColor.copy(alpha = 0.15f)
-            )
-        }
-        
-        // 繪製点和線
-        for (i in 0 until points.size - 1) {
-            val current = points[i]
-            val next = points[i + 1]
-            
-            drawLine(
-                color = mainLineColor,
-                start = current,
-                end = next,
-                strokeWidth = 2.5f
-            )
-            
-            // 異常體溫彩色點
-            val record = sortedRecords[i]
-            val pointColor = when {
-                record.temperature > 37.5f -> highTempColor
-                record.temperature < 36.0f -> lowTempColor
-                else -> mainLineColor
-            }
-            
-            drawCircle(
-                color = pointColor,
-                radius = 5f,
-                center = current
-            )
-        }
-        
-        // 最後一個點
-        if (points.isNotEmpty()) {
-            val lastRecord = sortedRecords.last()
-            val lastPointColor = when {
-                lastRecord.temperature > 37.5f -> highTempColor
-                lastRecord.temperature < 36.0f -> lowTempColor
-                else -> mainLineColor
-            }
-            
-            // 最後一個點顯示為較大的圓點
-            drawCircle(
-                color = lastPointColor,
-                radius = 8f,
-                center = points.last()
-            )
-            // 加外圈
-            drawCircle(
-                color = Color.White,
-                radius = 10f,
-                center = points.last(),
-                style = Stroke(width = 2f)
-            )
         }
     }
 }

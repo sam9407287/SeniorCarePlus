@@ -136,9 +136,10 @@ app/
 ### 2. 健康監測功能 | Health Monitoring Features
 - **體溫監測**: 記錄和追蹤用戶體溫數據，支援異常數據提醒
   *Temperature Monitoring: Records and tracks user temperature data, supports abnormal data alerts*
-  - 圖表顯示體溫變化趨勢，使用粉紅色主題視覺化展示 | *Charts display temperature trends with a pink theme visualization*
+  - 圖表顯示體溫變化趨勢，顯示範圍為34-40°C | *Charts display temperature trends within a 34-40°C range*
+  - 將點間連線下方區域使用淺紅色填充，類似心率圖效果 | *Area below connection lines filled with light pink, similar to heart rate chart style*
   - 高溫和低溫閾值以虛線清晰標示，並顯示數值 | *High and low temperature thresholds clearly marked with dashed lines and values*
-  - 按日期和時間範圍篩選數據（今日/本週/本月） | *Filter data by date and time range (Today/This Week/This Month)*
+  - 按日期選擇數據（今日/昨天/前天） | *Filter data by date selection (Today/Yesterday/Day Before)*
   - 異常體溫高亮顯示，使用紅色標記高溫和藍色標記低溫 | *Highlight abnormal temperatures with red for high and blue for low*
   - 支援切換不同病患查看各自的體溫記錄 | *Support switching between different patients to view their temperature records*
   - 體溫記錄可按全部/高溫/低溫類別進行過濾 | *Temperature records can be filtered by All/High/Low categories*
@@ -432,6 +433,14 @@ app/
   *Added notification center*
 - 改進健康監測數據顯示
   *Improved health monitoring data display*
+
+### v4.1
+- 改進體溫趨勢圖，調整為34-40°C範圍並實現點間連線下方填充效果
+  *Enhanced temperature trend chart with 34-40°C range and area fill below data point connections*
+- 優化體溫模擬器，生成更多樣化的溫度數據分布
+  *Optimized temperature simulator to generate more diverse temperature data distributions*
+- 修復UI中選擇項重複問題
+  *Fixed UI issues with duplicate selection elements*
 
 ### v4
 - 添加體溫監測功能

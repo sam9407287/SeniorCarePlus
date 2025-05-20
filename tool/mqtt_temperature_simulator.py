@@ -33,7 +33,7 @@ NORMAL_TEMP_MAX = 37.2  # 正常體溫上限
 
 # 發送頻率設置
 LOCATION_INTERVAL = 1.0  # 位置數據發送間隔（秒）
-TEMP_INTERVAL = LOCATION_INTERVAL * 10  # 體溫數據發送間隔（秒），是位置數據的10倍
+TEMP_INTERVAL = LOCATION_INTERVAL  # 體溫數據發送間隔（秒），設置為每秒發送一次
 
 # 全局變量
 running = True
@@ -42,9 +42,12 @@ temperature_history = {}  # 用於存儲每個用戶的體溫歷史記錄
 max_history_records = 1000  # 增加記錄數以存儲三天的數據
 
 # 時間設置
-DAYS_OF_HISTORY = 3  # 過去三天的數據
-DATA_INTERVAL_MINUTES = 10  # 數據間隔為10分鐘
-SIMULATION_INTERVAL_SECONDS = 10  # 模擬器發送頻率為10秒
+DAYS_OF_HISTORY = 2  # 過去兩天的數據
+DATA_INTERVAL_MINUTES = 5  # 數據間隔改為5分鐘，增加數據密度
+SIMULATION_INTERVAL_SECONDS = 0.5  # 模擬器發送頻率到0.5秒一次，加快發送
+
+# 日期格式
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"  # 標準年-月-日格式
 
 def setup_mqtt():
     """設置MQTT客戶端"""
@@ -117,18 +120,40 @@ def generate_temperature(user_id, timestamp=None):
     else:  # 80% 機率產生正常溫度
         return round(base_temp + random.uniform(-variation, variation), 1)
 
+# 模擬器的當前時間計數，從5月19日開始到現在
+SIMULATION_START_TIME = datetime(2025, 5, 19, 0, 0, 0)  # 以5月19日開始
+simulation_current_time = SIMULATION_START_TIME
+
+# 如果當前時間已經超過目標日期，重設為下一天的開始
+def check_and_reset_time():
+    global simulation_current_time
+    if simulation_current_time.day > 21:  # 如果超過21日，重設回19日
+        simulation_current_time = datetime(2025, 5, 19, 0, 0, 0)
+    
+    # 確保每天都有充分的數據
+    if simulation_current_time.hour >= 23 and simulation_current_time.minute >= 30:
+        # 移動到下一天的開始
+        next_day = simulation_current_time + timedelta(days=1)
+        simulation_current_time = datetime(next_day.year, next_day.month, next_day.day, 0, 0, 0)
+
 def send_temperature_data(user, timestamp=None, send_mqtt=True):
     """為單個用戶發送特定時間點的體溫數據"""
+    global simulation_current_time
     user_id = user["id"]
     user_name = user["name"]
     gateway_id = user["gateway_id"]
     
-    # 使用提供的時間戳或當前時間
+    # 檢查並重設時間如果需要
+    check_and_reset_time()
+    
+    # 使用提供的時間戳或模擬的當前時間
     if timestamp is None:
-        timestamp = datetime.now()
-        current_time = timestamp.strftime("%Y-%j %H:%M:%S.%f")[:-4]
-    else:
-        current_time = timestamp.strftime("%Y-%j %H:%M:%S.%f")[:-4]
+        timestamp = simulation_current_time
+        # 在實時發送模式下，每次增加10分鐘
+        simulation_current_time += timedelta(minutes=10)
+    
+    # 將datetime物件格式化為字符串
+    current_time = timestamp.strftime(DATE_FORMAT)[:-4]  # 使用標準的年-月-日格式
     
     # 生成該時間點的體溫數據
     skin_temp = generate_temperature(user_id, timestamp)
@@ -141,8 +166,8 @@ def send_temperature_data(user, timestamp=None, send_mqtt=True):
     # 添加新記錄
     new_record = {
         "temperature": skin_temp,
-        "timestamp": current_time,
-        "datetime": timestamp  # 保存實際的datetime對象以方便後續處理
+        "timestamp": current_time,  # 字符串格式的時間戳
+        "datetime": timestamp  # 原始的datetime對象
     }
     temperature_history[user_id].append(new_record)
     
@@ -186,18 +211,21 @@ def send_temperature_data(user, timestamp=None, send_mqtt=True):
         }
 
 def generate_historical_data():
-    """生成過去三天的歷史數據，每10分鐘一筆"""
-    print("\n正在生成過去三天的歷史溫度數據...")
+    """生成從5月19日到5月21日的歷史數據，每5分鐘一筆"""
+    print("\n正在生成從2025-05-19到2025-05-21的歷史溫度數據...")
     
     # 計算開始和結束時間
-    end_time = datetime.now()
-    start_time = end_time - timedelta(days=DAYS_OF_HISTORY)
+    # 使用5月19日到5月21日的完整時間範圍
+    current_date = datetime.now()
+    end_time = datetime(2025, 5, 21, 23, 59, 59)  # 固定結束日期為5月21日
+    start_time = datetime(2025, 5, 19, 0, 0, 0)  # 固定開始日期為5月19日
     
     # 計算需要生成的時間點總數
     data_points_per_day = 24 * 60 // DATA_INTERVAL_MINUTES  # 每天的數據點數
-    total_points = data_points_per_day * DAYS_OF_HISTORY
+    days_diff = (end_time - start_time).days + 1  # 計算實際天數
+    total_points = data_points_per_day * days_diff
     
-    print(f"將為每個用戶生成約{total_points}筆歷史數據（{DAYS_OF_HISTORY}天，每{DATA_INTERVAL_MINUTES}分鐘一筆）")
+    print(f"將為每個用戶生成約{total_points}筆歷史數據（從{start_time.strftime('%Y-%m-%d')}到{end_time.strftime('%Y-%m-%d')}，每{DATA_INTERVAL_MINUTES}分鐘一筆）")
     
     # 生成每個時間點的數據
     current_time = start_time
@@ -211,13 +239,47 @@ def generate_historical_data():
     
     print(f"歷史數據生成完成。總共為每個用戶生成了{len(temperature_history[USERS[0]['id']])}筆數據")
 
+def generate_balanced_data():
+    """為三天生成均衡的數據，確保以下日期都有數據：前天(5月18日)、昨天(5月19日)、今天(5月20日)"""
+    print("\n正在為三天生成均衡分布的溫度數據...")
+    
+    # 三天的時間點
+    days = [
+        datetime(2025, 5, 18, 0, 0, 0),  # 前天
+        datetime(2025, 5, 19, 0, 0, 0),  # 昨天
+        datetime(2025, 5, 20, 0, 0, 0)   # 今天
+    ]
+    
+    # 為每一天生成多個時間點
+    time_points_per_day = 24 * 60 // DATA_INTERVAL_MINUTES  # 每天的數據點數
+    
+    # 清空歷史數據
+    for user in USERS:
+        temperature_history[user["id"]] = []
+    
+    print(f"將為每個用戶生成約{time_points_per_day * 3}筆數據（每天約{time_points_per_day}筆）")
+    
+    # 為每一天生成數據
+    for day in days:
+        # 為一整天生成數據
+        for hour in range(24):
+            for minute in range(0, 60, DATA_INTERVAL_MINUTES):
+                current_time = day.replace(hour=hour, minute=minute)
+                
+                # 為每個用戶生成這個時間點的數據
+                for user in USERS:
+                    send_temperature_data(user, current_time, send_mqtt=False)
+    
+    total_data_points = sum(len(history) for history in temperature_history.values())
+    print(f"數據生成完成，總共生成了{total_data_points}筆數據 ({total_data_points//len(USERS)} 筆/用戶)")
+
 def temperature_simulation_loop():
     """定期從歷史數據中發送體溫數據的主循環"""
     global running
     iteration = 1
     
-    # 首先生成歷史數據
-    generate_historical_data()
+    # 改用均衡的數據生成方式
+    generate_balanced_data()
     
     # 為每個用戶建立一個指向其歷史數據的索引
     user_indices = {user["id"]: 0 for user in USERS}
@@ -323,7 +385,7 @@ def print_statistics():
         print(f"統計信息線程發生錯誤: {e}")
 
 if __name__ == "__main__":
-    print("開始體溫模擬器 - 生成過去三天的數據（每10分鐘一筆），每10秒發送一次")
+    print(f"開始體溫模擬器 - 從{SIMULATION_START_TIME.strftime('%Y-%m-%d')}開始，生成過去三天的數據（每10分鐘一筆），每秒發送一次")
     print("按Ctrl+C停止")
     print("---------------------------------")
     

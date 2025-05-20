@@ -150,12 +150,25 @@ fun TemperatureMonitorScreen(navController: NavController) {
         showAbnormalOnly = false // 始終顯示全部數據
     ).collectAsState(initial = emptyList())
     
-    // 獲取經過過濾的溫度數據（用於下方記錄列表顯示，受過濾選項影響）
-    val filteredRecords = when (filterType) {
-        1 -> fullTemperatureData.filter { it.temperature > 37.5f } // 高溫
-        2 -> fullTemperatureData.filter { it.temperature < 36.0f } // 低溫
-        else -> fullTemperatureData // 全部
-    }
+    // 獲取經過過濾的溫度數據（同時考慮溫度類型和時間範圍）
+    val now = LocalDateTime.now()
+    val filteredRecords = fullTemperatureData
+        .filter { record -> 
+            // 時間範圍過濾 - 使用getLocalDateTime()方法來獲取LocalDateTime對象
+            val recordDateTime = record.getLocalDateTime()
+            val daysAgo = ChronoUnit.DAYS.between(recordDateTime, now).toInt()
+            val inTimeRange = daysAgo < selectedTimeRange
+            
+            // 異常類型過濾
+            val matchesFilter = when (filterType) {
+                1 -> record.temperature > 37.5f // 高溫
+                2 -> record.temperature < 36.0f // 低溫
+                else -> true // 全部顯示
+            }
+            
+            inTimeRange && matchesFilter
+        }
+        .sortedByDescending { it.getLocalDateTime() }
     
     // 使用語言設置
     // val isChineseLanguage already defined above
@@ -389,82 +402,141 @@ fun TemperatureMonitorScreen(navController: NavController) {
             }
         }
         
-        // 體溫記錄列表
+        // 體溫記錄卡片
         item {
-            Text(
-                text = if (isChineseLanguage) "體溫記錄" else "Temperature Records",
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                fontSize = 18.sp,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
-        
-        // 過濾選項（移至體溫記錄標題下方）
-        item {
-            Row(
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isDarkTheme) 
+                        MaterialTheme.colorScheme.surfaceVariant 
+                    else 
+                        Color.White
+                )
             ) {
-                // 温度过滤按钮
-                AbnormalFilterChip(
-                    text = if (isChineseLanguage) "全部" else "All",
-                    isSelected = filterType == 0,
-                    onClick = { filterType = 0 },
-                    isDarkTheme = isDarkTheme
-                )
-                
-                AbnormalFilterChip(
-                    text = if (isChineseLanguage) "高溫" else "High",
-                    isSelected = filterType == 1,
-                    onClick = { filterType = 1 },
-                    isDarkTheme = isDarkTheme
-                )
-                
-                AbnormalFilterChip(
-                    text = if (isChineseLanguage) "低溫" else "Low",
-                    isSelected = filterType == 2,
-                    onClick = { filterType = 2 },
-                    isDarkTheme = isDarkTheme
-                )
-            }
-        }
-        
-        if (filteredRecords.isEmpty()) {
-            item {
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(100.dp),
-                    contentAlignment = Alignment.Center
+                        .padding(16.dp)
                 ) {
+                    // 標題
                     Text(
-                        text = if (isChineseLanguage) "無記錄" else "No records",
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        text = if (isChineseLanguage) "體溫記錄" else "Temperature Records",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
-                }
-            }
-        } else {
-            // 體溫記錄項目
-            items(filteredRecords) { record ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (isDarkTheme) 
-                            MaterialTheme.colorScheme.surfaceVariant 
-                        else 
-                            Color.White
+                    
+                    // 過濾按鈕行
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // 全部
+                        AbnormalFilterChip(
+                            text = if (isChineseLanguage) "全部" else "All",
+                            isSelected = filterType == 0,
+                            onClick = { filterType = 0 },
+                            isDarkTheme = isDarkTheme
+                        )
+                        
+                        // 高溫
+                        AbnormalFilterChip(
+                            text = if (isChineseLanguage) "高溫" else "High Temp",
+                            isSelected = filterType == 1,
+                            onClick = { filterType = 1 },
+                            isDarkTheme = isDarkTheme,
+                            color = if (isDarkTheme) Color(0xFFFF5252) else Color.Red
+                        )
+                        
+                        // 低溫
+                        AbnormalFilterChip(
+                            text = if (isChineseLanguage) "低溫" else "Low Temp",
+                            isSelected = filterType == 2,
+                            onClick = { filterType = 2 },
+                            isDarkTheme = isDarkTheme,
+                            color = if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3)
+                        )
+                    }
+                    
+                    // 時間範圍選擇
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // 1天
+                        TimeRangeChip(
+                            text = if (isChineseLanguage) "1天" else "1 Day",
+                            isSelected = selectedTimeRange == 1,
+                            onClick = { selectedTimeRange = 1 },
+                            isDarkTheme = isDarkTheme
+                        )
+                        
+                        // 3天
+                        TimeRangeChip(
+                            text = if (isChineseLanguage) "3天" else "3 Days",
+                            isSelected = selectedTimeRange == 3,
+                            onClick = { selectedTimeRange = 3 },
+                            isDarkTheme = isDarkTheme
+                        )
+                        
+                        // 7天
+                        TimeRangeChip(
+                            text = if (isChineseLanguage) "7天" else "7 Days",
+                            isSelected = selectedTimeRange == 7,
+                            onClick = { selectedTimeRange = 7 },
+                            isDarkTheme = isDarkTheme
+                        )
+                    }
+                    
+                    HorizontalDivider(
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        color = if (isDarkTheme) Color.DarkGray else Color.LightGray
                     )
-                ) {
-                    TemperatureRecordItem(
-                        record = record,
-                        isDarkTheme = isDarkTheme,
-                        isChineseLanguage = isChineseLanguage
-                    )
+                    
+                    // 在固定大小的Box內使用LazyColumn顯示溫度記錄
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)  // 給記錄列表一個合適的固定高度
+                    ) {
+                        if (filteredRecords.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (isChineseLanguage) "無符合條件的數據" else "No matching data",
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                )
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                items(filteredRecords) { record ->
+                                    TemperatureRecordItem(
+                                        record = record,
+                                        isDarkTheme = isDarkTheme,
+                                        isChineseLanguage = isChineseLanguage
+                                    )
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(vertical = 4.dp),
+                                        color = if (isDarkTheme) Color.DarkGray.copy(alpha = 0.5f) else Color.LightGray.copy(alpha = 0.5f)
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

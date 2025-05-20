@@ -136,9 +136,12 @@ app/
 ### 2. 健康監測功能 | Health Monitoring Features
 - **體溫監測**: 記錄和追蹤用戶體溫數據，支援異常數據提醒
   *Temperature Monitoring: Records and tracks user temperature data, supports abnormal data alerts*
-  - 圖表顯示體溫變化趨勢 | *Charts display temperature change trends*
-  - 按日期和時間範圍篩選數據 | *Filter data by date and time range*
-  - 異常體溫高亮顯示 | *Highlight abnormal temperatures*
+  - 圖表顯示體溫變化趨勢，使用粉紅色主題視覺化展示 | *Charts display temperature trends with a pink theme visualization*
+  - 高溫和低溫閾值以虛線清晰標示，並顯示數值 | *High and low temperature thresholds clearly marked with dashed lines and values*
+  - 按日期和時間範圍篩選數據（今日/本週/本月） | *Filter data by date and time range (Today/This Week/This Month)*
+  - 異常體溫高亮顯示，使用紅色標記高溫和藍色標記低溫 | *Highlight abnormal temperatures with red for high and blue for low*
+  - 支援切換不同病患查看各自的體溫記錄 | *Support switching between different patients to view their temperature records*
+  - 體溫記錄可按全部/高溫/低溫類別進行過濾 | *Temperature records can be filtered by All/High/Low categories*
   
 - **心率監測**: 記錄和檢視心率數據
   *Heart Rate Monitoring: Records and views heart rate data*
@@ -195,6 +198,33 @@ app/
   *Setting Options: Customize application appearance and behavior*
   - 支援多語言（中文和英文）| *Supports multiple languages (Chinese and English)*
   - 深色/淺色主題切換 | *Dark/light theme switching*
+
+## 更新日誌 | Update Log
+
+### 2025-05-20
+- 提升體溫監測界面和功能：
+  - 使用與心率圖類似的粉紅色主題增強體溫圖表視覺效果
+  - 添加清晰的高溫/低溫閾值虛線，旁邊顯示數值標註
+  - 重新組織過濾按鈕位置，移至「體溫記錄」標題下方
+  - 改進過濾功能邏輯，確保過濾器只影響記錄列表，不影響圖表顯示
+  - 修復界面編譯錯誤並改進整體代碼組織
+
+- 修復病患選擇功能：
+  - 實現下拉選單功能，解決不能切換患者的問題
+  - 確保選擇新病患後正確顯示對應的體溫數據
+  - 當沒有選擇病患時，自動選擇第一個可用病患
+
+*Improved temperature monitoring interface and functionality:*
+  - *Enhanced temperature chart with pink theme similar to heart rate chart*
+  - *Added clear high/low temperature threshold lines with dashed style and value annotations*
+  - *Reorganized filter button placement to below Temperature Records title*
+  - *Improved filter logic ensuring filters only affect record list, not the chart*
+  - *Fixed UI compilation errors and improved overall code organization*
+
+*Fixed patient selection functionality:*
+  - *Implemented dropdown menu functionality to solve patient switching issues*
+  - *Ensured correct temperature data display when switching patients*
+  - *Automatically selects first available patient when none is selected*
 
 ## 技術實現 | Technical Implementation
 

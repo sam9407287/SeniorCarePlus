@@ -430,70 +430,106 @@ fun TemperatureMonitorScreen(navController: NavController) {
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                     
-                    // 過濾按鈕行
+                    // 過濾按鈕行 - 等寬布局
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         // 全部
-                        AbnormalFilterChip(
-                            text = if (isChineseLanguage) "全部" else "All",
-                            isSelected = filterType == 0,
-                            onClick = { filterType = 0 },
-                            isDarkTheme = isDarkTheme
-                        )
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            AbnormalFilterChip(
+                                text = if (isChineseLanguage) "全部" else "All",
+                                isSelected = filterType == 0,
+                                onClick = { filterType = 0 },
+                                isDarkTheme = isDarkTheme,
+                                modifier = Modifier.fillMaxWidth(0.9f)
+                            )
+                        }
                         
                         // 高溫
-                        AbnormalFilterChip(
-                            text = if (isChineseLanguage) "高溫" else "High Temp",
-                            isSelected = filterType == 1,
-                            onClick = { filterType = 1 },
-                            isDarkTheme = isDarkTheme,
-                            color = if (isDarkTheme) Color(0xFFFF5252) else Color.Red
-                        )
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            AbnormalFilterChip(
+                                text = if (isChineseLanguage) "高溫" else "High",
+                                isSelected = filterType == 1,
+                                onClick = { filterType = 1 },
+                                isDarkTheme = isDarkTheme,
+                                color = if (isDarkTheme) Color(0xFFFF5252) else Color.Red,
+                                modifier = Modifier.fillMaxWidth(0.9f)
+                            )
+                        }
                         
                         // 低溫
-                        AbnormalFilterChip(
-                            text = if (isChineseLanguage) "低溫" else "Low Temp",
-                            isSelected = filterType == 2,
-                            onClick = { filterType = 2 },
-                            isDarkTheme = isDarkTheme,
-                            color = if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3)
-                        )
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            AbnormalFilterChip(
+                                text = if (isChineseLanguage) "低溫" else "Low",
+                                isSelected = filterType == 2,
+                                onClick = { filterType = 2 },
+                                isDarkTheme = isDarkTheme,
+                                color = if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3),
+                                modifier = Modifier.fillMaxWidth(0.9f)
+                            )
+                        }
                     }
                     
-                    // 時間範圍選擇
+                    // 時間範圍選擇 - 等寬布局
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         // 1天
-                        TimeRangeChip(
-                            text = if (isChineseLanguage) "1天" else "1 Day",
-                            isSelected = selectedTimeRange == 1,
-                            onClick = { selectedTimeRange = 1 },
-                            isDarkTheme = isDarkTheme
-                        )
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            TimeRangeChip(
+                                text = if (isChineseLanguage) "1天" else "1 Day",
+                                isSelected = selectedTimeRange == 1,
+                                onClick = { selectedTimeRange = 1 },
+                                isDarkTheme = isDarkTheme,
+                                modifier = Modifier.fillMaxWidth(0.9f)
+                            )
+                        }
                         
                         // 3天
-                        TimeRangeChip(
-                            text = if (isChineseLanguage) "3天" else "3 Days",
-                            isSelected = selectedTimeRange == 3,
-                            onClick = { selectedTimeRange = 3 },
-                            isDarkTheme = isDarkTheme
-                        )
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            TimeRangeChip(
+                                text = if (isChineseLanguage) "3天" else "3 Days",
+                                isSelected = selectedTimeRange == 3,
+                                onClick = { selectedTimeRange = 3 },
+                                isDarkTheme = isDarkTheme,
+                                modifier = Modifier.fillMaxWidth(0.9f)
+                            )
+                        }
                         
                         // 7天
-                        TimeRangeChip(
-                            text = if (isChineseLanguage) "7天" else "7 Days",
-                            isSelected = selectedTimeRange == 7,
-                            onClick = { selectedTimeRange = 7 },
-                            isDarkTheme = isDarkTheme
-                        )
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            TimeRangeChip(
+                                text = if (isChineseLanguage) "7天" else "7 Days",
+                                isSelected = selectedTimeRange == 7,
+                                onClick = { selectedTimeRange = 7 },
+                                isDarkTheme = isDarkTheme,
+                                modifier = Modifier.fillMaxWidth(0.9f)
+                            )
+                        }
                     }
                     
                     HorizontalDivider(

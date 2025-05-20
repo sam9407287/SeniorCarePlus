@@ -22,10 +22,11 @@ fun AbnormalFilterChip(
     isSelected: Boolean,
     onClick: () -> Unit,
     isDarkTheme: Boolean,
-    color: Color? = null
+    color: Color? = null,
+    modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(
                 if (isSelected) 

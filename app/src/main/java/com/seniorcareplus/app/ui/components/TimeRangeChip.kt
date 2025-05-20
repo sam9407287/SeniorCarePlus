@@ -19,10 +19,11 @@ fun TimeRangeChip(
     text: String,
     isSelected: Boolean,
     onClick: () -> Unit,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(
                 if (isSelected) 

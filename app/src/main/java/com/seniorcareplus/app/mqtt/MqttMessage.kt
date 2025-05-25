@@ -63,6 +63,12 @@ data class HealthMessage(
     @SerializedName("MAC")
     val mac: String = "",
     
+    @SerializedName("id")
+    val id: String? = null,  // 添加ID字段支持識別用戶
+    
+    @SerializedName("name")
+    val name: String? = null,  // 添加名稱字段
+    
     @SerializedName("SOS")
     val sos: Int = 0,
     
@@ -99,6 +105,9 @@ data class HealthMessage(
     @SerializedName("deep sleep (min)")
     val deepSleepMin: Int = 0,
     
+    @SerializedName("time")
+    val time: String? = null,  // 添加時間字段
+    
     @SerializedName("move")
     val move: Int = 0,
     
@@ -113,23 +122,63 @@ data class HealthMessage(
 ) : MqttMessage()
 
 /**
- * 尿布狀態消息
+ * 體溫數據消息 - 專用於體溫監測的消息格式
  */
-data class DiaperMessage(
-    @SerializedName("MAC")
-    val mac: String = "",
+data class TemperatureMessage(
+    @SerializedName("node")
+    val node: String = "",
+    
+    @SerializedName("id")
+    val id: String = "",
     
     @SerializedName("name")
     val name: String = "",
     
-    @SerializedName("fw ver")
-    val fwVer: Float = 0f,
+    @SerializedName("temperature")
+    val temperature: TemperatureData = TemperatureData(),
+    
+    @SerializedName("time")
+    val time: String = "",
+    
+    @SerializedName("serial no")
+    val serialNo: Int = 0
+) : MqttMessage()
+
+/**
+ * 體溫數據結構
+ */
+data class TemperatureData(
+    @SerializedName("value")
+    val value: Float = 0f,
+    
+    @SerializedName("unit")
+    val unit: String = "celsius",
+    
+    @SerializedName("is_abnormal")
+    val isAbnormal: Boolean = false,
+    
+    @SerializedName("room_temp")
+    val roomTemp: Float = 0f
+)
+
+/**
+ * 尿布狀態消息
+ */
+data class DiaperMessage(
+    @SerializedName("id")
+    val id: String = "",
     
     @SerializedName("temp")
     val temp: Float = 0f,
     
     @SerializedName("humi")
     val humidity: Float = 0f,
+    
+    @SerializedName("unit")
+    val unit: String = "",
+    
+    @SerializedName("is_success")
+    val isSuccess: Boolean = false,
     
     @SerializedName("button")
     val button: Int = 0,

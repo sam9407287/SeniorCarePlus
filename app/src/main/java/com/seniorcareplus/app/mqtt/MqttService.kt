@@ -43,6 +43,10 @@ class MqttService : Service() {
     private val _diaperMessages = MutableSharedFlow<DiaperMessage>(replay = 0)
     val diaperMessages: SharedFlow<DiaperMessage> = _diaperMessages.asSharedFlow()
     
+    // 添加體溫專用消息流
+    private val _temperatureMessages = MutableSharedFlow<TemperatureMessage>(replay = 0)
+    val temperatureMessages: SharedFlow<TemperatureMessage> = _temperatureMessages.asSharedFlow()
+    
     // 原始消息流 - 用於測試和調試
     private val _rawMessages = MutableSharedFlow<Pair<String, String>>(replay = 0)
     val rawMessages: SharedFlow<Pair<String, String>> = _rawMessages.asSharedFlow()
@@ -158,6 +162,7 @@ class MqttService : Service() {
             
             // 訂閱健康數據主題
             mqttClient?.subscribe(MqttConstants.TOPIC_HEALTH, MqttConstants.QOS_1)
+            mqttClient?.subscribe(MqttConstants.TOPIC_HEALTH_DATA, MqttConstants.QOS_1)  // 模擬器健康數據
             // 訂閱消息主題
             mqttClient?.subscribe(MqttConstants.TOPIC_MESSAGE, MqttConstants.QOS_1)
             // 訂閱確認消息主題
@@ -168,7 +173,7 @@ class MqttService : Service() {
             // 開發測試階段可以訂閱所有主題
             mqttClient?.subscribe(MqttConstants.TOPIC_ALL, MqttConstants.QOS_1)
             
-            Log.i(TAG, "所有MQTT主題訂閱成功，包括備用主題")
+            Log.i(TAG, "所有MQTT主題訂閱成功，包括備用主題和模擬器主題")
         } catch (e: Exception) {
             Log.e(TAG, "訂閱主題失敗: ${e.message}")
         }
@@ -181,7 +186,36 @@ class MqttService : Service() {
         try {
             Log.i(TAG, "正在處理消息，主題: $topic, 內容: $payload")
             
-            // 嘗試解析任何JSON訊息
+            // 首先嘗試解析模擬器的直接JSON格式（健康數據）
+            if (topic == MqttConstants.TOPIC_HEALTH_DATA) {
+                try {
+                    val gson = Gson()
+                    val mqttHealthData = gson.fromJson(payload, com.seniorcareplus.app.models.MqttHealthData::class.java)
+                    
+                    // 轉換為HealthMessage格式
+                    val healthMessage = HealthMessage(
+                        id = mqttHealthData.userId,
+                        name = mqttHealthData.userName,
+                        heartRate = mqttHealthData.heartRate,
+                        skinTemp = mqttHealthData.temperature.toFloat(),
+                        time = mqttHealthData.timeString
+                    ).apply {
+                        content = MqttConstants.CONTENT_TYPE_HEALTH
+                        gatewayId = mqttHealthData.gatewayId.removePrefix("gateway").toLongOrNull() ?: 0L
+                    }
+                    
+                    Log.d(TAG, "成功解析模擬器健康數據: 用戶=${mqttHealthData.userName}, 心率=${mqttHealthData.heartRate}")
+                    
+                    serviceScope.launch {
+                        _healthMessages.emit(healthMessage)
+                    }
+                    return
+                } catch (e: Exception) {
+                    Log.e(TAG, "解析模擬器健康數據失敗: ${e.message}")
+                }
+            }
+            
+            // 嘗試解析現有的結構化JSON消息
             try {
                 // 解析JSON消息
                 val baseMessage = gson.fromJson(payload, com.seniorcareplus.app.mqtt.MqttMessage::class.java)
@@ -206,6 +240,17 @@ class MqttService : Service() {
                         val healthMessage = gson.fromJson(payload, HealthMessage::class.java)
                         serviceScope.launch {
                             _healthMessages.emit(healthMessage)
+                        }
+                    }
+                    
+                    // 專用體溫數據
+                    MqttConstants.CONTENT_TYPE_TEMPERATURE -> {
+                        Log.d(TAG, "處理專用體溫數據消息")
+                        val temperatureMessage = gson.fromJson(payload, TemperatureMessage::class.java)
+                        Log.d(TAG, "體溫消息解析: id=${temperatureMessage.id}, 溫度=${temperatureMessage.temperature.value}°C")
+                        
+                        serviceScope.launch {
+                            _temperatureMessages.emit(temperatureMessage)
                         }
                     }
                     

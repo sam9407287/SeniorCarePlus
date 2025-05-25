@@ -21,6 +21,7 @@ object MqttConstants {
     const val TOPIC_LOCATION_ALT2 = "Loca"           // 另一個備用位置主題
     const val TOPIC_LOCATION_RAW = "raw/location"    // 原始位置數據主題
     const val TOPIC_HEALTH = "GW17F5_Health"         // 健康數據主題
+    const val TOPIC_HEALTH_DATA = "health/data"      // 模擬器健康數據主題
     const val TOPIC_MESSAGE = "GW17F5_Message"       // 消息主題
     const val TOPIC_ACK = "GW17F5_Ack"               // 確認消息主題
     const val TOPIC_GATEWAY = "UWB_Gateway"          // 網關主題
@@ -40,4 +41,5 @@ object MqttConstants {
     const val CONTENT_TYPE_HEARTBEAT = "heartbeat"
     const val CONTENT_TYPE_HEALTH = "300B"
     const val CONTENT_TYPE_DIAPER = "diaper DV1"
+    const val CONTENT_TYPE_TEMPERATURE = "temperature"  // 新增體溫數據類型
 }

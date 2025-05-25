@@ -90,6 +90,15 @@ class MqttMessageDeserializer : JsonDeserializer<MqttMessage> {
                     val gson = GsonBuilder().create()
                     gson.fromJson(json, DiaperMessage::class.java)
                 }
+                MqttConstants.CONTENT_TYPE_TEMPERATURE -> {
+                    Log.d(TAG, "解析體溫消息: $content")
+                    val gson = GsonBuilder()
+                        .registerTypeAdapter(String::class.java, StringIdTypeAdapter())
+                        .create()
+                    val result = gson.fromJson(json, TemperatureMessage::class.java)
+                    Log.d(TAG, "成功解析TemperatureMessage: id=${result.id}, temperature=${result.temperature.value}")
+                    result
+                }
                 else -> {
                     // 如果是未知類型但包含position字段，嘗試作為LocationMessage解析
                     if (jsonObject.has("position")) {

@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,8 +20,6 @@ fun AbnormalFilterChip(
     text: String,
     isSelected: Boolean,
     onClick: () -> Unit,
-    isDarkTheme: Boolean,
-    color: Color? = null,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -30,7 +27,7 @@ fun AbnormalFilterChip(
             .clip(RoundedCornerShape(16.dp))
             .background(
                 if (isSelected) 
-                    (color ?: MaterialTheme.colorScheme.primary).copy(alpha = 0.2f)
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                 else 
                     MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             )
@@ -41,7 +38,7 @@ fun AbnormalFilterChip(
         Text(
             text = text,
             color = if (isSelected) 
-                color ?: MaterialTheme.colorScheme.primary
+                MaterialTheme.colorScheme.primary
             else 
                 MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,

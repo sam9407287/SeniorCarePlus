@@ -537,8 +537,6 @@ fun TemperatureMonitorScreen(navController: NavController) {
                                 text = if (isChineseLanguage) "全部" else "All",
                                 isSelected = filterType == 0,
                                 onClick = { filterType = 0 },
-                                isDarkTheme = isDarkTheme,
-                                color = if (isDarkTheme) Color(0xFF81C784) else Color(0xFF4CAF50), // 綠色
                                 modifier = Modifier.fillMaxWidth(0.9f)
                             )
                         }
@@ -552,8 +550,6 @@ fun TemperatureMonitorScreen(navController: NavController) {
                                 text = if (isChineseLanguage) "高溫" else "High",
                                 isSelected = filterType == 1,
                                 onClick = { filterType = 1 },
-                                isDarkTheme = isDarkTheme,
-                                color = if (isDarkTheme) Color(0xFFFF5252) else Color.Red,
                                 modifier = Modifier.fillMaxWidth(0.9f)
                             )
                         }
@@ -567,8 +563,6 @@ fun TemperatureMonitorScreen(navController: NavController) {
                                 text = if (isChineseLanguage) "低溫" else "Low",
                                 isSelected = filterType == 2,
                                 onClick = { filterType = 2 },
-                                isDarkTheme = isDarkTheme,
-                                color = if (isDarkTheme) Color(0xFF64B5F6) else Color(0xFF2196F3),
                                 modifier = Modifier.fillMaxWidth(0.9f)
                             )
                         }
@@ -590,8 +584,6 @@ fun TemperatureMonitorScreen(navController: NavController) {
                                 text = if (isChineseLanguage) "1天" else "1 Day",
                                 isSelected = selectedTimeRange == 1,
                                 onClick = { selectedTimeRange = 1 },
-                                isDarkTheme = isDarkTheme,
-                                color = if (isDarkTheme) Color(0xFF81C784) else Color(0xFF4CAF50), // 綠色
                                 modifier = Modifier.fillMaxWidth(0.9f)
                             )
                         }
@@ -605,8 +597,6 @@ fun TemperatureMonitorScreen(navController: NavController) {
                                 text = if (isChineseLanguage) "3天" else "3 Days",
                                 isSelected = selectedTimeRange == 3,
                                 onClick = { selectedTimeRange = 3 },
-                                isDarkTheme = isDarkTheme,
-                                color = if (isDarkTheme) Color(0xFFFF5252) else Color.Red, // 紅色，與高溫按鈕相同
                                 modifier = Modifier.fillMaxWidth(0.9f)
                             )
                         }
@@ -620,7 +610,6 @@ fun TemperatureMonitorScreen(navController: NavController) {
                                 text = if (isChineseLanguage) "7天" else "7 Days",
                                 isSelected = selectedTimeRange == 7,
                                 onClick = { selectedTimeRange = 7 },
-                                isDarkTheme = isDarkTheme,
                                 modifier = Modifier.fillMaxWidth(0.9f)
                             )
                         }

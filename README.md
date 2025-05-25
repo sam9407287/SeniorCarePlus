@@ -1,14 +1,14 @@
 # 長者照護系統 (Senior Care Plus)
 
-這是一個專為長者護理設計的Android應用程式，提供多種功能來輔助長者照護和管理。
+這是一個專為長者護理設計的Android應用程式，提供多種功能來輔助長者照護和管理。該系統整合了MQTT實時通訊協議，實現智能設備的數據收集和實時監控。
 
-*This is an Android application designed for elderly care, providing various functions to assist in elderly care and management.*
+*This is an Android application designed for elderly care, providing various functions to assist in elderly care and management. The system integrates MQTT real-time communication protocol to achieve smart device data collection and real-time monitoring.*
 
 ## 專案概述 | Project Overview
 
-長者照護系統是使用Kotlin和Jetpack Compose構建的Android應用，專注於提供全面的長者照護功能。應用程式提供健康監測、位置追蹤、提醒設置、用戶管理等功能，幫助照顧者和長者獲得更好的照護體驗。
+長者照護系統是使用Kotlin和Jetpack Compose構建的Android應用，專注於提供全面的長者照護功能。應用程式提供健康監測、位置追蹤、提醒設置、用戶管理等功能，並通過MQTT協議實現與智能設備的實時數據同步，幫助照顧者和長者獲得更好的照護體驗。
 
-*The Senior Care Plus system is an Android application built with Kotlin and Jetpack Compose, focusing on providing comprehensive elderly care functions. The application offers health monitoring, location tracking, reminder settings, user management, and other features to help caregivers and the elderly achieve a better care experience.*
+*The Senior Care Plus system is an Android application built with Kotlin and Jetpack Compose, focusing on providing comprehensive elderly care functions. The application offers health monitoring, location tracking, reminder settings, user management, and real-time data synchronization with smart devices through MQTT protocol, helping caregivers and the elderly achieve a better care experience.*
 
 ## 專案架構 | Project Architecture
 

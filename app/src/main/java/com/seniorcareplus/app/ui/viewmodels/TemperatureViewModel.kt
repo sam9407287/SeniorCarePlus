@@ -106,6 +106,15 @@ class TemperatureViewModel(application: Application) : AndroidViewModel(applicat
     init {
         loadCachedData()
         bindMqttService()
+        
+        // 啟動定期清理任務，每小時檢查一次
+        viewModelScope.launch {
+            while (true) {
+                kotlinx.coroutines.delay(3600000) // 1小時 = 3600000毫秒
+                cleanOldData()
+                saveCachedData()
+            }
+        }
     }
     
     /**
@@ -272,29 +281,53 @@ class TemperatureViewModel(application: Application) : AndroidViewModel(applicat
             }
             
             // 保存到本地緩存
-            saveDataToCache()
+            saveCachedData()
         }
     }
     
     /**
-     * 將數據保存到本地緩存
+     * 保存數據到本地存儲
      */
-    private fun saveDataToCache() {
+    private fun saveCachedData() {
         try {
-            val dataToSave = _temperatureGroups.value.map { group ->
-                // 只保存每個病患的必要信息和最多100條記錄
-                PatientTemperatureGroup(
-                    patientId = group.patientId,
-                    patientName = group.patientName,
-                    records = group.records.take(100)
-                )
+            // 清理超過三天的舊數據
+            cleanOldData()
+            
+            val jsonData = gson.toJson(_temperatureGroups.value)
+            sharedPreferences.edit()
+                .putString("cached_temperature_data", jsonData)
+                .apply()
+        } catch (e: Exception) {
+            Log.e(TAG, "保存體溫數據失敗: ${e.message}")
+        }
+    }
+    
+    /**
+     * 清理超過三天的舊數據
+     */
+    private fun cleanOldData() {
+        try {
+            val threeDaysAgo = LocalDateTime.now().minusDays(3)
+            
+            val cleanedGroups = _temperatureGroups.value.map { group ->
+                val filteredRecords = group.records.filter { record ->
+                    record.getLocalDateTime().isAfter(threeDaysAgo)
+                }
+                group.copy(records = filteredRecords)
+            }.filter { group ->
+                // 移除沒有記錄的組
+                group.records.isNotEmpty()
             }
             
-            val jsonData = gson.toJson(dataToSave)
-            sharedPreferences.edit().putString("cached_temperature_data", jsonData).apply()
-            Log.d(TAG, "體溫數據已保存到本地緩存")
+            val originalCount = _temperatureGroups.value.sumOf { it.records.size }
+            val cleanedCount = cleanedGroups.sumOf { it.records.size }
+            
+            if (originalCount != cleanedCount) {
+                _temperatureGroups.value = cleanedGroups
+                Log.d(TAG, "清理舊數據: 原有 $originalCount 條記錄，清理後 $cleanedCount 條記錄")
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "保存數據到緩存時出錯: ${e.message}")
+            Log.e(TAG, "清理舊數據失敗: ${e.message}")
         }
     }
 
@@ -308,6 +341,9 @@ class TemperatureViewModel(application: Application) : AndroidViewModel(applicat
                 val cachedGroups: List<PatientTemperatureGroup> = gson.fromJson(jsonData, 
                     object : com.google.gson.reflect.TypeToken<List<PatientTemperatureGroup>>() {}.type)
                 _temperatureGroups.update { cachedGroups }
+                
+                // 載入後立即清理舊數據
+                cleanOldData()
                 
                 // 如果有數據，選擇第一個病患
                 if (cachedGroups.isNotEmpty()) {

@@ -109,6 +109,15 @@ class HeartRateViewModel(application: Application) : AndroidViewModel(applicatio
     init {
         loadCachedData()
         bindMqttService()
+        
+        // 啟動定期清理任務，每小時檢查一次
+        viewModelScope.launch {
+            while (true) {
+                kotlinx.coroutines.delay(3600000) // 1小時 = 3600000毫秒
+                cleanOldData()
+                saveCachedData()
+            }
+        }
     }
     
     /**
@@ -310,12 +319,44 @@ class HeartRateViewModel(application: Application) : AndroidViewModel(applicatio
      */
     private fun saveCachedData() {
         try {
+            // 清理超過三天的舊數據
+            cleanOldData()
+            
             val json = gson.toJson(_heartRateGroups.value)
             sharedPreferences.edit()
                 .putString("heart_rate_groups", json)
                 .apply()
         } catch (e: Exception) {
             Log.e(TAG, "保存心率數據失敗: ${e.message}")
+        }
+    }
+    
+    /**
+     * 清理超過三天的舊數據
+     */
+    private fun cleanOldData() {
+        try {
+            val threeDaysAgo = LocalDateTime.now().minusDays(3)
+            
+            val cleanedGroups = _heartRateGroups.value.map { group ->
+                val filteredRecords = group.records.filter { record ->
+                    record.getLocalDateTime().isAfter(threeDaysAgo)
+                }
+                group.copy(records = filteredRecords)
+            }.filter { group ->
+                // 移除沒有記錄的組
+                group.records.isNotEmpty()
+            }
+            
+            val originalCount = _heartRateGroups.value.sumOf { it.records.size }
+            val cleanedCount = cleanedGroups.sumOf { it.records.size }
+            
+            if (originalCount != cleanedCount) {
+                _heartRateGroups.value = cleanedGroups
+                Log.d(TAG, "清理舊數據: 原有 $originalCount 條記錄，清理後 $cleanedCount 條記錄")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "清理舊數據失敗: ${e.message}")
         }
     }
     
@@ -329,6 +370,10 @@ class HeartRateViewModel(application: Application) : AndroidViewModel(applicatio
                 val type = object : TypeToken<List<PatientHeartRateGroup>>() {}.type
                 val groups = gson.fromJson<List<PatientHeartRateGroup>>(json, type)
                 _heartRateGroups.value = groups
+                
+                // 載入後立即清理舊數據
+                cleanOldData()
+                
                 Log.d(TAG, "加載了 ${groups.size} 個心率數據組")
             }
         } catch (e: Exception) {

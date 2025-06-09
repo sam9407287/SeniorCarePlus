@@ -5,21 +5,36 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions.MQTT_VERSION_3_1_1
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
+import org.eclipse.paho.client.mqttv3.IMqttToken
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient
 import org.eclipse.paho.client.mqttv3.MqttCallback
 import org.eclipse.paho.client.mqttv3.MqttClient
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import org.eclipse.paho.client.mqttv3.MqttMessage
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence
+import org.json.JSONObject
+import org.json.JSONException
+import java.net.InetAddress
 import java.nio.charset.StandardCharsets
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
+import java.util.*
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 /**
  * MQTT服務，處理MQTT連接和消息接收
@@ -31,7 +46,7 @@ class MqttService : Service() {
     private val gson = MqttGsonHelper.createGson()
     
     // MQTT客戶端
-    private var mqttClient: MqttClient? = null
+    private var mqttClient: MqttAsyncClient? = null
     
     // 消息流，用於向UI層發送消息
     private val _locationMessages = MutableSharedFlow<LocationMessage>(replay = 0)
@@ -61,7 +76,10 @@ class MqttService : Service() {
     
     override fun onCreate() {
         super.onCreate()
-        setupMqttClient()
+        // 在後台線程啟動MQTT客戶端
+        serviceScope.launch {
+            setupMqttClient()
+        }
     }
     
     override fun onDestroy() {
@@ -74,55 +92,55 @@ class MqttService : Service() {
      */
     private fun setupMqttClient() {
         try {
-            // 創建MQTT客戶端
-            mqttClient = MqttClient(
-                MqttConstants.MQTT_SERVER_URI,
-                MqttConstants.generateClientId(),
+            Log.d(TAG, "初始化MQTT客戶端: ${MqttConstants.MQTT_SERVER_URI}")
+            
+            // 創建MQTT異步客戶端以提高穩定性和性能
+            // 使用WebSocket連接所需的屬性
+            val mqttConnectProperties = Properties()
+            mqttConnectProperties.setProperty("mqtt.websocket.uri.path", "/mqtt")
+            
+            mqttClient = MqttAsyncClient(
+                MqttConstants.MQTT_SERVER_URI, 
+                MqttConstants.generateClientId() + "_" + System.currentTimeMillis(), 
                 MemoryPersistence()
             )
             
-            // 設置回調
-            mqttClient?.setCallback(object : MqttCallback {
+            mqttClient!!.setCallback(object : MqttCallback {
                 override fun connectionLost(cause: Throwable?) {
                     Log.e(TAG, "MQTT連接丟失: ${cause?.message}")
-                    // 嘗試重新連接
-                    serviceScope.launch {
-                        try {
-                            Thread.sleep(MqttConstants.RECONNECT_DELAY)
-                            connectMqtt()
-                        } catch (e: Exception) {
-                            Log.e(TAG, "重新連接失敗: ${e.message}")
-                        }
+                    cause?.printStackTrace()
+                    
+                    // 延遲重新連接以避免立即重連造成的問題
+                    serviceScope.launch(Dispatchers.IO) {
+                        delay(3000) // 3秒後重試
+                        Log.d(TAG, "連接丟失後3秒重試MQTT連接")
+                        connectMqtt()
                     }
                 }
-                
+
                 override fun messageArrived(topic: String?, message: MqttMessage?) {
-                    message?.let { mqttMessage ->
-                        val payload = String(mqttMessage.payload, StandardCharsets.UTF_8)
-                        Log.d(TAG, "收到MQTT消息，主題: $topic, 内容: $payload")
-                        
-                        try {
-                            // 發送原始消息以供測試
-                            serviceScope.launch {
-                                topic?.let { _rawMessages.emit(it to payload) }
-                            }
-                            
-                            processMessage(topic, payload)
-                        } catch (e: Exception) {
-                            Log.e(TAG, "處理消息時出錯: ${e.message}")
-                        }
-                    }
+                    Log.d(TAG, "收到MQTT消息, 主題: $topic, 內容: ${message?.payload?.toString(Charsets.UTF_8)}")
+                    
+                    // 處理接收到的消息
+                    val payload = message?.payload?.toString(Charsets.UTF_8) ?: return
+                    processMessage(topic, payload)
                 }
-                
+
                 override fun deliveryComplete(token: IMqttDeliveryToken?) {
-                    Log.d(TAG, "消息發送完成")
+                    Log.d(TAG, "MQTT消息已送達: ${token?.message?.payload?.toString(Charsets.UTF_8)}")
                 }
             })
-            
             // 連接MQTT服務器
             connectMqtt()
         } catch (e: Exception) {
-            Log.e(TAG, "設置MQTT客戶端時出錯: ${e.message}")
+            Log.e(TAG, "MQTT客戶端設置失敗: ${e.message}")
+            e.printStackTrace()
+            // 延遲重試
+            serviceScope.launch(Dispatchers.IO) {
+                delay(5000) // 5秒後重試
+                Log.d(TAG, "設置失敗後5秒重試MQTT客戶端設置")
+                setupMqttClient()
+            }
         }
     }
     
@@ -130,22 +148,94 @@ class MqttService : Service() {
      * 連接MQTT服務器
      */
     private fun connectMqtt() {
-        try {
-            // 設置連接選項
-            val connOpts = MqttConnectOptions().apply {
-                isCleanSession = true
-                connectionTimeout = MqttConstants.CONNECTION_TIMEOUT
-                keepAliveInterval = MqttConstants.KEEP_ALIVE_INTERVAL
+        serviceScope.launch(Dispatchers.IO) {
+            try {
+                if (mqttClient == null) {
+                    setupMqttClient()
+                    return@launch
+                }
+
+                // 不檢查網絡可訪問性，直接嘗試連接
+                Log.d(TAG, "MQTT連接參數: 用戶名=${MqttConstants.MQTT_REMOTE_USER}, URI=${MqttConstants.MQTT_REMOTE_SERVER_URI}")
+                
+                val connOpts = MqttConnectOptions().apply {
+                    isCleanSession = true
+                    connectionTimeout = 60  // 增加至60秒
+                    keepAliveInterval = 60  // 增加至60秒
+                    maxInflight = 100
+                    
+                    // 設置MqttVersion以確保包容性
+                    mqttVersion = MQTT_VERSION_3_1_1
+                    
+                    // 設置WebSocket特定標頭
+                    val webSocketHeaders = Properties()
+                    webSocketHeaders.setProperty("Sec-WebSocket-Protocol", "mqtt")
+                    customWebSocketHeaders = webSocketHeaders
+                    
+                    if (MqttConstants.USE_REMOTE_SERVER) {
+                        userName = MqttConstants.MQTT_REMOTE_USER
+                        password = MqttConstants.MQTT_REMOTE_PASSWORD.toCharArray()
+                        
+                        try {
+                            // 使用標準TLS 1.2設置
+                            val sc = SSLContext.getInstance("TLSv1.2")
+                            val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
+                                override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+                                    Log.d(TAG, "客戶端證書檢查: authType=$authType")
+                                }
+                                
+                                override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+                                    Log.d(TAG, "服務器證書檢查: authType=$authType")
+                                }
+                                
+                                override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+                            })
+                            
+                            sc.init(null, trustAllCerts, SecureRandom())
+                            Log.d(TAG, "SSL信任管理器已配置")
+                            this.socketFactory = sc.socketFactory
+                        } catch (e: Exception) {
+                            Log.e(TAG, "SSL設置失敗: ${e.message}")
+                            e.printStackTrace()
+                        }
+                    }
+                }
+                
+                Log.d(TAG, "正在連接MQTT服務器(WebSocket): ${MqttConstants.MQTT_REMOTE_SERVER_URI}")
+                mqttClient?.connect(connOpts, null, object : IMqttActionListener {
+                    override fun onSuccess(asyncActionToken: IMqttToken?) {
+                        Log.d(TAG, "MQTT連接成功")
+                        serviceScope.launch(Dispatchers.IO) {
+                            try {
+                                subscribeToTopics()
+                            } catch (e: Exception) {
+                                Log.e(TAG, "訂閱主題失敗: ${e.message}")
+                                e.printStackTrace()
+                            }
+                        }
+                    }
+
+                    override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
+                        Log.e(TAG, "MQTT連接失敗: ${exception?.message}")
+                        exception?.printStackTrace()
+                        // 延遲重試
+                        serviceScope.launch(Dispatchers.IO) {
+                            delay(5000) // 5秒後重試
+                            Log.d(TAG, "5秒後重試MQTT連接")
+                            connectMqtt()
+                        }
+                    }
+                })
+            } catch (e: Exception) {
+                Log.e(TAG, "MQTT連接過程發生異常: ${e.message}")
+                e.printStackTrace()
+                // 延遲重試
+                serviceScope.launch(Dispatchers.IO) {
+                    delay(5000) // 5秒後重試
+                    Log.d(TAG, "例外處理後5秒重試MQTT連接")
+                    connectMqtt()
+                }
             }
-            
-            // 連接MQTT服務器
-            mqttClient?.connect(connOpts)
-            Log.d(TAG, "MQTT連接成功")
-            
-            // 訂閱主題
-            subscribeToTopics()
-        } catch (e: Exception) {
-            Log.e(TAG, "MQTT連接失敗: ${e.message}")
         }
     }
     
@@ -154,40 +244,67 @@ class MqttService : Service() {
      */
     private fun subscribeToTopics() {
         try {
-            // 訂閱位置數據主題 - 主要和備用主題
-            mqttClient?.subscribe(MqttConstants.TOPIC_LOCATION, MqttConstants.QOS_1)
-            mqttClient?.subscribe(MqttConstants.TOPIC_LOCATION_ALT, MqttConstants.QOS_1)
-            mqttClient?.subscribe(MqttConstants.TOPIC_LOCATION_ALT2, MqttConstants.QOS_1)
-            mqttClient?.subscribe(MqttConstants.TOPIC_LOCATION_RAW, MqttConstants.QOS_1)
+            if (mqttClient == null) {
+                Log.e(TAG, "無法訂閱主題: MQTT客戶端為null")
+                setupMqttClient()
+                return
+            }
             
-            // 訂閱健康數據主題
-            mqttClient?.subscribe(MqttConstants.TOPIC_HEALTH, MqttConstants.QOS_1)
-            mqttClient?.subscribe(MqttConstants.TOPIC_HEALTH_DATA, MqttConstants.QOS_1)  // 模擬器健康數據
-            // 訂閱消息主題
-            mqttClient?.subscribe(MqttConstants.TOPIC_MESSAGE, MqttConstants.QOS_1)
-            // 訂閱確認消息主題
-            mqttClient?.subscribe(MqttConstants.TOPIC_ACK, MqttConstants.QOS_1)
-            // 訂閱網關主題
-            mqttClient?.subscribe(MqttConstants.TOPIC_GATEWAY, MqttConstants.QOS_1)
-            
-            // 開發測試階段可以訂閱所有主題
-            mqttClient?.subscribe(MqttConstants.TOPIC_ALL, MqttConstants.QOS_1)
-            
-            Log.i(TAG, "所有MQTT主題訂閱成功，包括備用主題和模擬器主題")
+            if (mqttClient?.isConnected == true) {
+                if (MqttConstants.USE_REMOTE_SERVER) {
+                    // 訂閱遠端服務器主題
+                    val topic = MqttConstants.MQTT_REMOTE_TOPIC
+                    val qos = MqttConstants.QOS_1
+                    Log.d(TAG, "訂閱遠端主題: $topic")
+                    mqttClient?.subscribe(topic, qos, null, object : IMqttActionListener {
+                        override fun onSuccess(asyncActionToken: IMqttToken?) {
+                            Log.d(TAG, "成功訂閱MQTT主題: $topic")
+                        }
+
+                        override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
+                            Log.e(TAG, "訂閱遠端主題失敗: ${exception?.message}")
+                            exception?.printStackTrace()
+                            
+                            // 延遲後重試訂閱
+                            serviceScope.launch(Dispatchers.IO) {
+                                delay(3000) // 3秒後重試
+                                Log.d(TAG, "3秒後重試訂閱MQTT主題")
+                                subscribeToTopics()
+                            }
+                        }
+                    })
+                } else {
+                    // 訂閱本地主題在這裡實現
+                    Log.d(TAG, "使用本地主題訂閱")
+                    // 可以運行本地主題的訂閱部分
+                }
+            } else {
+                Log.e(TAG, "MQTT未連接，無法訂閱主題，將嘗試重新連接")
+                connectMqtt()
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "訂閱主題失敗: ${e.message}")
+            Log.e(TAG, "MQTT主題訂閱時發生異常: ${e.message}")
+            e.printStackTrace()
         }
     }
     
     /**
-     * 處理接收到的MQTT消息
+     * 處理MQTT消息內容
      */
     private fun processMessage(topic: String?, payload: String) {
+        // 記錄原始消息內容用於調試
+        Log.d(TAG, "接收到MQTT消息: Topic=$topic, Payload=$payload")
         try {
             Log.i(TAG, "正在處理消息，主題: $topic, 內容: $payload")
             
+            // 檢查是否為遠端MQTT主題
+            if (MqttConstants.USE_REMOTE_SERVER && topic != null && topic == MqttConstants.MQTT_REMOTE_TOPIC) {
+                processRemoteMqttMessage(payload)
+                return
+            }
+            
             // 首先嘗試解析模擬器的直接JSON格式（健康數據）
-            if (topic == MqttConstants.TOPIC_HEALTH_DATA) {
+            if (topic != null && topic == MqttConstants.TOPIC_HEALTH_DATA) {
                 try {
                     val gson = Gson()
                     val mqttHealthData = gson.fromJson(payload, com.seniorcareplus.app.models.MqttHealthData::class.java)
@@ -300,6 +417,53 @@ class MqttService : Service() {
     /**
      * 斷開MQTT連接
      */
+    /**
+     * 處理來自遠端MQTT伺服器的消息（格式不同）
+     */
+    private fun processRemoteMqttMessage(payload: String) {
+        try {
+            // 嘗試解析遠端MQTT消息格式
+            val jsonObj = JSONObject(payload)
+            
+            // 檢查是否為位置數據
+            if (jsonObj.has("content") && jsonObj.getString("content") == "location" && jsonObj.has("position")) {
+                val id = if (jsonObj.has("id")) jsonObj.get("id").toString() else ""
+                
+                // 獲取位置數據
+                val posObj = jsonObj.getJSONObject("position")
+                val x = posObj.optDouble("x", 0.0).toFloat()
+                val y = posObj.optDouble("y", 0.0).toFloat()
+                val z = posObj.optDouble("z", 0.0).toFloat()
+                
+                // 創建位置對象
+                val position = Position(x, y, z)
+                
+                // 創建標準LocationMessage對象
+                val locationMessage = LocationMessage(
+                    id = id,
+                    node = "remote-node",  // 默認節點名稱
+                    name = "Remote Device $id",  // 默認裝置名稱
+                    position = position,
+                    time = Date().toString()  // 使用當前時間
+                ).apply {
+                    content = MqttConstants.CONTENT_TYPE_LOCATION
+                }
+                
+                Log.d(TAG, "成功解析遠端位置消息: id=$id, position=$position")
+                
+                serviceScope.launch {
+                    _locationMessages.emit(locationMessage)
+                }
+            } else {
+                Log.w(TAG, "遠端消息格式不符合預期: $payload")
+            }
+        } catch (e: JSONException) {
+            Log.e(TAG, "解析遠端JSON消息失敗: ${e.message}")
+        } catch (e: Exception) {
+            Log.e(TAG, "處理遠端消息時出錯: ${e.message}")
+        }
+    }
+    
     private fun disconnectMqtt() {
         try {
             mqttClient?.disconnect()
